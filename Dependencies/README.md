@@ -34,7 +34,13 @@ Coming soon...
 
 ## MacOS
 
-Coming soon...
+### 1. Xcode (Clang/LLVM from Command Line Tools)
+- Run: `download_dep_mac.command`
+- Choose **option 1** for compiler
+
+### 2. GCC (via Homebrew or custom install)
+- Run: `download_dep_mac.command`
+- Choose **option 2** for compiler
 
 # Dependency Information
 
