@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
+
 project(Kemena3dSdk
     VERSION 0.0.1
     DESCRIPTION "Kemena3D SDK"
@@ -25,13 +26,12 @@ if(WIN32)
 endif()
 
 # Set output directories
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Debug)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Debug)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Debug)
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Release)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Release)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Release)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG     ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Debug)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG     ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG     ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Debug)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE   ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Release)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE   ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Release)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE   ${CMAKE_CURRENT_SOURCE_DIR}/Source/lib/Release)
 
 # Collect source files
 file(GLOB_RECURSE SRC_FILES
@@ -64,13 +64,13 @@ target_include_directories(kemena3d
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glm
+	${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/include
-        #${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/DetourCrowd/include
-        #${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/DetourTileCache/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/stb
+        # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/DetourCrowd/include
+        # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/DetourTileCache/include
 )
 
 # Link directories (if using prebuilt libraries)
@@ -81,48 +81,51 @@ link_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour
-    #${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/DetourCrowd
-    #${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/DetourTileCache
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/DetourCrowd
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/DetourTileCache
 )
 
-# Link libraries
-target_link_libraries(kemena3d
-    PUBLIC
-        libSDL3
-        #glew32
-        libassimp
-        libJolt
-        libRecast
-        libDetour
-        #libDetourCrowd
-        #libDetourTileCache
-)
-
-# Conditional linking and definitions for GLEW
+# Conditional linking and definitions
 if (NOT BUILD_SHARED_LIBS)
     target_compile_definitions(kemena3d PRIVATE GLEW_STATIC)
-    target_link_libraries(kemena3d PUBLIC glew32s)
+    set(GLEW_LIB glew32s)
 else()
-    target_link_libraries(kemena3d PUBLIC glew32)
+    set(GLEW_LIB glew32)
 endif()
 
 # Platform-specific settings
 if (WIN32)
     target_compile_definitions(kemena3d PRIVATE _WINDOWS)
-elseif(APPLE)
+elseif (APPLE)
     find_library(COCOA_LIBRARY Cocoa)
     find_library(OpenGL_LIBRARY OpenGL)
-    target_link_libraries(kemena3d ${COCOA_LIBRARY} ${OpenGL_LIBRARY})
+    target_link_libraries(kemena3d PUBLIC ${COCOA_LIBRARY} ${OpenGL_LIBRARY})
     target_compile_definitions(kemena3d PRIVATE _MACOS)
-elseif(UNIX)
+elseif (UNIX)
     find_package(OpenGL REQUIRED)
     find_package(X11 REQUIRED)
-    target_link_libraries(kemena3d ${OPENGL_LIBRARIES} ${X11_LIBRARIES})
+    target_link_libraries(kemena3d PUBLIC ${OPENGL_LIBRARIES} ${X11_LIBRARIES})
     target_compile_definitions(kemena3d PRIVATE _LINUX)
 endif()
 
-# Set Visual Studio startup project (for MSVC users)
-if(MSVC)
+# Link all libraries
+target_link_libraries(kemena3d
+    PUBLIC
+        libSDL3
+        ${GLEW_LIB}
+        libassimp
+        libJolt
+        libRecast
+        libDetour
+        # libDetourCrowd
+        # libDetourTileCache
+)
+
+# Suppress deprecated warnings from system headers (like sprintf)
+target_compile_options(kemena3d PRIVATE -Wno-deprecated-declarations)
+
+# Visual Studio startup project
+if (MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT kemena3d)
 endif()
 

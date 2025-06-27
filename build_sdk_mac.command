@@ -1,11 +1,12 @@
 #!/bin/bash
 
+# Enable strict mode
 set -e
 
 # Initialize
-DEP_FOLDER="$(cd "$(dirname "$0")" && pwd)"
-TEMP_FOLDER="$DEP_FOLDER/temp"
-BUILD_FOLDER="$DEP_FOLDER/build"
+KEMENA3D_FOLDER="$(cd "$(dirname "$0")" && pwd)"
+TEMP_FOLDER="$KEMENA3D_FOLDER/temp"
+BUILD_FOLDER="$KEMENA3D_FOLDER/build"
 
 # ASCII Banner
 cat << "EOF"
@@ -76,13 +77,13 @@ build_with_cmake() {
 
     echo "=== Building Kemena3D SDK ($BUILD_MODE) ==="
 
-    if [ ! -f "CMakeLists.txt" ]; then
+    if [ ! -f "$KEMENA3D_FOLDER/CMakeLists.txt" ]; then
         echo "[ERROR] CMakeLists.txt not found"
         exit 1
     fi
 
     echo "[INFO] Configuring with CMake..."
-    cmake -S . -B "$BUILD_FOLDER/$BUILD_MODE" -DCMAKE_BUILD_TYPE="$BUILD_MODE" $ARGS
+	cmake -S "$KEMENA3D_FOLDER" -B "$BUILD_FOLDER/$BUILD_MODE" -DCMAKE_BUILD_TYPE="$BUILD_MODE" $ARGS
     if [ $? -ne 0 ]; then
         echo "[ERROR] CMake configuration failed."
         exit 1

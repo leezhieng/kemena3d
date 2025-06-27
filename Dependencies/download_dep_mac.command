@@ -90,7 +90,7 @@ fi
 if [[ "$modelformat" == "1" ]]; then
   MODEL_FORMAT="-DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=ON -DASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT=ON"
 else
-  MODEL_FORMAT="-DASSIMP_BUILD_GLTF_IMPORTER=ON -DASSIMP_NO_EXPORT=ON"
+  MODEL_FORMAT="MODEL_FORMAT=-DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF -DASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT=OFF -DASSIMP_BUILD_GLTF_IMPORTER=ON -DASSIMP_BUILD_GLTF_EXPORTER=OFF -DASSIMP_NO_EXPORT=ON -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_SAMPLES=OFF -DASSIMP_BUILD_FBX_IMPORTER=OFF -DASSIMP_BUILD_OBJ_IMPORTER=OFF -DASSIMP_BUILD_COLLADA_IMPORTER=OFF"
 fi
 
 # ------------------------------------------------------------------------
@@ -273,7 +273,7 @@ cmake_minimum_required(VERSION 3.10)
 ' "$CMAKELISTS"
   fi
 
-  BUILD_DIR="$TEMP_FOLDER/build_$NAME"
+  BUILD_DIR="$SOURCE_DIR"
   mkdir -p "$BUILD_DIR"
   cd "$BUILD_DIR" || build_failed
 
@@ -307,17 +307,11 @@ build_with_make() {
   echo "[INFO] Running make clean..."
   make clean || true
 
-  #echo "[INFO] Building extensions (macOS safe)..."
-  #make extensions SYSTEM=darwin PYTHON=python3 || build_failed
-
   echo "[INFO] Building target..."
   make CONFIG="$BUILD_MODE" || build_failed
 
-  BUILD_DIR="$SOURCE_DIR/build_$(echo "$BUILD_MODE" | tr '[:upper:]' '[:lower:]')"
+  BUILD_DIR="$SOURCE_DIR"
   mkdir -p "$BUILD_DIR"
-
-  #echo "[INFO] Installing to $BUILD_DIR..."
-  #make install FINAL_DEST="$BUILD_DIR" CONFIG="$BUILD_MODE" || build_failed
 
   echo "[SUCCESS] $NAME built and installed to $BUILD_DIR."
   cd - > /dev/null || build_failed

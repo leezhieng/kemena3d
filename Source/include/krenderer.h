@@ -14,13 +14,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <GL/glew.h>
+
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
 #include <GL/gl.h>
+#include <GL/glu.h>
+#endif
 
 #define NO_SDL_GLEXT
 #include <SDL3/SDL.h>
-//#include <SDL3/SDL_syswm.h>
 #include <SDL3/SDL_opengl.h>
-//#include <SDL_opengl_glext.h>
 
 #include "kmesh.h"
 #include "kcamera.h"
