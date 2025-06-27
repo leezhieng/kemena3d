@@ -1,6 +1,6 @@
 # How to Build the Dependencies
 
-You can find the tutorial at: https://kemena3d.com/building-kemena3d-sdk
+You can find the tutorial at: https://kemena3d.com/manual
 
 # Why Do This Separately?
 
@@ -32,7 +32,7 @@ If you need to build Kemena3D using multiple compilers:
 
 Coming soon...
 
-## MacOS
+## macOS
 
 ### 1. Xcode (Clang/LLVM from Command Line Tools)
 - Run: `download_dep_mac.command`
@@ -67,10 +67,10 @@ The automated batch script performs its tasks using the configurations below.  I
 - **Website**: [GLEW GitHub](https://github.com/nigels-com/glew)  
 - **Version**: `2.2.0`  
 - **Download (Windows)**: [glew-2.2.0-win32.zip](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip)
-- **Download (MacOS)**: [glew-2.2.0.tgz](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
+- **Download (macOS)**: [glew-2.2.0.tgz](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
 - **Extract to**: `glew`  
 - **Build Required (Windows)**: ❌ No
-- **Build Required (MacOS)**: ✅ Yes
+- **Build Required (macOS)**: ✅ Yes
 
 ### Recast Navigation
 
