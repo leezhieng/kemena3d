@@ -44,8 +44,7 @@ The automated batch script performs its tasks using the configurations below.  I
 
 - **Website**: [SDL GitHub](https://github.com/libsdl-org/SDL)  
 - **Version**: `3.2.16`  
-- **Download (VS2022)**: [SDL3-devel-VC.zip](https://github.com/libsdl-org/SDL/releases/download/release-3.2.16/SDL3-devel-3.2.16-VC.zip)  
-- **Download (MinGW)**: [SDL3-devel-mingw.zip](https://github.com/libsdl-org/SDL/releases/download/release-3.2.16/SDL3-devel-3.2.16-mingw.zip)  
+- **Git Clone**: `https://github.com/libsdl-org/SDL.git`  
 - **Extract to**: `sdl`  
 - **Build Required**: ✅ Yes
 
@@ -61,9 +60,11 @@ The automated batch script performs its tasks using the configurations below.  I
 
 - **Website**: [GLEW GitHub](https://github.com/nigels-com/glew)  
 - **Version**: `2.2.0`  
-- **Download**: [glew-2.2.0-win32.zip](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip)  
+- **Download (Windows)**: [glew-2.2.0-win32.zip](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip)
+- **Download (MacOS)**: [glew-2.2.0.tgz](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
 - **Extract to**: `glew`  
-- **Build Required**: ❌ No
+- **Build Required (Windows)**: ❌ No
+- **Build Required (MacOS)**: ✅ Yes
 
 ### Recast Navigation
 
@@ -97,7 +98,7 @@ The automated batch script performs its tasks using the configurations below.  I
 - **Extract to**: `nlohmann`  
 - **Build Required**: ❌ No
 
-### 🔹 Jolt Physics
+### Jolt Physics
 
 - **Website**: [JoltPhysics GitHub](https://github.com/jrouwe/JoltPhysics)  
 - **Version**: `5.3.0`  
