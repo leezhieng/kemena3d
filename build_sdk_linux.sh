@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Enable strict mode
-set -e
+# Prevent exit when failed
+set +e
+trap 'echo -e "\n[ERROR] Script failed at line $LINENO. Exiting..."; read -n 1 -s -r -p "Press any key to close..."; exit 1' ERR
 
 # Initialize
 KEMENA3D_FOLDER="$(cd "$(dirname "$0")" && pwd)"
@@ -20,6 +21,19 @@ Automatically compile Kemena3D SDK...
 ------------------------------------------------------------------------
 EOF
 
+# ------------------------------------------------------------------------
+# FAILED
+# ------------------------------------------------------------------------
+build_failed() {
+  echo
+  echo "------------------------------------------------------------------------"
+  echo "Failed to build Kemena3D SDK, please try again."
+  echo "------------------------------------------------------------------------"
+  read -n 1 -s -r -p "Press any key to exit..."
+  echo
+  exit 1
+}
+
 # Linking type
 echo
 echo "Please choose static linking or dynamic linking:"
@@ -30,7 +44,7 @@ read -rp "Enter your choice (1 or 2): " linking
 
 if [[ "$linking" != "1" && "$linking" != "2" ]]; then
     echo "Invalid choice: $linking"
-    exit 1
+    build_failed
 fi
 
 # Determine linking flags
@@ -49,21 +63,21 @@ build_with_cmake() {
 
     if [ ! -f "$KEMENA3D_FOLDER/CMakeLists.txt" ]; then
         echo "[ERROR] CMakeLists.txt not found"
-        exit 1
+        build_failed
     fi
 
     echo "[INFO] Configuring with CMake..."
     cmake -S "$KEMENA3D_FOLDER" -B "$BUILD_FOLDER/$BUILD_MODE" -DCMAKE_BUILD_TYPE="$BUILD_MODE" $ARGS
     if [ $? -ne 0 ]; then
         echo "[ERROR] CMake configuration failed."
-        exit 1
+        build_failed
     fi
 
     echo "[INFO] Building..."
     cmake --build "$BUILD_FOLDER/$BUILD_MODE"
     if [ $? -ne 0 ]; then
         echo "[ERROR] Build failed."
-        exit 1
+        build_failed
     fi
 
     echo "[SUCCESS] Built Kemena3D SDK ($BUILD_MODE)"
