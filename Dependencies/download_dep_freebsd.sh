@@ -65,8 +65,156 @@ if [ "$modelformat" = "2" ]; then
 -DASSIMP_BUILD_FBX_IMPORTER=OFF -DASSIMP_BUILD_OBJ_IMPORTER=OFF -DASSIMP_BUILD_COLLADA_IMPORTER=OFF"
 fi
 
-# Include other functions (to be appended)
-. "$DEP_FOLDER/functions.sh"
+# Utility Functions
+build_success() {
+  echo "\n------------------------------------------------------------------------"
+  echo "All dependencies have been downloaded and compiled successfully."
+  echo "------------------------------------------------------------------------"
+}
+
+build_failed() {
+  echo "\n------------------------------------------------------------------------"
+  echo "Failed to download or compile dependencies, please try again."
+  echo "------------------------------------------------------------------------"
+  exit 1
+}
+
+download_and_extract_zip() {
+  NAME=$1
+  VERSION=$2
+  URL=$3
+  DESTFOLDER="$DEP_FOLDER/$4"
+  FLATTEN=$5
+  ZIPFILE="$TEMP_FOLDER/${4}_temp.zip"
+
+  echo "=== Downloading $NAME ($VERSION) ==="
+
+  if [ -d "$DESTFOLDER" ]; then
+    echo "Folder '$DESTFOLDER' already exists. Skipping."
+    return
+  fi
+
+  rm -rf "$TEMP_FOLDER"
+  mkdir -p "$TEMP_FOLDER"
+
+  echo "Downloading ZIP..."
+  fetch -o "$ZIPFILE" "$URL" || build_failed
+
+  echo "Extracting..."
+  unzip -q "$ZIPFILE" -d "$TEMP_FOLDER" || build_failed
+  rm -f "$ZIPFILE"
+
+  mkdir -p "$DESTFOLDER"
+
+  if [ "$FLATTEN" = "true" ]; then
+    mv "$TEMP_FOLDER"/*/* "$DESTFOLDER"/ || build_failed
+  else
+    mv "$TEMP_FOLDER"/* "$DESTFOLDER"/ || build_failed
+  fi
+
+  rm -rf "$TEMP_FOLDER"
+  echo "$NAME setup complete."
+}
+
+download_and_extract_tarball() {
+  NAME=$1
+  VERSION=$2
+  URL=$3
+  DESTFOLDER="$DEP_FOLDER/$4"
+  FLATTEN=$5
+  FILENAME=$(basename "$URL")
+  TARFILE="$TEMP_FOLDER/$FILENAME"
+
+  echo "=== Downloading $NAME ($VERSION) ==="
+
+  if [ -d "$DESTFOLDER" ]; then
+    echo "Folder '$DESTFOLDER' already exists. Skipping."
+    return
+  fi
+
+  rm -rf "$TEMP_FOLDER"
+  mkdir -p "$TEMP_FOLDER"
+
+  echo "Downloading tarball..."
+  fetch -o "$TARFILE" "$URL" || build_failed
+
+  echo "Extracting..."
+  tar -xzf "$TARFILE" -C "$TEMP_FOLDER" || build_failed
+  rm -f "$TARFILE"
+
+  mkdir -p "$DESTFOLDER"
+
+  if [ "$FLATTEN" = "true" ]; then
+    mv "$TEMP_FOLDER"/*/* "$DESTFOLDER"/ || build_failed
+  else
+    mv "$TEMP_FOLDER"/* "$DESTFOLDER"/ || build_failed
+  fi
+
+  rm -rf "$TEMP_FOLDER"
+  echo "$NAME setup complete."
+}
+
+clone_git() {
+  NAME=$1
+  VERSION=$2
+  REPO_URL=$3
+  REVISION=$4
+  DESTFOLDER="$DEP_FOLDER/$5"
+  TEMP_CLONE="$TEMP_FOLDER"
+
+  echo "=== Git Clone $NAME ($VERSION) ==="
+
+  if [ -d "$DESTFOLDER" ]; then
+    echo "Folder '$DESTFOLDER' already exists. Skipping."
+    return
+  fi
+
+  rm -rf "$TEMP_CLONE"
+  git clone "$REPO_URL" "$TEMP_CLONE" || build_failed
+  cd "$TEMP_CLONE" || build_failed
+
+  if [ -n "$REVISION" ]; then
+    git checkout "$REVISION" || build_failed
+  fi
+
+  git submodule update --init --recursive || build_failed
+  cd - > /dev/null || build_failed
+
+  mv "$TEMP_CLONE" "$DESTFOLDER"
+  echo "$NAME setup complete."
+}
+
+build_with_cmake() {
+  NAME=$1
+  SOURCE_DIR="$DEP_FOLDER/$2"
+  BUILD_MODE=$3
+  ARGS=$4
+
+  echo "=== Building $NAME ($BUILD_MODE) ==="
+
+  mkdir -p "$SOURCE_DIR/build_$BUILD_MODE"
+  cd "$SOURCE_DIR/build_$BUILD_MODE" || build_failed
+
+  cmake .. -DCMAKE_BUILD_TYPE=$BUILD_MODE $ARGS || build_failed
+  cmake --build . || build_failed
+
+  cd - > /dev/null || build_failed
+  echo "$NAME ($BUILD_MODE) build complete."
+}
+
+build_with_make() {
+  NAME=$1
+  SOURCE_DIR="$DEP_FOLDER/$2"
+  BUILD_MODE=$3
+
+  echo "=== Building $NAME ($BUILD_MODE) ==="
+
+  cd "$SOURCE_DIR" || build_failed
+  make clean || true
+  make || build_failed
+  cd - > /dev/null || build_failed
+  echo "$NAME built using Make."
+}
 
 # Dependencies
 clone_git "SDL" "v3.2.16" "https://github.com/libsdl-org/SDL.git" "release-3.2.16" "sdl"
