@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Enable strict mode
-set -e
+# Prevent exit when failed
+set +e
+trap 'echo -e "\n[ERROR] Script failed at line $LINENO. Exiting..."; read -n 1 -s -r -p "Press any key to close..."; exit 1' ERR
 
 DEP_FOLDER="$(cd "$(dirname "$0")" && pwd)"
 TEMP_FOLDER="$DEP_FOLDER/temp"
@@ -91,6 +92,8 @@ build_failed() {
   echo "------------------------------------------------------------------------"
   echo "Failed to download or compile dependencies, please try again."
   echo "------------------------------------------------------------------------"
+  read -n 1 -s -r -p "Press any key to exit..."
+  echo
   exit 1
 }
 
