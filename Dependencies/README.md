@@ -30,7 +30,8 @@ If you need to build Kemena3D using multiple compilers:
 
 ## Linux
 
-Coming soon...
+### 1. GCC
+- Run: `download_dep_linux.command`
 
 ## macOS
 
