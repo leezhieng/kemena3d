@@ -69,6 +69,37 @@ if not "%modelformat%"=="1" if not "%modelformat%"=="2" (
 :: ------------------------------------------------------------------------
 
 :: ------------------------------------------------------------------------
+:: AngelScript
+:: ------------------------------------------------------------------------
+echo.
+
+call :downloadAndExtractZip "AngelScript" "v2.37.0" "https://www.angelcode.com/angelscript/sdk/files/angelscript_2.37.0.zip" "angelscript" "true"
+
+if "%compiler%"=="1" (
+	:: VS 2022
+	if "%linking%"=="1" (
+		:: Static build
+		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=OFF -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=OFF -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+	) else if "%linking%"=="2" (
+		:: Dynamic build
+		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=ON -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=ON -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+	)
+) else if "%compiler%"=="2" (
+	:: MinGW
+	if "%linking%"=="1" (
+		:: Static build
+		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=OFF -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=OFF -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+	) else if "%linking%"=="2" (
+		:: Dynamic build
+		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=ON -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=ON -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+	)
+)
+
+:: ------------------------------------------------------------------------
 :: SDL
 :: ------------------------------------------------------------------------
 echo.
@@ -558,4 +589,83 @@ if errorlevel 1 (
 
 echo [SUCCESS] %SCRIPT% called successfully.
 popd
+goto :eof
+
+:: ------------------------------------------------------------------------
+:: Call all files in a folder to destination
+:: ------------------------------------------------------------------------
+:copyFilesInFolder
+:: %1 = Source folder
+:: %2 = Destination folder
+:: %3 = File extension filter
+
+if "%~1"=="" (
+    echo [ERROR] Source path not provided.
+    goto :eof
+)
+if "%~2"=="" (
+    echo [ERROR] Destination path not provided.
+    goto :eof
+)
+
+set "SRC=%~1"
+set "DEST=%~2"
+set "EXT=%~3"
+
+if not exist "%SRC%" (
+    echo [ERROR] Source folder "%SRC%" does not exist.
+    goto :eof
+)
+
+if not exist "%DEST%" (
+    echo Creating destination folder "%DEST%"...
+    mkdir "%DEST%"
+)
+
+echo Copying from "%SRC%" to "%DEST%"...
+
+if "%EXTS%"=="" (
+    echo Copying all files and folders from "%SRC%" to "%DEST%"...
+    xcopy "%SRC%\*" "%DEST%\" /E /H /C /Y >nul
+) else (
+    echo Copying specific extensions: %EXTS%
+    for %%E in (%EXTS%) do (
+        echo Copying *%%E files...
+        xcopy "%SRC%\*%%E" "%DEST%\" /E /H /C /Y >nul
+    )
+)
+
+echo [SUCCESS] Files successfully copied to %DEST%.
+goto :eof
+
+:: ------------------------------------------------------------------------
+:: Copy a single file to destination
+:: ------------------------------------------------------------------------
+:copySingleFile
+if "%~1"=="" (
+    echo [ERROR] Source file not provided.
+    goto :eof
+)
+if "%~2"=="" (
+    echo [ERROR] Destination folder not provided.
+    goto :eof
+)
+
+set "SRC_FILE=%~1"
+set "DEST_DIR=%~2"
+
+if not exist "%SRC_FILE%" (
+    echo [ERROR] Source file "%SRC_FILE%" does not exist.
+    goto :eof
+)
+
+if not exist "%DEST_DIR%" (
+    echo Creating destination folder "%DEST_DIR%"...
+    mkdir "%DEST_DIR%"
+)
+
+echo Copying file "%SRC_FILE%" to "%DEST_DIR%"...
+copy /Y "%SRC_FILE%" "%DEST_DIR%\"
+
+echo [SUCCESS] File successfully copied to %DEST%.
 goto :eof

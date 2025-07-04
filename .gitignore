@@ -58,3 +58,12 @@ Dependencies
 lib
 obj
 build
+nlohmann
+recast
+sdl
+stb
+angelscript
+assimp
+glew
+glm
+jolt

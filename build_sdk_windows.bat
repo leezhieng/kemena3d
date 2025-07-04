@@ -57,23 +57,23 @@ if "%compiler%"=="1" (
 	:: VS 2022
 	if "%linking%"=="1" (
 		:: Static build
-		call :buildWithCMake "Debug" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=OFF"
-		call :buildWithCMake "Release" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=OFF"
+		call :buildWithCMakeVs2022 "Debug" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=OFF"
+		call :buildWithCMakeVs2022 "Release" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=OFF"
 	) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :buildWithCMake "Debug" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF"
-		call :buildWithCMake "Release" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF"
+		call :buildWithCMakeVs2022 "Debug" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF"
+		call :buildWithCMakeVs2022 "Release" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF"
 	)
 ) else if "%compiler%"=="2" (
 	:: MinGW
 	if "%linking%"=="1" (
 		:: Static build
-		call :buildWithCMake "Debug" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
-		call :buildWithCMake "Release" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
+		call :buildWithCMakeMinGW "Debug" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
+		call :buildWithCMakeMinGW "Release" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
 	) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :buildWithCMake "Debug" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON"
-		call :buildWithCMake "Release" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON"
+		call :buildWithCMakeMinGW "Debug" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON"
+		call :buildWithCMakeMinGW "Release" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON"
 	)
 )
 
@@ -109,9 +109,9 @@ goto :eof
 :: ------------------------------------------------------------------------
 
 :: ------------------------------------------------------------------------
-:: Build With CMake
+:: Build With CMake (VS 2022)
 :: ------------------------------------------------------------------------
-:buildWithCMake
+:buildWithCMakeVs2022
 set "BUILD_MODE=%~1"
 set "ARGS=%~2"
 
@@ -123,7 +123,7 @@ if not exist "CMakeLists.txt" (
 )
 
 echo [INFO] Running CMake configuration...
-cmake -S . -B build %ARGS%
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=%cd% %ARGS%
 if errorlevel 1 (
     echo [ERROR] CMake configuration failed.
     goto :build_failed
@@ -137,5 +137,53 @@ if errorlevel 1 (
 )
 
 echo [SUCCESS] Kemena3D SDK built successfully.
+
+echo [INFO] Installing Kemena3D SDK...
+cmake --install build --config %BUILD_MODE%
+if errorlevel 1 (
+    echo [ERROR] Installation failed.
+    goto :build_failed
+)
+
+popd
+goto :eof
+
+:: ------------------------------------------------------------------------
+:: Build With CMake (MinGW)
+:: ------------------------------------------------------------------------
+:buildWithCMakeMinGW
+set "BUILD_MODE=%~1"
+set "ARGS=%~2"
+
+echo === Building Kemena3D SDK (%BUILD_MODE%) ===
+
+if not exist "CMakeLists.txt" (
+    echo [ERROR] CMakeLists.txt not found
+    goto :build_failed
+)
+
+echo [INFO] Running CMake configuration...
+cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=%cd% %ARGS%
+if errorlevel 1 (
+    echo [ERROR] CMake configuration failed.
+    goto :build_failed
+)
+
+echo [INFO] Building Kemena3D SDK...
+cmake --build build --config %BUILD_MODE%
+if errorlevel 1 (
+    echo [ERROR] Build failed.
+    goto :build_failed
+)
+
+echo [SUCCESS] Kemena3D SDK built successfully.
+
+echo [INFO] Installing Kemena3D SDK...
+cmake --install build --config %BUILD_MODE%
+if errorlevel 1 (
+    echo [ERROR] Installation failed.
+    goto :build_failed
+)
+
 popd
 goto :eof
