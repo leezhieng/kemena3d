@@ -2,8 +2,8 @@
 setlocal EnableDelayedExpansion
 set "TEMP_FOLDER=temp"
 set "VS2022_PATH=%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-set "GCC_PATH=C:/MinGW/bin/gcc.exe"
-set "GPP_PATH=C:/MinGW/bin/g++.exe"
+set "GCC_PATH=C:/msys64/mingw64/bin/gcc.exe"
+set "GPP_PATH=C:/msys64/mingw64/bin/g++.exe"
 
 :: ASCII Banner
 echo  _  __   ___   __  __    ___    _  _     ___     ____    ___   
@@ -79,23 +79,23 @@ if "%compiler%"=="1" (
 	:: VS 2022
 	if "%linking%"=="1" (
 		:: Static build
-		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=OFF -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
-		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=OFF -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=OFF"
+		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=OFF"
 	) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=ON -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
-		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=ON -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=ON"
+		call :buildWithCMakeVs2022 "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=ON"
 	)
 ) else if "%compiler%"=="2" (
 	:: MinGW
 	if "%linking%"=="1" (
 		:: Static build
-		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=OFF -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
-		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=OFF -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=OFF"
+		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=OFF"
 	) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=ON -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
-		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=ON -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=%OUT_ROOT%\lib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=%OUT_ROOT%\bin"
+		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Debug" "-DBUILD_SHARED_LIBS=ON"
+		call :buildWithCMakeMinGW "AngelScript" "angelscript/angelscript/projects/cmake" "Release" "-DBUILD_SHARED_LIBS=ON"
 	)
 )
 
@@ -228,23 +228,23 @@ if "%compiler%"=="1" (
 	:: VS 2022
 	if "%linking%"=="1" (
 		:: Static build
-		call :buildWithCMakeVs2022 "Assimp" "assimp" "Debug" "-DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
-		call :buildWithCMakeVs2022 "Assimp" "assimp" "Release" "-DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
+		call :buildWithCMakeVs2022 "Assimp" "assimp" "Debug" "-DASSIMP_BUILD_ZLIB=ON -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
+		call :buildWithCMakeVs2022 "Assimp" "assimp" "Release" "-DASSIMP_BUILD_ZLIB=ON -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
 	) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :buildWithCMakeVs2022 "Assimp" "assimp" "Debug" "-DBUILD_SHARED_LIBS=ON -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
-		call :buildWithCMakeVs2022 "Assimp" "assimp" "Release" "-DBUILD_SHARED_LIBS=ON -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
+		call :buildWithCMakeVs2022 "Assimp" "assimp" "Debug" "-DASSIMP_BUILD_ZLIB=ON -DBUILD_SHARED_LIBS=ON -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
+		call :buildWithCMakeVs2022 "Assimp" "assimp" "Release" "-DASSIMP_BUILD_ZLIB=ON -DBUILD_SHARED_LIBS=ON -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
 	)
 ) else if "%compiler%"=="2" (
 	:: MinGW
 	if "%linking%"=="1" (
 		:: Static build
 		call :buildWithCMakeMinGW "assimp" "assimp" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
-		call :buildWithCMakeMinGW "assimp" "assimp" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DCMAKE_CXX_FLAGS_RELEASE=-Wno-array-bounds;-Wno-alloc-size-larger-than;-Wno-error=array-compare -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
+		call :buildWithCMakeMinGW "assimp" "assimp" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DCMAKE_CXX_FLAGS_RELEASE=-Wno-array-bounds -Wno-alloc-size-larger-than -Wno-error=array-compare -Wno-error=class-memaccess -DASSIMP_BUILD_ZLIB=ON -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
 	) else if "%linking%"=="2" (
 		:: Dynamic build
 		call :buildWithCMakeMinGW "assimp" "assimp" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
-		call :buildWithCMakeMinGW "assimp" "assimp" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DCMAKE_CXX_FLAGS_RELEASE=-Wno-array-bounds;-Wno-alloc-size-larger-than;-Wno-error=array-compare -DBUILD_SHARED_LIBS=ON -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
+		call :buildWithCMakeMinGW "assimp" "assimp" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DCMAKE_CXX_FLAGS_RELEASE=-Wno-array-bounds -Wno-alloc-size-larger-than -Wno-error=array-compare -Wno-error=class-memaccess -DASSIMP_BUILD_ZLIB=ON -DBUILD_SHARED_LIBS=ON -DASSIMP_BUILD_TESTS=OFF %MODEL_FORMAT%"
 	)
 )
 

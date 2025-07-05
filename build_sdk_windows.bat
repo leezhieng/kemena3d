@@ -2,8 +2,8 @@
 setlocal EnableDelayedExpansion
 set "TEMP_FOLDER=temp"
 set "VS2022_PATH=%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-set "GCC_PATH=C:/MinGW/bin/gcc.exe"
-set "GPP_PATH=C:/MinGW/bin/g++.exe"
+set "GCC_PATH=C:/msys64/mingw64/bin/gcc.exe"
+set "GPP_PATH=C:/msys64/mingw64/bin/g++.exe"
 
 :: ASCII Banner
 echo  _  __   ___   __  __    ___    _  _     ___     ____    ___   
