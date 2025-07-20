@@ -1,6 +1,8 @@
 #ifndef KSCRIPTMANAGER_H
 #define KSCRIPTMANAGER_H
 
+#include "kexport.h"
+
 #include <cassert>
 #include <vector>
 #include <iostream>
@@ -15,7 +17,7 @@
 
 namespace kemena
 {
-    struct kScriptFunc
+    struct KEMENA3D_API kScriptFunc
     {
         std::string decl;
         asIScriptFunction* asFunc;
@@ -40,7 +42,7 @@ namespace kemena
         */
     };
 
-    struct kScript
+    struct KEMENA3D_API kScript
     {
         std::string uuid;
         bool isActive = true;
@@ -101,7 +103,7 @@ namespace kemena
         }
     };
 
-    class kScriptManager
+    class KEMENA3D_API kScriptManager
     {
         public:
             kScriptManager();

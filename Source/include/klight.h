@@ -1,11 +1,13 @@
 #ifndef KLIGHT_H
 #define KLIGHT_H
 
+#include "kexport.h"
+
 #include "kobject.h"
 
 namespace kemena
 {
-    class kLight : public kObject
+    class KEMENA3D_API kLight : public kObject
     {
         public:
             kLight(kObject* parentNode = nullptr);

@@ -68,7 +68,7 @@ if "%compiler%"=="1" (
 	:: MinGW
 	if "%linking%"=="1" (
 		:: Static build
-		call :buildWithCMakeMinGW "Debug" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
+		::call :buildWithCMakeMinGW "Debug" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
 		call :buildWithCMakeMinGW "Release" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
 	) else if "%linking%"=="2" (
 		:: Dynamic build

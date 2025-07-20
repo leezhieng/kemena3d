@@ -1,11 +1,13 @@
 #ifndef KFONT_H
 #define KFONT_H
 
+#include "kexport.h"
+
 #include "kdatatype.h"
 
 namespace kemena
 {
-    class kFont
+    class KEMENA3D_API kFont
     {
         public:
             kFont();

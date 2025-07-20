@@ -11,6 +11,16 @@ namespace kemena
         else
             return nullptr;
     }
+	
+	kWindow* createWindow(int width, int height, std::string title, void* nativeHandle)
+    {
+        kWindow* window = new kWindow;
+        bool done = window->init(width, height, title, nativeHandle);
+        if (done)
+            return window;
+        else
+            return nullptr;
+    }
 
     kRenderer* createRenderer(kWindow* window)
     {

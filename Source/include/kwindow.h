@@ -1,6 +1,8 @@
 #ifndef KWINDOW_H
 #define KWINDOW_H
 
+#include "kexport.h"
+
 #include "kdatatype.h"
 #include "ktimer.h"
 
@@ -14,13 +16,14 @@
 
 namespace kemena
 {
-    class kWindow
+    class KEMENA3D_API kWindow
     {
         public:
             kWindow();
             virtual ~kWindow();
 
             bool init(int width, int height, std::string title);
+            bool init(int width, int height, std::string title, void* nativeHandle);
             void destroy();
             void swap();
             int getWindowWidth();

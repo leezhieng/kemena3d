@@ -1,6 +1,8 @@
 #ifndef KTEXTURE_H
 #define KTEXTURE_H
 
+#include "kexport.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -20,7 +22,7 @@
 
 namespace kemena
 {
-    class kTexture
+    class KEMENA3D_API kTexture
     {
         public:
             kTexture();

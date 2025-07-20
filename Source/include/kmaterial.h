@@ -1,6 +1,8 @@
 #ifndef KMATERIAL_H
 #define KMATERIAL_H
 
+#include "kexport.h"
+
 #include "kdatatype.h"
 #include "kshader.h"
 #include "ktexture2d.h"

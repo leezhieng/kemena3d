@@ -1,11 +1,13 @@
 #ifndef KTIMER_H
 #define KTIMER_H
 
+#include "kexport.h"
+
 #include <chrono>
 
 namespace kemena
 {
-    class kTimer
+    class KEMENA3D_API kTimer
     {
         public:
             kTimer();

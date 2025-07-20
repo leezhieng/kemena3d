@@ -32,6 +32,33 @@ namespace kemena
 
         return true;
     }
+	
+	bool kWindow::init(int width, int height, std::string title, void* nativeHandle)
+    {
+        windowWidth = width;
+        windowHeight = height;
+        windowTitle = title;
+
+        if(!SDL_Init(SDL_INIT_VIDEO))
+        {
+            std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
+            return false;
+        }
+
+		SDL_PropertiesID props = SDL_CreateProperties();
+		SDL_SetPointerProperty(props, "native", nativeHandle);
+		
+		sdlWindow = SDL_CreateWindowWithProperties(props);
+		SDL_DestroyProperties(props);
+		
+        if(sdlWindow == NULL)
+        {
+            std::cout << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+            return false;
+        }
+
+        return true;
+    }
 
     void kWindow::destroy()
     {

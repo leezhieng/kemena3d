@@ -1,6 +1,8 @@
 #ifndef KMESH_H
 #define KMESH_H
 
+#include "kexport.h"
+
 #include <map>
 #include <vector>
 #include <string>
@@ -14,7 +16,7 @@ namespace kemena
 {
     class kAnimator;
 
-    class kMesh : public kObject
+    class KEMENA3D_API kMesh : public kObject
     {
         public:
             kMesh(kObject* parentNode = nullptr);

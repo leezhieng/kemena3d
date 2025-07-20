@@ -57,19 +57,15 @@ target_include_directories(kemena3d
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/stb
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/include
 )
 
 # Link directories if needed
 link_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl
+	${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/cmake
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour
 )
 
 # Definitions and static linking behavior
@@ -82,7 +78,15 @@ endif()
 
 # Platform specific
 if (WIN32)
+	target_link_libraries(kemena3d PUBLIC opengl32)
     target_compile_definitions(kemena3d PRIVATE _WINDOWS)
+	if (NOT BUILD_SHARED_LIBS)
+		target_compile_definitions(kemena3d PUBLIC KEMENA3D_STATIC)
+	endif()
+	# Define export macro only for shared builds
+    if (BUILD_SHARED_LIBS)
+        target_compile_definitions(kemena3d PRIVATE KEMENA3D_EXPORTS)
+    endif()
 elseif (APPLE)
     find_library(COCOA_LIBRARY Cocoa)
     find_library(OpenGL_LIBRARY OpenGL)
@@ -98,13 +102,10 @@ endif()
 # Link libraries
 target_link_libraries(kemena3d
     PUBLIC
-        angelscript
-        SDL3
-        ${GLEW_LIB}
-        assimp
-        Jolt
-        Recast
-        Detour
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/cmake/libangelscript.dll.a
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/libSDL3.dll.a
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/${GLEW_LIB}.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/libassimp.dll.a
 )
 
 # Suppress some noisy warnings
@@ -139,14 +140,14 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glm/glm/
         DESTINATION Output/include/glm FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/stb/
         DESTINATION Output/include/stb FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt/
-        DESTINATION Output/include/jolt FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt/
+#        DESTINATION Output/include/jolt FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include/nlohmann/
         DESTINATION Output/include/nlohmann FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/include/
-        DESTINATION Output/include/recast/Recast FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/include/
-        DESTINATION Output/include/recast/Detour FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/include/
+#        DESTINATION Output/include/recast/Recast FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/include/
+#        DESTINATION Output/include/recast/Detour FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 
 # Install dependency libs
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/cmake/
@@ -157,9 +158,9 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/
         DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/
         DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/
-        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/
-        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/
-        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/
+#        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/
+#        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/
+#        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")

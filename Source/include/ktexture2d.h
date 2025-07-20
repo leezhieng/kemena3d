@@ -1,11 +1,13 @@
 #ifndef KTEXTURE2D_H
 #define KTEXTURE2D_H
 
+#include "kexport.h"
+
 #include "ktexture.h"
 
 namespace kemena
 {
-    class kTexture2D : public kTexture
+    class KEMENA3D_API kTexture2D : public kTexture
     {
         public:
             kTexture2D();

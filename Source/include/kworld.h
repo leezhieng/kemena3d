@@ -9,11 +9,24 @@
 #include "kassetmanager.h"
 #include "kscene.h"
 
+// Export macro
+#ifdef _WIN32
+  #ifdef KEMENA3D_STATIC
+    #define KEMENA3D_API
+  #elif defined(KEMENA3D_EXPORTS)
+    #define KEMENA3D_API __declspec(dllexport)
+  #else
+    #define KEMENA3D_API __declspec(dllimport)
+  #endif
+#else
+  #define KEMENA3D_API
+#endif
+
 namespace kemena
 {
     class kScene;
 
-    class kWorld
+    class KEMENA3D_API kWorld
     {
         public:
             kWorld();

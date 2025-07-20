@@ -1,6 +1,8 @@
 #ifndef KRENDERER_H
 #define KRENDERER_H
 
+#include "kexport.h"
+
 #include "kwindow.h"
 #include "kdatatype.h"
 
@@ -38,7 +40,7 @@
 
 namespace kemena
 {
-    class kRenderer
+    class KEMENA3D_API kRenderer
     {
         public:
             kRenderer();

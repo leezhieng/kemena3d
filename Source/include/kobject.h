@@ -1,6 +1,8 @@
 #ifndef KOBJECT_H
 #define KOBJECT_H
 
+#include "kexport.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -18,7 +20,7 @@ using json = nlohmann::json;
 
 namespace kemena
 {
-    class kObject
+    class KEMENA3D_API kObject
     {
         public:
             kObject(kObject* parentNode = nullptr);

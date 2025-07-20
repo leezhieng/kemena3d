@@ -145,69 +145,69 @@ call :downloadAndExtractZip "GLEW" "v2.2.0" "https://github.com/nigels-com/glew/
 :: ------------------------------------------------------------------------
 :: Recast Navigation
 :: ------------------------------------------------------------------------
-echo.
-call :downloadAndExtractZip "Recast Navigation" "v1.6.0" "https://github.com/recastnavigation/recastnavigation/archive/refs/tags/v1.6.0.zip" "recast" "true"
-echo.
+::echo.
+::call :downloadAndExtractZip "Recast Navigation" "v1.6.0" "https://github.com/recastnavigation/recastnavigation/archive/refs/tags/v1.6.0.zip" "recast" "true"
+::echo.
 
-if "%compiler%"=="1" (
+::if "%compiler%"=="1" (
 	:: VS 2022
-	if "%linking%"=="1" (
+	::if "%linking%"=="1" (
 		:: Static build
-		call :buildWithCMakeVs2022 "Detour" "recast/Detour" "Debug" "-DBUILD_SHARED_LIBS=OFF"
-		call :buildWithCMakeVs2022 "Detour" "recast/Detour" "Release" "-DBUILD_SHARED_LIBS=OFF"
+		::call :buildWithCMakeVs2022 "Detour" "recast/Detour" "Debug" "-DBUILD_SHARED_LIBS=OFF -DDT_CUSTOM_ASSERT=0"
+		::call :buildWithCMakeVs2022 "Detour" "recast/Detour" "Release" "-DBUILD_SHARED_LIBS=OFF -DDT_CUSTOM_ASSERT=0"
 
-		call :buildWithCMakeVs2022 "Recast" "recast/Recast" "Debug" "-DBUILD_SHARED_LIBS=OFF"
-		call :buildWithCMakeVs2022 "Recast" "recast/Recast" "Release" "-DBUILD_SHARED_LIBS=OFF"
+		::call :buildWithCMakeVs2022 "Recast" "recast/Recast" "Debug" "-DBUILD_SHARED_LIBS=OFF"
+		::call :buildWithCMakeVs2022 "Recast" "recast/Recast" "Release" "-DBUILD_SHARED_LIBS=OFF"
 
 		::call :buildWithCMakeVs2022 "DetourCrowd" "recast/DetourCrowd" "Debug" "-DBUILD_SHARED_LIBS=OFF"
 		::call :buildWithCMakeVs2022 "DetourCrowd" "recast/DetourCrowd" "Release" "-DBUILD_SHARED_LIBS=OFF"
 
 		::call :buildWithCMakeMinGW "DetourTileCache" "recast/DetourTileCache" "Debug" "-DBUILD_SHARED_LIBS=OFF"
 		::call :buildWithCMakeMinGW "DetourTileCache" "recast/DetourTileCache" "Release" "-DBUILD_SHARED_LIBS=OFF"
-	) else if "%linking%"=="2" (
+	::) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :buildWithCMakeVs2022 "Detour" "recast/Detour" "Debug" "-DBUILD_SHARED_LIBS=ON"
-		call :buildWithCMakeVs2022 "Detour" "recast/Detour" "Release" "-DBUILD_SHARED_LIBS=ON"
+		::call :buildWithCMakeVs2022 "Detour" "recast/Detour" "Debug" "-DBUILD_SHARED_LIBS=ON -DDT_CUSTOM_ASSERT=0"
+		::call :buildWithCMakeVs2022 "Detour" "recast/Detour" "Release" "-DBUILD_SHARED_LIBS=ON -DDT_CUSTOM_ASSERT=0"
 
-		call :buildWithCMakeVs2022 "Recast" "recast/Recast" "Debug" "-DBUILD_SHARED_LIBS=ON"
-		call :buildWithCMakeVs2022 "Recast" "recast/Recast" "Release" "-DBUILD_SHARED_LIBS=ON"
+		::call :buildWithCMakeVs2022 "Recast" "recast/Recast" "Debug" "-DBUILD_SHARED_LIBS=ON"
+		::call :buildWithCMakeVs2022 "Recast" "recast/Recast" "Release" "-DBUILD_SHARED_LIBS=ON"
 
 		::call :buildWithCMakeVs2022 "DetourCrowd" "recast/DetourCrowd" "Debug" "-DBUILD_SHARED_LIBS=ON"
 		::call :buildWithCMakeVs2022 "DetourCrowd" "recast/DetourCrowd" "Release" "-DBUILD_SHARED_LIBS=ON"
 
 		::call :buildWithCMakeMinGW "DetourTileCache" "recast/DetourTileCache" "Debug" "-DBUILD_SHARED_LIBS=ON"
 		::call :buildWithCMakeMinGW "DetourTileCache" "recast/DetourTileCache" "Release" "-DBUILD_SHARED_LIBS=ON"
-	)
-) else if "%compiler%"=="2" (
+	::)
+::) else if "%compiler%"=="2" (
 	:: MinGW
-	if "%linking%"=="1" (
+	::if "%linking%"=="1" (
 		:: Static build
-		call :buildWithCMakeMinGW "Detour" "recast/Detour" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
-		call :buildWithCMakeMinGW "Detour" "recast/Detour" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
+		::call :buildWithCMakeMinGW "Detour" "recast/Detour" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
+		::call :buildWithCMakeMinGW "Detour" "recast/Detour" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
 
-		call :buildWithCMakeMinGW "Recast" "recast/Recast" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
-		call :buildWithCMakeMinGW "Recast" "recast/Recast" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
+		::call :buildWithCMakeMinGW "Recast" "recast/Recast" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
+		::call :buildWithCMakeMinGW "Recast" "recast/Recast" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
 
 		::call :buildWithCMakeMinGW "DetourCrowd" "recast/DetourCrowd" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
 		::call :buildWithCMakeMinGW "DetourCrowd" "recast/DetourCrowd" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
 
 		::call :buildWithCMakeMinGW "DetourTileCache" "recast/DetourTileCache" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
 		::call :buildWithCMakeMinGW "DetourTileCache" "recast/DetourTileCache" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=OFF"
-	) else if "%linking%"=="2" (
+	::) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :buildWithCMakeMinGW "Detour" "recast/Detour" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
-		call :buildWithCMakeMinGW "Detour" "recast/Detour" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
+		::call :buildWithCMakeMinGW "Detour" "recast/Detour" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
+		::call :buildWithCMakeMinGW "Detour" "recast/Detour" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
 
-		call :buildWithCMakeMinGW "Recast" "recast/Recast" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
-		call :buildWithCMakeMinGW "Recast" "recast/Recast" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
+		::call :buildWithCMakeMinGW "Recast" "recast/Recast" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
+		::call :buildWithCMakeMinGW "Recast" "recast/Recast" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
 
 		::call :buildWithCMakeMinGW "DetourCrowd" "recast/DetourCrowd" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
 		::call :buildWithCMakeMinGW "DetourCrowd" "recast/DetourCrowd" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
 
 		::call :buildWithCMakeMinGW "DetourTileCache" "recast/DetourTileCache" "Debug" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
 		::call :buildWithCMakeMinGW "DetourTileCache" "recast/DetourTileCache" "Release" "-DCMAKE_C_COMPILER=%GCC_PATH% -DCMAKE_CXX_COMPILER=%GPP_PATH% -DBUILD_SHARED_LIBS=ON"
-	)
-)
+	::)
+::)
 
 :: ------------------------------------------------------------------------
 :: Assimp
@@ -263,40 +263,40 @@ call :cloneGit "nlohmann JSON" "v3.12.0" "https://github.com/nlohmann/json.git" 
 :: ------------------------------------------------------------------------
 :: JoltPhysics
 :: ------------------------------------------------------------------------
-echo.
-call :downloadAndExtractZip "JoltPhysics" "v5.3.0" "https://github.com/jrouwe/JoltPhysics/archive/refs/tags/v5.3.0.zip" "jolt" "true"
-echo.
+::echo.
+::call :downloadAndExtractZip "JoltPhysics" "v5.3.0" "https://github.com/jrouwe/JoltPhysics/archive/refs/tags/v5.3.0.zip" "jolt" "true"
+::echo.
 
-if "%compiler%"=="1" (
+::if "%compiler%"=="1" (
 	:: VS 2022
-	if "%linking%"=="1" (
+	::if "%linking%"=="1" (
 		:: Static build
-		call :callExternalScript "jolt\Build" "cmake_vs2022_cl.bat"
-		call :buildWithVs2022 "JoltPhysics" "jolt\Build\VS2022_CL" "JoltPhysics.sln" "Debug" "-DBUILD_SHARED_LIBS=OFF"
-		call :buildWithVs2022 "JoltPhysics" "jolt\Build\VS2022_CL" "JoltPhysics.sln" "Release" "-DBUILD_SHARED_LIBS=OFF"
-	) else if "%linking%"=="2" (
+		::call :callExternalScript "jolt\Build" "cmake_vs2022_cl.bat"
+		::call :buildWithVs2022 "JoltPhysics" "jolt\Build\VS2022_CL" "JoltPhysics.sln" "Debug" "-DBUILD_SHARED_LIBS=OFF"
+		::call :buildWithVs2022 "JoltPhysics" "jolt\Build\VS2022_CL" "JoltPhysics.sln" "Release" "-DBUILD_SHARED_LIBS=OFF"
+	::) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :callExternalScript "jolt\Build" "cmake_vs2022_cl.bat"
-		call :buildWithVs2022 "JoltPhysics" "jolt\Build\VS2022_CL" "JoltPhysics.sln" "Debug" "-DBUILD_SHARED_LIBS=ON"
-		call :buildWithVs2022 "JoltPhysics" "jolt\Build\VS2022_CL" "JoltPhysics.sln" "Release" "-DBUILD_SHARED_LIBS=ON"
-	)
-) else if "%compiler%"=="2" (
+		::call :callExternalScript "jolt\Build" "cmake_vs2022_cl.bat"
+		::call :buildWithVs2022 "JoltPhysics" "jolt\Build\VS2022_CL" "JoltPhysics.sln" "Debug" "-DBUILD_SHARED_LIBS=ON"
+		::call :buildWithVs2022 "JoltPhysics" "jolt\Build\VS2022_CL" "JoltPhysics.sln" "Release" "-DBUILD_SHARED_LIBS=ON"
+	::)
+::) else if "%compiler%"=="2" (
 	:: MinGW
-	if "%linking%"=="1" (
-		call :callExternalScript "jolt\Build" "cmake_windows_mingw.sh" "Debug"
-		call :callExternalScript "jolt\Build" "cmake_windows_mingw.sh" "Release"
+	::if "%linking%"=="1" (
+		::call :callExternalScript "jolt\Build" "cmake_windows_mingw.sh" "Debug"
+		::call :callExternalScript "jolt\Build" "cmake_windows_mingw.sh" "Release"
 		
-		call :buildWithCMakeMinGW "MinGW_Debug" "jolt\Build" "Debug" "-DBUILD_SHARED_LIBS=OFF"
-		call :buildWithCMakeMinGW "MinGW_Release" "jolt\Build" "Release" "-DBUILD_SHARED_LIBS=OFF"
-	) else if "%linking%"=="2" (
+		::call :buildWithCMakeMinGW "MinGW_Debug" "jolt\Build" "Debug" "-DBUILD_SHARED_LIBS=OFF"
+		::call :buildWithCMakeMinGW "MinGW_Release" "jolt\Build" "Release" "-DBUILD_SHARED_LIBS=OFF"
+	::) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :callExternalScript "jolt\Build" "cmake_windows_mingw.sh" "Debug"
-		call :callExternalScript "jolt\Build" "cmake_windows_mingw.sh" "Release"
+		::call :callExternalScript "jolt\Build" "cmake_windows_mingw.sh" "Debug"
+		::call :callExternalScript "jolt\Build" "cmake_windows_mingw.sh" "Release"
 		
-		call :buildWithCMakeMinGW "MinGW_Debug" "jolt\Build" "Debug" "-DBUILD_SHARED_LIBS=ON"
-		call :buildWithCMakeMinGW "MinGW_Release" "jolt\Build" "Release" "-DBUILD_SHARED_LIBS=ON"
-	)
-)
+		::call :buildWithCMakeMinGW "MinGW_Debug" "jolt\Build" "Debug" "-DBUILD_SHARED_LIBS=ON"
+		::call :buildWithCMakeMinGW "MinGW_Release" "jolt\Build" "Release" "-DBUILD_SHARED_LIBS=ON"
+	::)
+::)
 
 :: ------------------------------------------------------------------------
 :: End of script

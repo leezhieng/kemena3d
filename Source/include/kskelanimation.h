@@ -1,6 +1,8 @@
 #ifndef KSKELETALANIMATION_H
 #define KSKELETALANIMATION_H
 
+#include "kexport.h"
+
 #include <map>
 #include <vector>
 
@@ -13,7 +15,7 @@
 
 namespace kemena
 {
-    class kSkeletalAnimation
+    class KEMENA3D_API kSkeletalAnimation
     {
         public:
             kSkeletalAnimation();

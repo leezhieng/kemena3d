@@ -1,6 +1,8 @@
 #ifndef KSHADER_H
 #define KSHADER_H
 
+#include "kexport.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -23,7 +25,7 @@
 
 namespace kemena
 {
-    class kShader
+    class KEMENA3D_API kShader
     {
         public:
             kShader();

@@ -1,6 +1,8 @@
 #ifndef KSCENE_H
 #define KSCENE_H
 
+#include "kexport.h"
+
 #include <string>
 #include <iostream>
 #include <vector>
@@ -18,7 +20,7 @@ namespace kemena
 {
     class kWorld;
 
-    class kScene
+    class KEMENA3D_API kScene
     {
         public:
             kScene();
