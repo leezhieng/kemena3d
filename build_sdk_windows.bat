@@ -61,19 +61,19 @@ if "%compiler%"=="1" (
 		call :buildWithCMakeVs2022 "Release" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=OFF"
 	) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :buildWithCMakeVs2022 "Debug" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF"
-		call :buildWithCMakeVs2022 "Release" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF"
+		call :buildWithCMakeVs2022 "Debug" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON -DKEMENA_SHARED"
+		call :buildWithCMakeVs2022 "Release" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON -DKEMENA_SHARED"
 	)
 ) else if "%compiler%"=="2" (
 	:: MinGW
 	if "%linking%"=="1" (
 		:: Static build
-		::call :buildWithCMakeMinGW "Debug" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
+		call :buildWithCMakeMinGW "Debug" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
 		call :buildWithCMakeMinGW "Release" "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
 	) else if "%linking%"=="2" (
 		:: Dynamic build
-		call :buildWithCMakeMinGW "Debug" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON"
-		call :buildWithCMakeMinGW "Release" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON"
+		call :buildWithCMakeMinGW "Debug" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON -DKEMENA_SHARED"
+		call :buildWithCMakeMinGW "Release" "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON -DKEMENA_SHARED"
 	)
 )
 
