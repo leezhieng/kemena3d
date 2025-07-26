@@ -792,6 +792,11 @@ namespace kemena
     {
         return shadowShader;
     }
+	
+	SDL_GLContext kRenderer::getOpenGlContext()
+	{
+		return openglContext;
+	}
 
     void kRenderer::resizeFbo(int newWidth, int newHeight)
     {

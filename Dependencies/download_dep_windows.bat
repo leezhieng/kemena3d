@@ -131,6 +131,86 @@ if "%compiler%"=="1" (
 )
 
 :: ------------------------------------------------------------------------
+:: imgui
+:: ------------------------------------------------------------------------
+echo.
+
+call :cloneGit "imgui" "v1.92.1" "https://github.com/ocornut/imgui.git" "v1.92.1" "imgui"
+
+:: Generate CMake file for imgui since it doesn't come with one
+
+:: Set variables
+set IMGUI_DIR=imgui
+set BUILD_DIR=build
+
+:: Write CMakeLists.txt inside imgui folder
+echo Generating CMakeLists.txt...
+
+(
+echo cmake_minimum_required^(VERSION 3.10^)
+echo project^(ImGuiLib LANGUAGES CXX^)
+echo set^(CMAKE_CXX_STANDARD 17^)
+echo file^(GLOB IMGUI_SRC
+echo^    imgui.cpp
+echo^    imgui_demo.cpp
+echo^    imgui_draw.cpp
+echo^    imgui_widgets.cpp
+echo^    imgui_tables.cpp
+echo^    backends/imgui_impl_sdl3.cpp
+echo^    backends/imgui_impl_opengl3.cpp
+echo ^)
+if "%linking%"=="1" (
+    echo add_library^(imgui STATIC ^${IMGUI_SRC}^)
+) else (
+    echo add_library^(imgui SHARED ^${IMGUI_SRC}^)
+)
+echo target_include_directories^(imgui PUBLIC ^${CMAKE_CURRENT_SOURCE_DIR}^ ^${CMAKE_CURRENT_SOURCE_DIR}^/backends^)
+echo if^(DEFINED SDL3_INCLUDE_DIR^)
+echo^    target_include_directories^(imgui PUBLIC ^${SDL3_INCLUDE_DIR}^)
+echo endif^(^)
+echo target_compile_definitions^(imgui PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLEW^)
+) > "%IMGUI_DIR%\CMakeLists.txt"
+
+:: Create build folder and run CMake
+echo Creating build directory...
+mkdir %IMGUI_DIR%\%BUILD_DIR%
+cd %IMGUI_DIR%\%BUILD_DIR%
+
+echo Running CMake...
+cmake .. || goto :error
+
+echo.
+echo ImGui build files generated in %IMGUI_DIR%\%BUILD_DIR%
+
+cd ..\..
+
+if "%compiler%"=="1" (
+    :: VS 2022
+    if "%linking%"=="1" (
+        call :buildWithCMakeVs2022 "imgui" "imgui" "Debug" "-DBUILD_SHARED_LIBS=OFF -DSDL3_INCLUDE_DIR=../sdl/include"
+        call :buildWithCMakeVs2022 "imgui" "imgui" "Release" "-DBUILD_SHARED_LIBS=OFF -DSDL3_INCLUDE_DIR=../sdl/include"
+    ) else (
+        if "%linking%"=="2" (
+            call :buildWithCMakeVs2022 "imgui" "imgui" "Debug" "-DBUILD_SHARED_LIBS=ON -DSDL3_INCLUDE_DIR=../sdl/include"
+            call :buildWithCMakeVs2022 "imgui" "imgui" "Release" "-DBUILD_SHARED_LIBS=ON -DSDL3_INCLUDE_DIR=../sdl/include"
+        )
+    )
+) else (
+    if "%compiler%"=="2" (
+        :: MinGW
+        if "%linking%"=="1" (
+            call :buildWithCMakeMinGW "imgui" "imgui" "Debug" "-DBUILD_SHARED_LIBS=OFF -DSDL3_INCLUDE_DIR=../sdl/include"
+            call :buildWithCMakeMinGW "imgui" "imgui" "Release" "-DBUILD_SHARED_LIBS=OFF -DSDL3_INCLUDE_DIR=../sdl/include"
+        ) else (
+            if "%linking%"=="2" (
+                call :buildWithCMakeMinGW "imgui" "imgui" "Debug" "-DBUILD_SHARED_LIBS=ON -DSDL3_INCLUDE_DIR=../sdl/include"
+                call :buildWithCMakeMinGW "imgui" "imgui" "Release" "-DBUILD_SHARED_LIBS=ON -DSDL3_INCLUDE_DIR=../sdl/include"
+            )
+        )
+    )
+)
+
+:: ------------------------------------------------------------------------
 :: GLM
 :: ------------------------------------------------------------------------
 echo.

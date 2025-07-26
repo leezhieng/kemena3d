@@ -59,6 +59,8 @@ namespace kemena
 
             void setShadowShader(kShader* newShader);
             kShader* getShadowShader();
+			
+			SDL_GLContext getOpenGlContext();
 
             void resizeFbo(int newWidth, int newHeight);
 

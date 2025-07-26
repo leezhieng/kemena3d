@@ -30,13 +30,20 @@ file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Source/src/*.cpp)
 file(GLOB_RECURSE HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/Source/include/*.h)
 
 # Collect AngelScript add_on sources, and remove generateheader.cpp (which defines main)
-file(GLOB_RECURSE ADDON_SRC ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on/*.cpp)
-list(REMOVE_ITEM ADDON_SRC "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on/scriptbuilder/generateheader.cpp")
+file(GLOB_RECURSE ANGELSCRIPT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on/*.cpp)
+list(REMOVE_ITEM ANGELSCRIPT_SRC "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on/scriptbuilder/generateheader.cpp")
+file(GLOB_RECURSE ANGELSCRIPT_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on/*.h)
 
-file(GLOB_RECURSE ADDON_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on/*.h)
+# ImGui sources
+file(GLOB IMGUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/*.cpp)
+file(GLOB IMGUI_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/*.h)
+file(GLOB IMGUI_BACKENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/backends/imgui_impl_sdl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/backends/imgui_impl_opengl3.cpp
+)
 
 # Create library target
-add_library(kemena3d ${SRC_FILES} ${HEADER_FILES} ${ADDON_SRC} ${ADDON_HEADERS})
+add_library(kemena3d ${SRC_FILES} ${HEADER_FILES} ${ANGELSCRIPT_SRC} ${ANGELSCRIPT_HEADERS} ${IMGUI_SRC} ${IMGUI_HEADERS} ${IMGUI_BACKENDS})
 
 set_target_properties(kemena3d PROPERTIES
     VERSION ${PROJECT_VERSION}
@@ -50,6 +57,8 @@ set_target_properties(kemena3d PROPERTIES
 target_include_directories(kemena3d
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Source/include
+		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui
+		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/backends
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/include
@@ -75,6 +84,9 @@ if (NOT BUILD_SHARED_LIBS)
 else()
     set(GLEW_LIB glew32)
 endif()
+
+# Use GLEW for imgui
+target_compile_definitions(kemena3d PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLEW)
 
 # Platform specific
 if (WIN32)
@@ -126,6 +138,12 @@ install(TARGETS kemena3d
 )
 
 # Install headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/
+        DESTINATION Output/include/imgui FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/
+        DESTINATION Output/include/imgui/backends FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/backends/
+        DESTINATION Output/include/imgui/backends FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/include/
         DESTINATION Output/include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on/
@@ -150,6 +168,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include/nloh
 #        DESTINATION Output/include/recast/Detour FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 
 # Install dependency libs
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/
+        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/cmake/
         DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/
