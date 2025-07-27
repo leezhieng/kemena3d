@@ -45,72 +45,6 @@ namespace kemena
                     std::cout << "GLEW Error: " << glewGetErrorString(status) << std::endl;
                     return false;
                 }
-
-                // Screen quad
-                float quadVerts[] = {
-                    -1, -1,  0, 0,
-                     1, -1,  1, 0,
-                     1,  1,  1, 1,
-                    -1,  1,  0, 1,
-                };
-                GLuint quadIndices[] = { 0, 1, 2, 2, 3, 0 };
-
-                glGenVertexArrays(1, &quadVao);
-                glGenBuffers(1, &quadVbo);
-                glGenBuffers(1, &quadEbo);
-                glBindVertexArray(quadVao);
-                glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(quadVerts), quadVerts, GL_STATIC_DRAW);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEbo);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
-                glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-                glEnableVertexAttribArray(0);
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-                glEnableVertexAttribArray(1);
-
-                // Create MSAA FBO
-                glGenFramebuffers(1, &fboMsaa);
-                glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
-                glGenTextures(1, &fboTexColorMsaa);
-                glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa);
-                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGB, window->getWindowWidth(), window->getWindowHeight(), GL_TRUE);
-                glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa, 0);
-
-                glGenRenderbuffers(1, &rboMsaa);
-                glBindRenderbuffer(GL_RENDERBUFFER, rboMsaa);
-                glRenderbufferStorageMultisample(GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, window->getWindowWidth(), window->getWindowHeight());
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboMsaa);
-
-                if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-                {
-                    std::cerr << "FBO not complete!" << std::endl;
-                    return false;
-                }
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-                // Create FBO
-                glGenFramebuffers(1, &fbo);
-                glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-                glGenTextures(1, &fboTexColor);
-                glBindTexture(GL_TEXTURE_2D, fboTexColor);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, window->getWindowWidth(), window->getWindowHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexColor, 0);
-
-                glGenRenderbuffers(1, &rboDepth);
-                glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, window->getWindowWidth(), window->getWindowHeight()); // depth + stencil
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-
-                if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-                {
-                    std::cerr << "FBO not complete!" << std::endl;
-                    return false;
-                }
-                glBindFramebuffer(GL_FRAMEBUFFER, 0);
             }
 
             std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
@@ -123,32 +57,6 @@ namespace kemena
 
             //glEnable(GL_FRAMEBUFFER_SRGB);
             glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
-
-            // Create shadow FBO
-            glGenFramebuffers(1, &shadowFbo);
-            glGenTextures(1, &shadowFboTex);
-            glBindTexture(GL_TEXTURE_2D, shadowFboTex);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-            float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-            glBindFramebuffer(GL_FRAMEBUFFER, shadowFbo);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowFboTex, 0);
-            glDrawBuffer(GL_NONE);
-            glReadBuffer(GL_NONE);
-
-            GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-            if (status != GL_FRAMEBUFFER_COMPLETE)
-            {
-                std::cerr << "Shadow framebuffer is incomplete: " << status << std::endl;
-            }
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             // Must call this in the beginning to make it render
             glBindVertexArray(0);
@@ -216,10 +124,13 @@ namespace kemena
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        // Render to MSAA FBO
-        resizeFbo(width, height);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
+		if (enableScreenBuffer)
+		{
+			// Render to MSAA FBO
+			resizeFbo(width, height);
+			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+			glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
+		}
 
         glEnable(GL_DEPTH_TEST);
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Ask for nicest perspective correction
@@ -310,43 +221,46 @@ namespace kemena
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        // Blit MSAA FBO to regular FBO
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, fboMsaa);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		if (enableScreenBuffer)
+		{
+			// Blit MSAA FBO to regular FBO
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, fboMsaa);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+			glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-        // Render FBO texture to screen
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDisable(GL_DEPTH_TEST);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        getScreenShader()->use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, fboTexColor);
-        //glBindTexture(GL_TEXTURE_2D, shadowFboTex); // Debug shadow depth map
+			// Render FBO texture to screen
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glDisable(GL_DEPTH_TEST);
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+			getScreenShader()->use();
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, fboTexColor);
+			//glBindTexture(GL_TEXTURE_2D, shadowFboTex); // Debug shadow depth map
 
-        // Calculate luminance for auto exposure
-        if (enableAutoExposure)
-        {
-            glGenerateMipmap(GL_TEXTURE_2D); // auto-downsamples the texture
-            int mipLevel = (int)std::floor(std::log2(std::max(width, height)));
-            glGetTexImage(GL_TEXTURE_2D, mipLevel, GL_RGBA, GL_FLOAT, &averageLuminanceColor);
-            averageLuminance = 0.2126f * averageLuminanceColor[0] + 0.7152f * averageLuminanceColor[1] + 0.0722f * averageLuminanceColor[2];
-            float targetExposure = exposureKey / (averageLuminance + 0.001);
-            exposure = glm::mix(exposure, targetExposure, deltaTime * exposureAdaptationRate);
-            //std::cout << averageLuminance << std::endl;
-            if (screenShader != nullptr)
-            {
-                screenShader->setValue("enable_autoExposure", enableAutoExposure);
-                screenShader->setValue("exposure", exposure * 3.0f);
-                screenShader->setValue("contrast", 1.01f);
-                screenShader->setValue("gamma", 2.2f);
-            }
-        }
+			// Calculate luminance for auto exposure
+			if (enableAutoExposure)
+			{
+				glGenerateMipmap(GL_TEXTURE_2D); // auto-downsamples the texture
+				int mipLevel = (int)std::floor(std::log2(std::max(width, height)));
+				glGetTexImage(GL_TEXTURE_2D, mipLevel, GL_RGBA, GL_FLOAT, &averageLuminanceColor);
+				averageLuminance = 0.2126f * averageLuminanceColor[0] + 0.7152f * averageLuminanceColor[1] + 0.0722f * averageLuminanceColor[2];
+				float targetExposure = exposureKey / (averageLuminance + 0.001);
+				exposure = glm::mix(exposure, targetExposure, deltaTime * exposureAdaptationRate);
+				//std::cout << averageLuminance << std::endl;
+				if (screenShader != nullptr)
+				{
+					screenShader->setValue("enable_autoExposure", enableAutoExposure);
+					screenShader->setValue("exposure", exposure * 3.0f);
+					screenShader->setValue("contrast", 1.01f);
+					screenShader->setValue("gamma", 2.2f);
+				}
+			}
 
-        glBindVertexArray(quadVao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        getScreenShader()->unuse();
+			glBindVertexArray(quadVao);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			getScreenShader()->unuse();
+		}
 
         // Must call this in the end to make it render
         glBindVertexArray(0);
@@ -772,6 +686,120 @@ namespace kemena
         clearColor = newColor;
         glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     }
+	
+	void kRenderer::setEnableScreenBuffer(bool newEnable, bool useDefaultShader)
+	{
+		enableScreenBuffer = newEnable;
+		
+		if (newEnable)
+		{
+			// Screen quad
+            float quadVerts[] = {
+                -1, -1,  0, 0,
+                 1, -1,  1, 0,
+                 1,  1,  1, 1,
+                -1,  1,  0, 1,
+            };
+            GLuint quadIndices[] = { 0, 1, 2, 2, 3, 0 };
+
+            glGenVertexArrays(1, &quadVao);
+            glGenBuffers(1, &quadVbo);
+            glGenBuffers(1, &quadEbo);
+            glBindVertexArray(quadVao);
+            glBindBuffer(GL_ARRAY_BUFFER, quadVbo);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(quadVerts), quadVerts, GL_STATIC_DRAW);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEbo);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+            glEnableVertexAttribArray(1);
+
+            // Create MSAA FBO
+            glGenFramebuffers(1, &fboMsaa);
+            glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
+            glGenTextures(1, &fboTexColorMsaa);
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGB, appWindow->getWindowWidth(), appWindow->getWindowHeight(), GL_TRUE);
+            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa, 0);
+
+            glGenRenderbuffers(1, &rboMsaa);
+            glBindRenderbuffer(GL_RENDERBUFFER, rboMsaa);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, appWindow->getWindowWidth(), appWindow->getWindowHeight());
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboMsaa);
+
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            {
+                std::cerr << "FBO not complete!" << std::endl;
+                return;
+            }
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            // Create FBO
+            glGenFramebuffers(1, &fbo);
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+            glGenTextures(1, &fboTexColor);
+            glBindTexture(GL_TEXTURE_2D, fboTexColor);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, appWindow->getWindowWidth(), appWindow->getWindowHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexColor, 0);
+
+            glGenRenderbuffers(1, &rboDepth);
+            glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, appWindow->getWindowWidth(), appWindow->getWindowHeight()); // depth + stencil
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            {
+                std::cerr << "FBO not complete!" << std::endl;
+                return;
+            }
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			
+			if (useDefaultShader)
+			{
+				string vertexShader = "#version 330 core \
+				layout(location = 0) in vec2 aPos; \
+				layout(location = 1) in vec2 aTexCoord; \
+				out vec2 TexCoord; \
+				void main() \
+				{ \
+					TexCoord = aTexCoord; \
+					gl_Position = vec4(aPos, 0.0, 1.0); \
+				}";
+				
+				string fragmentShader = "#version 330 core \
+				in vec2 TexCoord; \
+				out vec4 FragColor; \
+				uniform sampler2D screenTexture; \
+				uniform int enable_autoExposure; \
+				uniform float exposure; \
+				uniform float contrast; \
+				uniform float gamma; \
+				void main() \
+				{ \
+					vec3 color = texture(screenTexture, TexCoord).rgb; \
+					vec3 mapped = color * exposure; \
+					mapped = (mapped - 0.5) * contrast + 0.5; \
+					mapped = pow(mapped, vec3(1.0 / gamma)); \
+					vec4 result = vec4(mapped, 1.0); \
+					FragColor = result; \
+				}";
+				
+				kShader* screenShader = new kShader();
+				screenShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());
+				setScreenShader(screenShader);
+			}
+		}
+	}
+	
+	bool kRenderer::getEnableScreenBuffer()
+	{
+		return enableScreenBuffer;
+	}
 
     void kRenderer::setScreenShader(kShader* newShader)
     {
@@ -782,6 +810,100 @@ namespace kemena
     {
         return screenShader;
     }
+	
+	void kRenderer::setEnableShadow(bool newEnable, bool useDefaultShader)
+	{
+		enableShadow = newEnable;
+		
+		if (newEnable)
+		{
+			// Create shadow FBO
+            glGenFramebuffers(1, &shadowFbo);
+            glGenTextures(1, &shadowFboTex);
+            glBindTexture(GL_TEXTURE_2D, shadowFboTex);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, shadowFbo);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowFboTex, 0);
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+
+            GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            if (status != GL_FRAMEBUFFER_COMPLETE)
+            {
+                std::cerr << "Shadow framebuffer is incomplete: " << status << std::endl;
+            }
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			
+			if (useDefaultShader)
+			{
+				string vertexShader = "#version 330 core \
+				layout (location = 0) in vec3 vertexPosition; \
+				layout (location = 6) in ivec4 boneIDs;  \
+				layout (location = 7) in vec4 weights; \
+				uniform mat4 lightSpaceMatrix; \
+				uniform mat4 modelMatrix; \
+				uniform mat4 viewMatrix; \
+				uniform mat4 projectionMatrix; \
+				const int MAX_BONES = 128; \
+				const int MAX_BONE_INFLUENCE = 4; \
+				uniform mat4 finalBonesMatrices[MAX_BONES]; \
+				out vec3 vertexPositionFrag; \
+				void main() \
+				{ \
+					vec4 totalPosition = vec4(vertexPosition, 1.0f); \
+					float totalWeight = 0.0; \
+					for(int i = 0 ; i < MAX_BONE_INFLUENCE; i++) \
+					{ \
+						int boneID = boneIDs[i]; \
+						float weight = weights[i]; \
+						if(boneID == -1 || weight <= 0.0) \
+							continue; \
+						if(boneID >= MAX_BONES) \
+						{ \
+							totalPosition = vec4(vertexPosition, 1.0f); \
+							break; \
+						} \
+						totalPosition += (finalBonesMatrices[boneID] * vec4(vertexPosition, 1.0f)) * weight; \
+						mat3 normalMatrixBone = transpose(inverse(mat3(finalBonesMatrices[boneID]))); \
+						totalWeight += weight; \
+					} \
+					if (totalWeight == 0.0) \
+					{ \
+						totalPosition = vec4(vertexPosition, 1.0f); \
+					} \
+					mat4 mvp = projectionMatrix * viewMatrix * modelMatrix; \
+					vec4 worldPosition = modelMatrix * totalPosition; \
+					vertexPositionFrag = (lightSpaceMatrix * worldPosition).xyz; \
+					gl_Position = lightSpaceMatrix * worldPosition; \
+				}";
+				
+				string fragmentShader = "#version 330 core \
+				in vec3 vertexPositionFrag; \
+				out vec4 fragColor; \
+				void main() \
+				{ \
+				}";
+				
+				kShader* shadowShader = new kShader();
+				shadowShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());
+				setShadowShader(shadowShader);
+			}
+		}
+	}
+	
+	bool kRenderer::getEnableShadow()
+	{
+		return enableShadow;
+	}
 
     void kRenderer::setShadowShader(kShader* newShader)
     {
@@ -792,6 +914,16 @@ namespace kemena
     {
         return shadowShader;
     }
+	
+	void kRenderer::setEnableAutoExposure(bool newEnable)
+	{
+		enableAutoExposure = newEnable;
+	}
+	
+	bool kRenderer::getEnableAutoExposure()
+	{
+		return enableAutoExposure;
+	}
 	
 	SDL_GLContext kRenderer::getOpenGlContext()
 	{

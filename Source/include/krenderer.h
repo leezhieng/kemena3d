@@ -53,12 +53,19 @@ namespace kemena
 
             glm::vec4 getClearColor();
             void setClearColor(glm::vec4 newColor);
-
+			
+			void setEnableScreenBuffer(bool newEnable, bool useDefaultShader = true);
+			bool getEnableScreenBuffer();
             void setScreenShader(kShader* newShader);
             kShader* getScreenShader();
-
+			
+			void setEnableShadow(bool newEnable, bool useDefaultShader = true);
+			bool getEnableShadow();
             void setShadowShader(kShader* newShader);
             kShader* getShadowShader();
+			
+			void setEnableAutoExposure(bool newEnable);
+			bool getEnableAutoExposure();
 			
 			SDL_GLContext getOpenGlContext();
 
@@ -80,8 +87,7 @@ namespace kemena
             kRendererType renderType;
 
             vec4 clearColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-            kShader* screenShader = nullptr;
-            kShader* shadowShader = nullptr;
+            
             // This is used to determine if we're still on the same frame
             int frameId = 0;
 
@@ -92,18 +98,22 @@ namespace kemena
             SDL_GLContext openglContext;
 
             // Screen FBO
+			bool enableScreenBuffer = false;
+			kShader* screenShader = nullptr;
             GLuint quadVao, quadVbo, quadEbo;
             GLuint fbo, fboTexColor, rboDepth;
             GLuint fboMsaa, fboTexColorMsaa, rboMsaa;
 
             // Shadow FBO
+			bool enableShadow = false;
+			kShader* shadowShader = nullptr;
             GLuint shadowFbo;
             const unsigned int shadowWidth = 1024, shadowHeight = 1024;
             GLuint shadowFboTex;
             mat4 lightSpaceMatrix;
 
             // For auto exposure
-            bool enableAutoExposure = true;
+            bool enableAutoExposure = false;
             float averageLuminance;
             float averageLuminanceColor[4];
             // 0.09	Dark and moody

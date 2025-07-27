@@ -6,8 +6,7 @@
 
 ## Building the Demo
 
-Ensure you have CMake and a compatible compiler installed.  
-Navigate to the folder of the demo you wish to build, then run the following commands:
+Ensure you have CMake and a compatible compiler installed. Navigate to the folder of the demo you wish to build, then run the following commands on terminal:
 
 <details>
 <summary><strong>MinGW (Windows)</strong></summary>
