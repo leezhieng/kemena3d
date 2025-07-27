@@ -1,6 +1,8 @@
 # Demo List
 
-1. Hello World
+| Demo           | Screenshot                      |
+|----------------|----------------------------------|
+| 1. Hello World | ![Hello World](1. Hello World/screenshot.png) |
 
 ## Building the Demo
 
