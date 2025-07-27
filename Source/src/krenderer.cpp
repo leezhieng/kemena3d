@@ -55,7 +55,7 @@ namespace kemena
             SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
             std::cout << "Requested OpenGL Version: " << major << "." << minor << std::endl;
 
-            //glEnable(GL_FRAMEBUFFER_SRGB);
+            glEnable(GL_FRAMEBUFFER_SRGB);
             glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 
             // Must call this in the beginning to make it render
@@ -693,6 +693,8 @@ namespace kemena
 		
 		if (newEnable)
 		{
+			glDisable(GL_FRAMEBUFFER_SRGB);
+			
 			// Screen quad
             float quadVerts[] = {
                 -1, -1,  0, 0,
@@ -793,6 +795,10 @@ namespace kemena
 				screenShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());
 				setScreenShader(screenShader);
 			}
+		}
+		else
+		{
+			glEnable(GL_FRAMEBUFFER_SRGB);
 		}
 	}
 	

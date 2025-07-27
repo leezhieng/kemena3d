@@ -13,12 +13,6 @@ int main()
     kAssetManager* assetManager = createAssetManager();
     kWorld* world = createWorld(assetManager);
     kScene* scene = world->createScene("My Scene");
-	
-	kShader* screenShader = assetManager->createShaderByFile("../../../Assets/shader/glsl/screen.vert", "../../../Assets/shader/glsl/screen.frag");
-    renderer->setScreenShader(screenShader);
-	
-	kShader* shadowShader = assetManager->createShaderByFile("../../../Assets/shader/glsl/shadow.vert", "../../../Assets/shader/glsl/shadow.frag");
-    renderer->setShadowShader(shadowShader);
 
     // Create a camera and a sun light
     kCamera* camera = scene->addCamera(glm::vec3(2.5f, 2.5f, 2.5f), glm::vec3(0.0f, 0.5f, 0.0f), kCameraType::CAMERA_TYPE_LOCKED);
