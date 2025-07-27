@@ -2,7 +2,7 @@
 
 | Demo           | Screenshot                      |
 |----------------|----------------------------------|
-| 1. Hello World | ![Hello World](1. Hello World/screenshot.png) |
+| 1. Hello World | <img src="1. Hello World/screenshot.png" alt="Hello World" width="300"/> |
 
 ## Building the Demo
 
