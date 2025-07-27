@@ -10,4 +10,4 @@ Cartoon Character Reptile Mage 3D Model
 
 ## Screenshots
 
-![Screenshot](screenshot.jpg)
+![Screenshot](screenshot.png)

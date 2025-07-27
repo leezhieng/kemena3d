@@ -10,5 +10,7 @@ You can find the latest release, tutorials and additional information at: https:
 
 ## Screenshots
 
-![Phone Material on Mesh](https://kemena3d.com/site/wp-content/uploads/2025/06/phong_mesh-768x595.png)
-![DPBR Material with Shadow](https://kemena3d.com/site/wp-content/uploads/2025/06/pbr_shadow-768x595.jpg)
+![Phone Material on Mesh](Screenshots/phong_mesh.png)
+![PBR Material with Shadow](Screenshots/pbr_shadow.jpg)
+![Blur Screen Effect](Screenshots/blur.png)
+![Edge Detection Screen Effect](Screenshots/edge.png)
