@@ -75,7 +75,7 @@ namespace kemena
         engineVersion = version;
     }
 
-    void kRenderer::render(kScene* scene, int x, int y, int width, int height, float deltaTime)
+    void kRenderer::render(kScene* scene, int x, int y, int width, int height, float deltaTime, bool swapWindow)
     {
         if (frameId > 999999999999)
             frameId = 0;
@@ -266,7 +266,7 @@ namespace kemena
         glBindVertexArray(0);
 
 
-        if (appWindow != nullptr)
+        if (swapWindow && appWindow != nullptr)
         {
             appWindow->swap();
         }

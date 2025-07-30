@@ -49,7 +49,7 @@ namespace kemena
             void destroy();
             void setEngineInfo(const std::string name, uint32_t version);
 
-            void render(kScene* scene, int x, int y, int width, int height, float deltaTime = 0.0f);
+            void render(kScene* scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool swapWindow = true);
 
             glm::vec4 getClearColor();
             void setClearColor(glm::vec4 newColor);

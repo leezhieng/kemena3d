@@ -294,6 +294,11 @@ namespace kemena
     {
         SDL_Event event;
         std::vector<unsigned int> keys;
+		
+		SDL_Event* getSdlEvent()
+		{
+			return &event;
+		}
 
         bool hasEvent()
         {
@@ -335,14 +340,14 @@ namespace kemena
                 // Remove key from array
                 if (keys.size() > 0)
                 {
-                    for (size_t i = keys.size() - 1; i >= 0; --i)
-                    {
-                        if (keys.at(i) == key)
-                        {
-                            keys.erase(keys.begin() + i);
-                            break;
-                        }
-                    }
+                    for (size_t i = keys.size(); i-- > 0;)
+					{
+						if (keys[i] == key)
+						{
+							keys.erase(keys.begin() + i);
+							break;
+						}
+					}
                 }
             }
 
@@ -380,21 +385,20 @@ namespace kemena
         }
 
         bool getKeyDown(unsigned int key)
-        {
-            bool found = false;
-            if (keys.size() > 0)
-            {
-                for (size_t i = 0; i < keys.size(); ++i)
-                {
-                    if (keys.at(i) == key)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            return found;
-        }
+		{
+			if (keys.empty())
+				return false;
+
+			for (size_t i = 0; i < keys.size(); ++i)
+			{
+				if (keys[i] == key)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
 
         float getMouseWheelX()
         {
