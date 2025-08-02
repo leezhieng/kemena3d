@@ -51,4 +51,11 @@ namespace kemena
         kScriptManager* manager = new kScriptManager();
         return manager;
     }
+	
+	kGuiManager* createGuiManager(kRenderer* renderer)
+	{
+		kGuiManager* manager = new kGuiManager();
+		manager->init(renderer);
+		return manager;
+	}
 }

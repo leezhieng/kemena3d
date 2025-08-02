@@ -9,6 +9,7 @@
 #include "kassetmanager.h"
 #include "kworld.h"
 #include "kscriptmanager.h"
+#include "kguimanager.h"
 
 namespace kemena
 {
@@ -21,6 +22,7 @@ namespace kemena
     KEMENA3D_API kAssetManager* createAssetManager();
     KEMENA3D_API kWorld* createWorld(kAssetManager* assetManager);
     KEMENA3D_API kScriptManager* createScriptManager();
+    KEMENA3D_API kGuiManager* createGuiManager(kRenderer* renderer);
 }
 
 #endif // KEMENA_H

@@ -74,6 +74,11 @@ namespace kemena
         engineName = name;
         engineVersion = version;
     }
+	
+	kWindow* kRenderer::getWindow()
+	{
+		return appWindow;
+	}
 
     void kRenderer::render(kScene* scene, int x, int y, int width, int height, float deltaTime, bool swapWindow)
     {

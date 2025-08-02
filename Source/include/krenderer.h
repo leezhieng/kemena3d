@@ -48,6 +48,8 @@ namespace kemena
             bool init(kWindow* window = nullptr, kRendererType type = kRendererType::RENDERER_GL);
             void destroy();
             void setEngineInfo(const std::string name, uint32_t version);
+			
+			kWindow* getWindow();
 
             void render(kScene* scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool swapWindow = true);
 
