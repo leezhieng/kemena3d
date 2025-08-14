@@ -104,7 +104,7 @@ if "%compiler%"=="1" (
 :: ------------------------------------------------------------------------
 echo.
 
-call :cloneGit "SDL" "v3.2.16" "https://github.com/libsdl-org/SDL.git" "release-3.2.16" "sdl"
+call :cloneGit "SDL" "v3.2.16" "https://github.com/libsdl-org/SDL.git" "release-3.2.16" "" "sdl"
 
 if "%compiler%"=="1" (
 	:: VS 2022
@@ -135,7 +135,7 @@ if "%compiler%"=="1" (
 :: ------------------------------------------------------------------------
 echo.
 
-call :cloneGit "imgui" "v1.92.1" "https://github.com/ocornut/imgui.git" "v1.92.1" "imgui"
+call :cloneGit "imgui" "docking branch" "https://github.com/ocornut/imgui.git" "" "docking" "imgui"
 
 :: Generate CMake file for imgui since it doesn't come with one
 
@@ -214,7 +214,7 @@ if "%compiler%"=="1" (
 :: GLM
 :: ------------------------------------------------------------------------
 echo.
-call :cloneGit "GLM" "v1.0.1" "https://github.com/g-truc/glm.git" "1.0.1" "glm"
+call :cloneGit "GLM" "v1.0.1" "https://github.com/g-truc/glm.git" "1.0.1" "" "glm"
 
 :: ------------------------------------------------------------------------
 :: GLEW
@@ -293,7 +293,7 @@ call :downloadAndExtractZip "GLEW" "v2.2.0" "https://github.com/nigels-com/glew/
 :: Assimp
 :: ------------------------------------------------------------------------
 echo.
-call :cloneGit "Assimp" "v6.0.2" "https://github.com/assimp/assimp.git" "v6.0.2" "assimp"
+call :cloneGit "Assimp" "v6.0.2" "https://github.com/assimp/assimp.git" "v6.0.2" "" "assimp"
 echo.
 
 if "%modelformat%"=="1" (
@@ -332,13 +332,13 @@ if "%compiler%"=="1" (
 :: STB
 :: ------------------------------------------------------------------------
 echo.
-call :cloneGit "STB" "Rev. f58f558" "https://github.com/nothings/stb.git" "f58f558c120e9b32c217290b80bad1a0729fbb2c" "stb"
+call :cloneGit "STB" "Rev. f58f558" "https://github.com/nothings/stb.git" "f58f558c120e9b32c217290b80bad1a0729fbb2c" "" "stb"
 
 :: ------------------------------------------------------------------------
 :: nlohmann JSON
 :: ------------------------------------------------------------------------
 echo.
-call :cloneGit "nlohmann JSON" "v3.12.0" "https://github.com/nlohmann/json.git" "v3.12.0" "nlohmann"
+call :cloneGit "nlohmann JSON" "v3.12.0" "https://github.com/nlohmann/json.git" "v3.12.0" "" "nlohmann"
 
 :: ------------------------------------------------------------------------
 :: JoltPhysics
@@ -476,12 +476,19 @@ goto :eof
 :: Clone Git
 :: ------------------------------------------------------------------------
 :cloneGit
-:: Args: %1 = name, %2 = version (for display), %3 = repo URL, %4 = dest folder name, %5 = revision/commit/tag (optional)
+:: Args:
+::   %1 = name
+::   %2 = version (for display)
+::   %3 = repo URL
+::   %4 = revision/commit/tag (optional)
+::   %5 = branch name (optional)
+::   %6 = dest folder name
 set "NAME=%~1"
 set "VERSION=%~2"
 set "REPO_URL=%~3"
 set "REVISION=%~4"
-set "DESTFOLDER=%~5"
+set "BRANCH=%~5"
+set "DESTFOLDER=%~6"
 set "TEMP_CLONE=%TEMP_FOLDER%"
 
 echo === Git Clone %NAME% (%VERSION%) ===
@@ -495,7 +502,15 @@ if exist "%DESTFOLDER%" (
 if exist "%TEMP_CLONE%" rmdir /s /q "%TEMP_CLONE%"
 
 echo Cloning %NAME% repository...
-git clone "%REPO_URL%" "%TEMP_CLONE%"
+
+:: If branch is provided, use it
+if not "%BRANCH%"=="" (
+	echo Cloning branch: %BRANCH%
+    git clone --branch "%BRANCH%" --single-branch "%REPO_URL%" "%TEMP_CLONE%"
+) else (
+    git clone "%REPO_URL%" "%TEMP_CLONE%"
+)
+
 if errorlevel 1 (
     echo ERROR: Failed to clone %NAME% repo.
     goto :build_failed
@@ -503,7 +518,7 @@ if errorlevel 1 (
 
 pushd "%TEMP_CLONE%"
 
-:: Checkout specific revision if provided
+:: Checkout specific revision if provided (and not already on it)
 if not "%REVISION%"=="" (
     echo Checking out revision: %REVISION%
     git checkout %REVISION%

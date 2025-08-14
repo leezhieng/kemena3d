@@ -139,11 +139,11 @@ install(TARGETS kemena3d
 
 # Install headers
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/
-        DESTINATION Output/include/imgui FILES_MATCHING PATTERN "*.h")
+        DESTINATION Output/include FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/
-        DESTINATION Output/include/imgui/backends FILES_MATCHING PATTERN "*.h")
+        DESTINATION Output/include/backends FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/backends/
-        DESTINATION Output/include/imgui/backends FILES_MATCHING PATTERN "*.h")
+        DESTINATION Output/include/backends FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/include/
         DESTINATION Output/include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on/

@@ -30,6 +30,21 @@ namespace kemena
 			void windowStart(std::string title, bool *open = nullptr);
 			void windowEnd();
 			
+			void dockSpaceStart(std::string name);
+			void dockSpaceEnd();
+			
+			bool menuBar();
+			void menuBarEnd();
+			bool menu(std::string text);
+			void menuEnd();
+			bool menuItem(std::string text, std::string shortcut = "", bool selected = false, bool enabled = true);
+			
+			void groupStart();
+			void groupEnd();
+			
+			void sameLine();
+			void spacing();
+			void separator();
 			void text(std::string text);
 			
 			void destroy();
