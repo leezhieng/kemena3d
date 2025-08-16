@@ -4,11 +4,11 @@ namespace kemena
 {
     kTextureCube::kTextureCube()
     {
-        //ctor
+        // ctor
     }
 
     kTextureCube::~kTextureCube()
     {
-        //dtor
+        // dtor
     }
 }

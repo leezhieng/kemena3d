@@ -11,47 +11,49 @@ namespace kemena
     {
     }
 
-    bool kWindow::init(int width, int height, std::string title)
+    bool kWindow::init(int width, int height, std::string title, bool maximized, kWindowType type, void *nativeHandle)
     {
         windowWidth = width;
         windowHeight = height;
         windowTitle = title;
 
-        if(!SDL_Init(SDL_INIT_VIDEO))
+        if (!SDL_Init(SDL_INIT_VIDEO))
         {
             std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
             return false;
         }
 
-        sdlWindow = SDL_CreateWindow(title.c_str(), width, height, SDL_WINDOW_OPENGL);
-        if(sdlWindow == NULL)
+        int flags = SDL_WINDOW_OPENGL;
+
+        if (type == kWindowType::WINDOW_BORDERLESS)
         {
-            std::cout << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
-            return false;
+            flags |= SDL_WINDOW_BORDERLESS;
+        }
+        else if (type == kWindowType::WINDOW_FULLSCREEN)
+        {
+            flags |= SDL_WINDOW_FULLSCREEN;
         }
 
-        return true;
-    }
-	
-	bool kWindow::init(int width, int height, std::string title, void* nativeHandle)
-    {
-        windowWidth = width;
-        windowHeight = height;
-        windowTitle = title;
-
-        if(!SDL_Init(SDL_INIT_VIDEO))
+        if (maximized && type != kWindowType::WINDOW_FULLSCREEN)
         {
-            std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
-            return false;
+            flags |= SDL_WINDOW_RESIZABLE;
+            flags |= SDL_WINDOW_MAXIMIZED;
         }
 
-		SDL_PropertiesID props = SDL_CreateProperties();
-		SDL_SetPointerProperty(props, "native", nativeHandle);
-		
-		sdlWindow = SDL_CreateWindowWithProperties(props);
-		SDL_DestroyProperties(props);
-		
-        if(sdlWindow == NULL)
+        if (nativeHandle != nullptr)
+        {
+            SDL_PropertiesID props = SDL_CreateProperties();
+            SDL_SetPointerProperty(props, "native", nativeHandle);
+
+            sdlWindow = SDL_CreateWindowWithProperties(props);
+            SDL_DestroyProperties(props);
+        }
+        else
+        {
+            sdlWindow = SDL_CreateWindow(title.c_str(), width, height, flags);
+        }
+
+        if (sdlWindow == NULL)
         {
             std::cout << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
             return false;
@@ -98,12 +100,12 @@ namespace kemena
         running = newRunning;
     }
 
-    kTimer* kWindow::getTimer()
+    kTimer *kWindow::getTimer()
     {
         return timer;
     }
 
-    SDL_Window* kWindow::getSdlWindow()
+    SDL_Window *kWindow::getSdlWindow()
     {
         return sdlWindow;
     }

@@ -3,7 +3,7 @@
 namespace kemena
 {
 
-    kBone::kBone(const std::string &boneName, int boneID, aiNodeAnim* channel)
+    kBone::kBone(const std::string &boneName, int boneID, aiNodeAnim *channel)
     {
         name = boneName;
         id = boneID;
@@ -42,7 +42,7 @@ namespace kemena
             scales.push_back(data);
         }
 
-        //std::cout << "name: " << name << ", positionCount: " << positionCount << ", rotationCount: " << rotationCount << ", scaleCount: " << scaleCount << std::endl;
+        // std::cout << "name: " << name << ", positionCount: " << positionCount << ", rotationCount: " << rotationCount << ", scaleCount: " << scaleCount << std::endl;
     }
 
     void kBone::update(float animationTime)
@@ -71,17 +71,20 @@ namespace kemena
     int kBone::getPositionIndex(float animationTime)
     {
         // Handle empty positions array
-        if (positions.empty()) {
+        if (positions.empty())
+        {
             throw std::runtime_error("No position keyframes found.");
         }
 
         // Handle animationTime before the first keyframe
-        if (animationTime <= positions[0].timeStamp) {
+        if (animationTime <= positions[0].timeStamp)
+        {
             return 0;
         }
 
         // Handle animationTime after the last keyframe
-        if (animationTime >= positions.back().timeStamp) {
+        if (animationTime >= positions.back().timeStamp)
+        {
             return static_cast<int>(positions.size()) - 1;
         }
 
@@ -99,17 +102,20 @@ namespace kemena
     int kBone::getRotationIndex(float animationTime)
     {
         // Handle empty rotations array
-        if (rotations.empty()) {
+        if (rotations.empty())
+        {
             throw std::runtime_error("No rotation keyframes found.");
         }
 
         // Handle animationTime before the first keyframe
-        if (animationTime <= rotations[0].timeStamp) {
+        if (animationTime <= rotations[0].timeStamp)
+        {
             return 0;
         }
 
         // Handle animationTime after the last keyframe
-        if (animationTime >= rotations.back().timeStamp) {
+        if (animationTime >= rotations.back().timeStamp)
+        {
             return static_cast<int>(rotations.size()) - 1;
         }
 
@@ -127,17 +133,20 @@ namespace kemena
     int kBone::getScaleIndex(float animationTime)
     {
         // Handle empty scales array
-        if (scales.empty()) {
+        if (scales.empty())
+        {
             throw std::runtime_error("No scale keyframes found.");
         }
 
         // Handle animationTime before the first keyframe
-        if (animationTime <= scales[0].timeStamp) {
+        if (animationTime <= scales[0].timeStamp)
+        {
             return 0;
         }
 
         // Handle animationTime after the last keyframe
-        if (animationTime >= scales.back().timeStamp) {
+        if (animationTime >= scales.back().timeStamp)
+        {
             return static_cast<int>(scales.size()) - 1;
         }
 
@@ -168,14 +177,17 @@ namespace kemena
         float midWayLength;
 
         // Check for wrap-around: nextTimeStamp is less than lastTimeStamp.
-        if (nextTimeStamp < lastTimeStamp) {
+        if (nextTimeStamp < lastTimeStamp)
+        {
             framesDiff = (duration - lastTimeStamp) + nextTimeStamp;
             // If animationTime is before nextTimeStamp, it has wrapped.
             if (animationTime < nextTimeStamp)
                 midWayLength = (duration - lastTimeStamp) + animationTime;
             else
                 midWayLength = animationTime - lastTimeStamp;
-        } else {
+        }
+        else
+        {
             framesDiff = nextTimeStamp - lastTimeStamp;
             midWayLength = animationTime - lastTimeStamp;
         }
@@ -204,7 +216,7 @@ namespace kemena
         return glm::translate(glm::mat4(1.0f), finalPosition);*/
 
         if (positionCount == 1)
-        return glm::translate(glm::mat4(1.0f), positions[0].position);
+            return glm::translate(glm::mat4(1.0f), positions[0].position);
 
         int p0Index = getPositionIndex(animationTime);
         int p1Index = p0Index + 1;
@@ -295,7 +307,7 @@ namespace kemena
         return glm::scale(glm::mat4(1.0f), finalScale);*/
 
         if (scaleCount == 1)
-        return glm::scale(glm::mat4(1.0f), scales[0].scale);
+            return glm::scale(glm::mat4(1.0f), scales[0].scale);
 
         int p0Index = getScaleIndex(animationTime);
         int p1Index = p0Index + 1;
@@ -319,4 +331,3 @@ namespace kemena
         return glm::scale(glm::mat4(1.0f), finalScale);
     }
 }
-

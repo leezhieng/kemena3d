@@ -15,36 +15,35 @@ namespace kemena
 
     class kAnimator
     {
-        public:
-            kAnimator(kAnimation* newAnimation);
+    public:
+        kAnimator(kAnimation *newAnimation);
 
-            void addAnimation(kAnimation* newAnimation);
+        void addAnimation(kAnimation *newAnimation);
 
-            void updateAnimation(float newDeltaTime, int frameId);
+        void updateAnimation(float newDeltaTime, int frameId);
 
-            void playAnimation(kAnimation* animation);
-            kAnimation* getCurrentAnimation();
+        void playAnimation(kAnimation *animation);
+        kAnimation *getCurrentAnimation();
 
-            void calculateBoneTransform(const kAssimpNodeData* node, glm::mat4 parentTransform);
-            const std::vector<glm::mat4> getFinalBoneMatrices() const;
+        void calculateBoneTransform(const kAssimpNodeData *node, glm::mat4 parentTransform);
+        const std::vector<glm::mat4> getFinalBoneMatrices() const;
 
-            void setCurrentTime(float newTime);
+        void setCurrentTime(float newTime);
 
-            void setSpeed(float newSpeed);
-            float getSpeed();
+        void setSpeed(float newSpeed);
+        float getSpeed();
 
-        protected:
+    protected:
+    private:
+        std::vector<glm::mat4> finalBoneMatrices;
+        kAnimation *currentAnimation = nullptr;
+        float currentTime;
+        float deltaTime;
+        float speed = 1.0f;
 
-        private:
-            std::vector<glm::mat4> finalBoneMatrices;
-            kAnimation* currentAnimation = nullptr;
-            float currentTime;
-            float deltaTime;
-            float speed = 1.0f;
+        std::vector<kAnimation *> animations;
 
-            std::vector<kAnimation*> animations;
-
-            int currentFrameId = -1;
+        int currentFrameId = -1;
     };
 
 }

@@ -2,29 +2,29 @@
 
 namespace kemena
 {
-    kWindow* createWindow(int width, int height, std::string title)
+    kWindow *createWindow(int width, int height, std::string title)
     {
-        kWindow* window = new kWindow;
+        kWindow *window = new kWindow;
         bool done = window->init(width, height, title);
         if (done)
             return window;
         else
             return nullptr;
     }
-	
-	kWindow* createWindow(int width, int height, std::string title, void* nativeHandle)
+
+    kWindow *createWindow(int width, int height, std::string title, bool maximized, kWindowType type, void *nativeHandle)
     {
-        kWindow* window = new kWindow;
-        bool done = window->init(width, height, title, nativeHandle);
+        kWindow *window = new kWindow;
+        bool done = window->init(width, height, title, maximized, type, nativeHandle);
         if (done)
             return window;
         else
             return nullptr;
     }
 
-    kRenderer* createRenderer(kWindow* window)
+    kRenderer *createRenderer(kWindow *window)
     {
-        kRenderer* renderer = new kRenderer;
+        kRenderer *renderer = new kRenderer;
         renderer->setEngineInfo(engineName, engineVersion);
         bool done = renderer->init(window);
         if (done)
@@ -33,29 +33,29 @@ namespace kemena
             return nullptr;
     }
 
-    kAssetManager* createAssetManager()
+    kAssetManager *createAssetManager()
     {
-        kAssetManager* manager = new kAssetManager();
+        kAssetManager *manager = new kAssetManager();
         return manager;
     }
 
-    kWorld* createWorld(kAssetManager* assetManager)
+    kWorld *createWorld(kAssetManager *assetManager)
     {
-        kWorld* manager = new kWorld();
+        kWorld *manager = new kWorld();
         manager->setAssetManager(assetManager);
         return manager;
     }
 
-    kScriptManager* createScriptManager()
+    kScriptManager *createScriptManager()
     {
-        kScriptManager* manager = new kScriptManager();
+        kScriptManager *manager = new kScriptManager();
         return manager;
     }
-	
-	kGuiManager* createGuiManager(kRenderer* renderer)
-	{
-		kGuiManager* manager = new kGuiManager();
-		manager->init(renderer);
-		return manager;
-	}
+
+    kGuiManager *createGuiManager(kRenderer *renderer)
+    {
+        kGuiManager *manager = new kGuiManager();
+        manager->init(renderer);
+        return manager;
+    }
 }

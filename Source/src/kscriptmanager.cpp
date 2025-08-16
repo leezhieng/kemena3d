@@ -6,9 +6,9 @@ namespace kemena
     static void messageCallback(const asSMessageInfo *msg, void *param)
     {
         const char *type = "ERR ";
-        if( msg->type == asMSGTYPE_WARNING )
+        if (msg->type == asMSGTYPE_WARNING)
             type = "WARN";
-        else if( msg->type == asMSGTYPE_INFORMATION )
+        else if (msg->type == asMSGTYPE_INFORMATION)
             type = "INFO";
         printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
     }
@@ -43,7 +43,7 @@ namespace kemena
 
         CScriptBuilder builder;
         int result = builder.StartNewModule(engine, moduleName.c_str());
-        if(result < 0)
+        if (result < 0)
         {
             // If the code fails here it is usually because there
             // is no more memory to allocate the module
@@ -51,7 +51,7 @@ namespace kemena
             return newScript;
         }
         result = builder.AddSectionFromFile(fileName.c_str());
-        if(result < 0)
+        if (result < 0)
         {
             // The builder wasn't able to load the file. Maybe the file
             // has been removed, or the wrong name was given, or some
@@ -60,7 +60,7 @@ namespace kemena
             return newScript;
         }
         result = builder.BuildModule();
-        if(result < 0)
+        if (result < 0)
         {
             // An error occurred. Instruct the script writer to fix the
             // compilation errors that were listed in the output stream.
@@ -74,14 +74,14 @@ namespace kemena
         newScript.loaded = true;
 
         // Auto look for variables and functions
-        int varCount = (int) newScript.module->GetGlobalVarCount();
-        int funcCount = (int) newScript.module->GetFunctionCount();
-        int impFuncCount = (int) newScript.module->GetImportedFunctionCount();
-        int enumCount = (int) newScript.module->GetEnumCount();
-        int objTypeCount = (int) newScript.module->GetObjectTypeCount();
-        int typeDefCount = (int) newScript.module->GetTypedefCount();
+        int varCount = (int)newScript.module->GetGlobalVarCount();
+        int funcCount = (int)newScript.module->GetFunctionCount();
+        int impFuncCount = (int)newScript.module->GetImportedFunctionCount();
+        int enumCount = (int)newScript.module->GetEnumCount();
+        int objTypeCount = (int)newScript.module->GetObjectTypeCount();
+        int typeDefCount = (int)newScript.module->GetTypedefCount();
 
-        //std::cout << varCount << std::endl;
+        // std::cout << varCount << std::endl;
 
         scripts.push_back(newScript);
 
@@ -106,15 +106,15 @@ namespace kemena
             {
                 if (scripts.at(i).module->GetFunctionCount() > 0)
                 {
-                    for (int j = 0; j < (int) scripts.at(i).module->GetFunctionCount(); ++j)
+                    for (int j = 0; j < (int)scripts.at(i).module->GetFunctionCount(); ++j)
                     {
                         scripts.at(i).context->Prepare(scripts.at(i).module->GetFunctionByIndex(j));
 
                         int result = scripts.at(i).context->Execute();
-                        if(result != asEXECUTION_FINISHED)
+                        if (result != asEXECUTION_FINISHED)
                         {
                             // The execution didn't complete as expected. Determine what happened.
-                            if(result == asEXECUTION_EXCEPTION)
+                            if (result == asEXECUTION_EXCEPTION)
                             {
                                 // An exception occurred, let the script writer know what happened so it can be corrected.
                                 printf("An exception '%s' occurred. Please correct the code and try again.\n", scripts.at(i).context->GetExceptionString());

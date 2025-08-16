@@ -15,36 +15,35 @@ namespace kemena
 
     class kAnimation
     {
-        public:
-            kAnimation(const std::string& animationPath, kMesh* setMesh);
+    public:
+        kAnimation(const std::string &animationPath, kMesh *setMesh);
 
-            kBone* findBone(const std::string& name);
-            float getTicksPerSecond() const;
-            float getDuration() const;
-            const kAssimpNodeData& getRootNode() const;
+        kBone *findBone(const std::string &name);
+        float getTicksPerSecond() const;
+        float getDuration() const;
+        const kAssimpNodeData &getRootNode() const;
 
-            void setMesh(const aiAnimation* animation, kMesh* newMesh);
-            std::vector<kMesh*> getMeshes();
+        void setMesh(const aiAnimation *animation, kMesh *newMesh);
+        std::vector<kMesh *> getMeshes();
 
-            void setSpeed(float newSpeed);
-            float getSpeed();
+        void setSpeed(float newSpeed);
+        float getSpeed();
 
-        protected:
+    protected:
+    private:
+        float duration;
+        int ticksPerSecond;
+        std::vector<kBone> bones;
+        kAssimpNodeData rootNode;
 
-        private:
-            float duration;
-            int ticksPerSecond;
-            std::vector<kBone> bones;
-            kAssimpNodeData rootNode;
+        std::vector<kMesh *> meshes;
 
-            std::vector<kMesh*> meshes;
+        void readMissingBones(const aiAnimation *animation, kMesh *setMesh);
+        void readHierarchyData(kAssimpNodeData &dest, const aiNode *src);
 
-            void readMissingBones(const aiAnimation* animation, kMesh* setMesh);
-            void readHierarchyData(kAssimpNodeData& dest, const aiNode* src);
+        std::map<std::string, kBoneInfo> boneInfoMap;
 
-            std::map<std::string, kBoneInfo> boneInfoMap;
-
-            float speed = 1.0f;
+        float speed = 1.0f;
     };
 }
 

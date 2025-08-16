@@ -40,12 +40,12 @@ namespace kemena
         return channels;
     }
 
-    void kTexture2D::setData(unsigned char* newData)
+    void kTexture2D::setData(unsigned char *newData)
     {
         data = newData;
     }
 
-    unsigned char* kTexture2D::getData()
+    unsigned char *kTexture2D::getData()
     {
         return data;
     }

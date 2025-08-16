@@ -42,88 +42,85 @@ namespace kemena
 {
     class KEMENA3D_API kRenderer
     {
-        public:
-            kRenderer();
+    public:
+        kRenderer();
 
-            bool init(kWindow* window = nullptr, kRendererType type = kRendererType::RENDERER_GL);
-            void destroy();
-            void setEngineInfo(const std::string name, uint32_t version);
-			
-			kWindow* getWindow();
+        bool init(kWindow *window = nullptr, kRendererType type = kRendererType::RENDERER_GL);
+        void destroy();
+        void setEngineInfo(const std::string name, uint32_t version);
 
-            void render(kScene* scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool swapWindow = true);
+        kWindow *getWindow();
 
-            glm::vec4 getClearColor();
-            void setClearColor(glm::vec4 newColor);
-			
-			void setEnableScreenBuffer(bool newEnable, bool useDefaultShader = true);
-			bool getEnableScreenBuffer();
-            void setScreenShader(kShader* newShader);
-            kShader* getScreenShader();
-			
-			void setEnableShadow(bool newEnable, bool useDefaultShader = true);
-			bool getEnableShadow();
-            void setShadowShader(kShader* newShader);
-            kShader* getShadowShader();
-			
-			void setEnableAutoExposure(bool newEnable);
-			bool getEnableAutoExposure();
-			
-			SDL_GLContext getOpenGlContext();
+        void render(kScene *scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool swapWindow = true);
 
-            void resizeFbo(int newWidth, int newHeight);
+        glm::vec4 getClearColor();
+        void setClearColor(glm::vec4 newColor);
 
-            float srgbToLinear(float c);
-            vec3 idToRgb(unsigned int i);
-            unsigned int rgbToId(unsigned int r, unsigned int g, unsigned int b);
+        void setEnableScreenBuffer(bool newEnable, bool useDefaultShader = true);
+        bool getEnableScreenBuffer();
+        void setScreenShader(kShader *newShader);
+        kShader *getScreenShader();
 
+        void setEnableShadow(bool newEnable, bool useDefaultShader = true);
+        bool getEnableShadow();
+        void setShadowShader(kShader *newShader);
+        kShader *getShadowShader();
 
+        void setEnableAutoExposure(bool newEnable);
+        bool getEnableAutoExposure();
 
-        protected:
+        SDL_GLContext getOpenGlContext();
 
-        private:
-            std::string engineName;
-            uint32_t engineVersion;
-            kWindow* appWindow;
+        void resizeFbo(int newWidth, int newHeight);
 
-            kRendererType renderType;
+        float srgbToLinear(float c);
+        vec3 idToRgb(unsigned int i);
+        unsigned int rgbToId(unsigned int r, unsigned int g, unsigned int b);
 
-            vec4 clearColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-            
-            // This is used to determine if we're still on the same frame
-            int frameId = 0;
+    protected:
+    private:
+        std::string engineName;
+        uint32_t engineVersion;
+        kWindow *appWindow;
 
-            void renderSceneGraph(kScene* scene, kObject* rootNode, bool transparent = false, float deltaTime = 0.0f);
-            void renderSceneGraphShadow(kScene* scene, kObject* rootNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent = false, float deltaTime = 0.0f);
+        kRendererType renderType;
 
-            // OpenGL
-            SDL_GLContext openglContext;
+        vec4 clearColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-            // Screen FBO
-			bool enableScreenBuffer = false;
-			kShader* screenShader = nullptr;
-            GLuint quadVao, quadVbo, quadEbo;
-            GLuint fbo, fboTexColor, rboDepth;
-            GLuint fboMsaa, fboTexColorMsaa, rboMsaa;
+        // This is used to determine if we're still on the same frame
+        int frameId = 0;
 
-            // Shadow FBO
-			bool enableShadow = false;
-			kShader* shadowShader = nullptr;
-            GLuint shadowFbo;
-            const unsigned int shadowWidth = 1024, shadowHeight = 1024;
-            GLuint shadowFboTex;
-            mat4 lightSpaceMatrix;
+        void renderSceneGraph(kScene *scene, kObject *rootNode, bool transparent = false, float deltaTime = 0.0f);
+        void renderSceneGraphShadow(kScene *scene, kObject *rootNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent = false, float deltaTime = 0.0f);
 
-            // For auto exposure
-            bool enableAutoExposure = false;
-            float averageLuminance;
-            float averageLuminanceColor[4];
-            // 0.09	Dark and moody
-            // 0.18	Neutral (default for many tone mappers)
-            // 0.25+	Bright scene
-            float exposureKey = 0.18f;
-            float exposureAdaptationRate = 2.0f;
-            float exposure = 1.0f;
+        // OpenGL
+        SDL_GLContext openglContext;
+
+        // Screen FBO
+        bool enableScreenBuffer = false;
+        kShader *screenShader = nullptr;
+        GLuint quadVao, quadVbo, quadEbo;
+        GLuint fbo, fboTexColor, rboDepth;
+        GLuint fboMsaa, fboTexColorMsaa, rboMsaa;
+
+        // Shadow FBO
+        bool enableShadow = false;
+        kShader *shadowShader = nullptr;
+        GLuint shadowFbo;
+        const unsigned int shadowWidth = 1024, shadowHeight = 1024;
+        GLuint shadowFboTex;
+        mat4 lightSpaceMatrix;
+
+        // For auto exposure
+        bool enableAutoExposure = false;
+        float averageLuminance;
+        float averageLuminanceColor[4];
+        // 0.09	Dark and moody
+        // 0.18	Neutral (default for many tone mappers)
+        // 0.25+	Bright scene
+        float exposureKey = 0.18f;
+        float exposureAdaptationRate = 2.0f;
+        float exposure = 1.0f;
     };
 }
 

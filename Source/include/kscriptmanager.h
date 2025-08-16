@@ -20,7 +20,7 @@ namespace kemena
     struct KEMENA3D_API kScriptFunc
     {
         std::string decl;
-        asIScriptFunction* asFunc;
+        asIScriptFunction *asFunc;
         asSFuncPtr cFunc;
 
         /*
@@ -50,10 +50,10 @@ namespace kemena
 
         std::string fileName;
         std::string moduleName;
-        asIScriptEngine* engine;
-        asIScriptContext* context;
-        asIScriptModule* module;
-        //std::vector<kScriptFunc> functions;
+        asIScriptEngine *engine;
+        asIScriptContext *context;
+        asIScriptModule *module;
+        // std::vector<kScriptFunc> functions;
         bool loaded = false;
 
         void call(std::string declaration)
@@ -61,10 +61,10 @@ namespace kemena
             context->Prepare(module->GetFunctionByDecl(declaration.c_str()));
 
             int result = context->Execute();
-            if(result != asEXECUTION_FINISHED)
+            if (result != asEXECUTION_FINISHED)
             {
                 // The execution didn't complete as expected. Determine what happened.
-                if(result == asEXECUTION_EXCEPTION)
+                if (result == asEXECUTION_EXCEPTION)
                 {
                     // An exception occurred, let the script writer know what happened so it can be corrected.
                     printf("An exception '%s' occurred. Please correct the code and try again.\n", context->GetExceptionString());
@@ -79,15 +79,15 @@ namespace kemena
         {
             if (module->GetFunctionCount() > 0)
             {
-                for (int j = 0; j < (int) module->GetFunctionCount(); ++j)
+                for (int j = 0; j < (int)module->GetFunctionCount(); ++j)
                 {
                     context->Prepare(module->GetFunctionByIndex(j));
 
                     int result = context->Execute();
-                    if(result != asEXECUTION_FINISHED)
+                    if (result != asEXECUTION_FINISHED)
                     {
                         // The execution didn't complete as expected. Determine what happened.
-                        if(result == asEXECUTION_EXCEPTION)
+                        if (result == asEXECUTION_EXCEPTION)
                         {
                             // An exception occurred, let the script writer know what happened so it can be corrected.
                             printf("An exception '%s' occurred. Please correct the code and try again.\n", context->GetExceptionString());
@@ -105,20 +105,19 @@ namespace kemena
 
     class KEMENA3D_API kScriptManager
     {
-        public:
-            kScriptManager();
-            virtual ~kScriptManager();
+    public:
+        kScriptManager();
+        virtual ~kScriptManager();
 
-            kScript loadScript(std::string fileName);
-            void registerGlobalFunction(std::string declaration, asSFuncPtr func);
-            void runAll();
-            void destroy();
+        kScript loadScript(std::string fileName);
+        void registerGlobalFunction(std::string declaration, asSFuncPtr func);
+        void runAll();
+        void destroy();
 
-        protected:
-
-        private:
-            asIScriptEngine* engine;
-            std::vector<kScript> scripts;
+    protected:
+    private:
+        asIScriptEngine *engine;
+        std::vector<kScript> scripts;
     };
 }
 

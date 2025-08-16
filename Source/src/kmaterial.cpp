@@ -10,27 +10,27 @@ namespace kemena
     {
     }
 
-    void kMaterial::setShader(kShader* newShader)
+    void kMaterial::setShader(kShader *newShader)
     {
         shader = newShader;
     }
 
-    kShader* kMaterial::getShader()
+    kShader *kMaterial::getShader()
     {
         return shader;
     }
 
-    void kMaterial::addTexture(kTexture* texture)
+    void kMaterial::addTexture(kTexture *texture)
     {
         textures.push_back(texture);
     }
 
-    std::vector<kTexture*> kMaterial::getTextures()
+    std::vector<kTexture *> kMaterial::getTextures()
     {
         return textures;
     }
 
-    kTexture* kMaterial::getTexture(int index)
+    kTexture *kMaterial::getTexture(int index)
     {
         return textures.at(index);
     }

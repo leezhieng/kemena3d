@@ -15,46 +15,48 @@
 
 namespace kemena
 {
-    class KEMENA3D_API kGuiManager
-    {
-        public:
-            kGuiManager();
-            virtual ~kGuiManager();
+	class KEMENA3D_API kGuiManager
+	{
+	public:
+		kGuiManager();
+		virtual ~kGuiManager();
 
-            void init(kRenderer* newRenderer);
-			void processEvent(kSystemEvent event);
-			
-			void canvasStart();
-			void canvasEnd();
-			
-			void windowStart(std::string title, bool *open = nullptr);
-			void windowEnd();
-			
-			void dockSpaceStart(std::string name);
-			void dockSpaceEnd();
-			
-			bool menuBar();
-			void menuBarEnd();
-			bool menu(std::string text);
-			void menuEnd();
-			bool menuItem(std::string text, std::string shortcut = "", bool selected = false, bool enabled = true);
-			
-			void groupStart();
-			void groupEnd();
-			
-			void sameLine();
-			void spacing();
-			void separator();
-			void text(std::string text);
-			
-			void destroy();
+		void init(kRenderer *newRenderer);
+		void processEvent(kSystemEvent event);
 
-        protected:
+		void canvasStart();
+		void canvasEnd();
 
-        private:
-            float mainScale;
-			kRenderer* renderer;
-    };
+		void windowStart(std::string title, bool *open = nullptr, ImGuiWindowFlags flags = 0);
+		void windowEnd();
+
+		void dockSpaceStart(std::string name);
+		void dockSpaceEnd();
+
+		bool menuBar();
+		void menuBarEnd();
+		bool menu(std::string text);
+		void menuEnd();
+		bool menuItem(std::string text, std::string shortcut = "", bool selected = false, bool enabled = true);
+
+		void groupStart();
+		void groupEnd();
+
+		void sameLine();
+		void spacing();
+		void separator();
+
+		void text(std::string text);
+		bool button(std::string text, ivec2 size = ivec2(0, 0));
+		bool checkbox(std::string text, bool *output);
+
+		void destroy();
+
+	protected:
+	private:
+		float mainScale;
+		kRenderer *renderer;
+	};
 }
 
 #endif // KGUIMANAGER_H

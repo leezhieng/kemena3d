@@ -24,28 +24,26 @@ namespace kemena
 {
     class KEMENA3D_API kTexture
     {
-        public:
-            kTexture();
-            virtual ~kTexture();
+    public:
+        kTexture();
+        virtual ~kTexture();
 
-            kTexture* duplicate(std::string newName);
+        kTexture *duplicate(std::string newName);
 
-            void setTextureID(GLuint newTextureID);
-            GLuint getTextureID();
+        void setTextureID(GLuint newTextureID);
+        GLuint getTextureID();
 
-            void setTextureName(std::string newName);
-            std::string getTextureName();
+        void setTextureName(std::string newName);
+        std::string getTextureName();
 
-            void setType(kTextureType newType);
-            kTextureType getType();
+        void setType(kTextureType newType);
+        kTextureType getType();
 
-        protected:
-
-        private:
-
-            GLuint textureID;
-            std::string textureName;
-            kTextureType type = kTextureType::TEX_TYPE_2D;
+    protected:
+    private:
+        GLuint textureID;
+        std::string textureName;
+        kTextureType type = kTextureType::TEX_TYPE_2D;
     };
 }
 

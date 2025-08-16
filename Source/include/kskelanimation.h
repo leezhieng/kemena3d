@@ -17,28 +17,27 @@ namespace kemena
 {
     class KEMENA3D_API kSkeletalAnimation
     {
-        public:
-            kSkeletalAnimation();
-            virtual ~kSkeletalAnimation();
+    public:
+        kSkeletalAnimation();
+        virtual ~kSkeletalAnimation();
 
-            void loadAnimation(const std::string& animationPath, kMesh* model);
-            kBone* findBone(std::string& name);
-            float getTicksPerSecond();
-            float getDuration();
-            const kAssimpNodeData& getRootNode();
-            const std::map<std::string, kBoneInfo>& getBoneIDMap();
+        void loadAnimation(const std::string &animationPath, kMesh *model);
+        kBone *findBone(std::string &name);
+        float getTicksPerSecond();
+        float getDuration();
+        const kAssimpNodeData &getRootNode();
+        const std::map<std::string, kBoneInfo> &getBoneIDMap();
 
-        protected:
+    protected:
+    private:
+        float duration;
+        int ticksPerSecond;
+        std::vector<kBone> bones;
+        kAssimpNodeData rootNode;
+        std::map<std::string, kBoneInfo> boneInfoMap;
 
-        private:
-            float duration;
-            int ticksPerSecond;
-            std::vector<kBone> bones;
-            kAssimpNodeData rootNode;
-            std::map<std::string, kBoneInfo> boneInfoMap;
-
-            void readMissingBones(const aiAnimation* animation, kMesh& model);
-            void readHeirarchyData(kAssimpNodeData& dest, const aiNode* src);
+        void readMissingBones(const aiAnimation *animation, kMesh &model);
+        void readHeirarchyData(kAssimpNodeData &dest, const aiNode *src);
     };
 }
 

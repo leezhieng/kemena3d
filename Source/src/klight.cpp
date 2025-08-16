@@ -2,7 +2,7 @@
 
 namespace kemena
 {
-    kLight::kLight(kObject* parentNode)
+    kLight::kLight(kObject *parentNode)
     {
         if (parentNode != nullptr)
             setParent(parentNode);

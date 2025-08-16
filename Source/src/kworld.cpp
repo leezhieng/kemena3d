@@ -22,9 +22,9 @@ namespace kemena
         uuid = newUuid;
     }
 
-    kScene* kWorld::createScene(std::string sceneName, std::string sceneUuid)
+    kScene *kWorld::createScene(std::string sceneName, std::string sceneUuid)
     {
-        kScene* newScene = new kScene();
+        kScene *newScene = new kScene();
         newScene->setAssetManager(assetManager);
         newScene->setWorld(this);
         newScene->setName(sceneName);
@@ -34,7 +34,7 @@ namespace kemena
         return newScene;
     }
 
-    void kWorld::addScene(kScene* scene, std::string sceneUuid)
+    void kWorld::addScene(kScene *scene, std::string sceneUuid)
     {
         if (sceneUuid.empty())
             scene->setUuid(generateUuid());
@@ -45,17 +45,17 @@ namespace kemena
         scenes.push_back(scene);
     }
 
-    void kWorld::setAssetManager(kAssetManager* manager)
+    void kWorld::setAssetManager(kAssetManager *manager)
     {
         assetManager = manager;
     }
 
-    kAssetManager* kWorld::getAssetManager()
+    kAssetManager *kWorld::getAssetManager()
     {
         return assetManager;
     }
 
-    std::vector<kScene*> kWorld::getScenes()
+    std::vector<kScene *> kWorld::getScenes()
     {
         return scenes;
     }
@@ -74,16 +74,15 @@ namespace kemena
         }
 
         json data =
-        {
-            { "uuid", getUuid() },
-            { "scenes", scenesData },
-        };
+            {
+                {"uuid", getUuid()},
+                {"scenes", scenesData},
+            };
 
         return data;
     }
 
     void kWorld::deserialize(json data)
     {
-
     }
 }

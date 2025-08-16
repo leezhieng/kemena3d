@@ -11,22 +11,22 @@ namespace kemena
     {
     }
 
-    void kScene::setAssetManager(kAssetManager* manager)
+    void kScene::setAssetManager(kAssetManager *manager)
     {
         assetManager = manager;
     }
 
-    kAssetManager* kScene::getAssetManager()
+    kAssetManager *kScene::getAssetManager()
     {
         return assetManager;
     }
 
-    void kScene::setWorld(kWorld* newWorld)
+    void kScene::setWorld(kWorld *newWorld)
     {
         world = newWorld;
     }
 
-    kWorld* kScene::getWorld()
+    kWorld *kScene::getWorld()
     {
         return world;
     }
@@ -61,22 +61,22 @@ namespace kemena
         name = newName;
     }
 
-    std::vector<kCamera*> kScene::getCameras()
+    std::vector<kCamera *> kScene::getCameras()
     {
         return cameras;
     }
 
-    std::vector<kLight*> kScene::getLights()
+    std::vector<kLight *> kScene::getLights()
     {
         return lights;
     }
 
-    kObject* kScene::getRootNode()
+    kObject *kScene::getRootNode()
     {
         return rootNode;
     }
 
-    void kScene::addObject(kObject* object, std::string objectUuid)
+    void kScene::addObject(kObject *object, std::string objectUuid)
     {
         object->setParent(rootNode);
 
@@ -86,9 +86,9 @@ namespace kemena
             object->setUuid(objectUuid);
     }
 
-    kMesh* kScene::addMesh(std::string fileName, std::string objectUuid)
+    kMesh *kScene::addMesh(std::string fileName, std::string objectUuid)
     {
-        kMesh* mesh = assetManager->loadMesh(fileName);
+        kMesh *mesh = assetManager->loadMesh(fileName);
         mesh->setParent(rootNode);
 
         if (objectUuid.empty())
@@ -99,7 +99,7 @@ namespace kemena
         return mesh;
     }
 
-    void kScene::addMesh(kMesh* mesh, std::string objectUuid)
+    void kScene::addMesh(kMesh *mesh, std::string objectUuid)
     {
         mesh->setParent(rootNode);
 
@@ -109,9 +109,9 @@ namespace kemena
             mesh->setUuid(objectUuid);
     }
 
-    kCamera* kScene::addCamera(glm::vec3 position, glm::vec3 lookAt, kCameraType type, std::string objectUuid)
+    kCamera *kScene::addCamera(glm::vec3 position, glm::vec3 lookAt, kCameraType type, std::string objectUuid)
     {
-        kCamera* camera = new kCamera();
+        kCamera *camera = new kCamera();
         camera->setCameraType(type);
         camera->setPosition(position);
         camera->setLookAt(lookAt);
@@ -131,7 +131,7 @@ namespace kemena
         return camera;
     }
 
-    void kScene::addCamera(kCamera* camera, std::string objectUuid)
+    void kScene::addCamera(kCamera *camera, std::string objectUuid)
     {
         camera->setParent(rootNode);
 
@@ -147,12 +147,12 @@ namespace kemena
             mainCamera = camera;
     }
 
-    kCamera* kScene::getMainCamera()
+    kCamera *kScene::getMainCamera()
     {
         return mainCamera;
     }
 
-    void kScene::setMainCamera(kCamera* camera)
+    void kScene::setMainCamera(kCamera *camera)
     {
         mainCamera = camera;
     }
@@ -167,9 +167,9 @@ namespace kemena
         ambientLightColor = newColor;
     }
 
-    kLight* kScene::addSunLight(glm::vec3 position, glm::vec3 direction, glm::vec3 ambientColor, glm::vec3 diffuseColor, glm::vec3 specularColor, std::string objectUuid)
+    kLight *kScene::addSunLight(glm::vec3 position, glm::vec3 direction, glm::vec3 ambientColor, glm::vec3 diffuseColor, glm::vec3 specularColor, std::string objectUuid)
     {
-        kLight* light = new kLight();
+        kLight *light = new kLight();
         light->setLightType(kLightType::LIGHT_TYPE_SUN);
         light->setPosition(position);
         light->setDirection(direction);
@@ -188,9 +188,9 @@ namespace kemena
         return light;
     }
 
-    kLight* kScene::addPointLight(glm::vec3 position, glm::vec3 ambientColor, glm::vec3 diffuseColor, glm::vec3 specularColor, std::string objectUuid)
+    kLight *kScene::addPointLight(glm::vec3 position, glm::vec3 ambientColor, glm::vec3 diffuseColor, glm::vec3 specularColor, std::string objectUuid)
     {
-        kLight* light = new kLight();
+        kLight *light = new kLight();
         light->setLightType(kLightType::LIGHT_TYPE_POINT);
         light->setPosition(position);
         light->setAmbientColor(ambientColor);
@@ -208,9 +208,9 @@ namespace kemena
         return light;
     }
 
-    kLight* kScene::addSpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 ambientColor, glm::vec3 diffuseColor, glm::vec3 specularColor, std::string objectUuid)
+    kLight *kScene::addSpotLight(glm::vec3 position, glm::vec3 direction, glm::vec3 ambientColor, glm::vec3 diffuseColor, glm::vec3 specularColor, std::string objectUuid)
     {
-        kLight* light = new kLight();
+        kLight *light = new kLight();
         light->setLightType(kLightType::LIGHT_TYPE_SPOT);
         light->setPosition(position);
         light->setDirection(direction);
@@ -229,18 +229,18 @@ namespace kemena
         return light;
     }
 
-    void kScene::setSkybox(kMaterial* newMaterial, kMesh* newMesh)
+    void kScene::setSkybox(kMaterial *newMaterial, kMesh *newMesh)
     {
         skyMaterial = newMaterial;
         skyMesh = newMesh;
     }
 
-    kMaterial* kScene::getSkyboxMaterial()
+    kMaterial *kScene::getSkyboxMaterial()
     {
         return skyMaterial;
     }
 
-    kMesh* kScene::getSkyboxMesh()
+    kMesh *kScene::getSkyboxMesh()
     {
         return skyMesh;
     }
@@ -255,18 +255,17 @@ namespace kemena
         }
 
         json data =
-        {
-            { "uuid", getUuid() },
-            { "name", getName() },
-            { "active", getActive() },
-            { "objects", objectsData },
-        };
+            {
+                {"uuid", getUuid()},
+                {"name", getName()},
+                {"active", getActive()},
+                {"objects", objectsData},
+            };
 
         return data;
     }
 
     void kScene::deserialize(json data)
     {
-
     }
 }

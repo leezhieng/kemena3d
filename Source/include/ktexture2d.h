@@ -9,31 +9,30 @@ namespace kemena
 {
     class KEMENA3D_API kTexture2D : public kTexture
     {
-        public:
-            kTexture2D();
-            virtual ~kTexture2D();
+    public:
+        kTexture2D();
+        virtual ~kTexture2D();
 
-            void setWidth(int newWidth);
-            int getWidth();
-            void setHeight(int newHeight);
-            int getHeight();
-            void setChannels(int newChannel);
-            int getChannels();
+        void setWidth(int newWidth);
+        int getWidth();
+        void setHeight(int newHeight);
+        int getHeight();
+        void setChannels(int newChannel);
+        int getChannels();
 
-            void setData(unsigned char* newData);
-            unsigned char* getData();
+        void setData(unsigned char *newData);
+        unsigned char *getData();
 
-        protected:
+    protected:
+    private:
+        int width;
+        int height;
+        int channels;
 
-        private:
-            int width;
-            int height;
-            int channels;
+        GLuint textureID;
+        std::string textureName;
 
-            GLuint textureID;
-            std::string textureName;
-
-            unsigned char* data;
+        unsigned char *data;
     };
 }
 

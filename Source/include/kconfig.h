@@ -1,8 +1,7 @@
 #ifndef KCONFIG_H
 #define KCONFIG_H
 
-//#define K_RENDERER_OPENGL_ENABLED
+// #define K_RENDERER_OPENGL_ENABLED
 #define K_RENDERER_VULKAN_ENABLED
 
 #endif // KCONFIG_H
-

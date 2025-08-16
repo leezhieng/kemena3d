@@ -18,36 +18,34 @@ namespace kemena
 {
     class KEMENA3D_API kWindow
     {
-        public:
-            kWindow();
-            virtual ~kWindow();
+    public:
+        kWindow();
+        virtual ~kWindow();
 
-            bool init(int width, int height, std::string title);
-            bool init(int width, int height, std::string title, void* nativeHandle);
-            void destroy();
-            void swap();
-            int getWindowWidth();
-            int getWindowHeight();
-            std::string getWindowTitle();
+        bool init(int width, int height, std::string title, bool maximized = false, kWindowType type = kWindowType::WINDOW_DEFAULT, void *nativeHandle = nullptr);
+        void destroy();
+        void swap();
+        int getWindowWidth();
+        int getWindowHeight();
+        std::string getWindowTitle();
 
-            SDL_Window* getSdlWindow();
+        SDL_Window *getSdlWindow();
 
-            bool getRunning();
-            void setRunning(bool newRunning);
+        bool getRunning();
+        void setRunning(bool newRunning);
 
-            kTimer* getTimer();
+        kTimer *getTimer();
 
-        protected:
+    protected:
+    private:
+        SDL_Window *sdlWindow = NULL;
 
-        private:
-            SDL_Window* sdlWindow = NULL;
+        std::string windowTitle;
+        int windowWidth;
+        int windowHeight;
 
-            std::string windowTitle;
-            int windowWidth;
-            int windowHeight;
-
-            bool running = true;
-            kTimer* timer;
+        bool running = true;
+        kTimer *timer;
     };
 }
 

@@ -6,7 +6,7 @@ namespace kemena
     {
     }
 
-    bool kRenderer::init(kWindow* window, kRendererType type)
+    bool kRenderer::init(kWindow *window, kRendererType type)
     {
         if (window != nullptr)
             appWindow = window;
@@ -25,11 +25,11 @@ namespace kemena
             // Don't do it here? Incase not using SDL
             if (window != nullptr)
             {
-                //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-                //SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+                // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+                // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-                //SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);   // Enable multisample buffer
-                //SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);   // Number of samples (e.g., 4x MSAA)
+                // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);   // Enable multisample buffer
+                // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);   // Number of samples (e.g., 4x MSAA)
 
                 openglContext = SDL_GL_CreateContext(window->getSdlWindow());
                 if (!openglContext)
@@ -74,20 +74,20 @@ namespace kemena
         engineName = name;
         engineVersion = version;
     }
-	
-	kWindow* kRenderer::getWindow()
-	{
-		return appWindow;
-	}
 
-    void kRenderer::render(kScene* scene, int x, int y, int width, int height, float deltaTime, bool swapWindow)
+    kWindow *kRenderer::getWindow()
+    {
+        return appWindow;
+    }
+
+    void kRenderer::render(kScene *scene, int x, int y, int width, int height, float deltaTime, bool swapWindow)
     {
         if (frameId > 999999999999)
             frameId = 0;
         else
             frameId++;
 
-        //std::cout << "render: " << deltaTime << std::endl;
+        // std::cout << "render: " << deltaTime << std::endl;
 
         // Render shadow scene
         if (shadowShader != nullptr)
@@ -96,7 +96,7 @@ namespace kemena
             {
                 for (size_t i = 0; i < scene->getLights().size(); ++i)
                 {
-                    kLight* currentLight = scene->getLights().at(i);
+                    kLight *currentLight = scene->getLights().at(i);
 
                     if (currentLight->getLightType() == kLightType::LIGHT_TYPE_SUN)
                     {
@@ -129,13 +129,13 @@ namespace kemena
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		if (enableScreenBuffer)
-		{
-			// Render to MSAA FBO
-			resizeFbo(width, height);
-			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-			glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
-		}
+        if (enableScreenBuffer)
+        {
+            // Render to MSAA FBO
+            resizeFbo(width, height);
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+            glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
+        }
 
         glEnable(GL_DEPTH_TEST);
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Ask for nicest perspective correction
@@ -148,18 +148,18 @@ namespace kemena
             // Use viewport instead of window?
             // Can set which camera to use for render?
             glViewport(x, y, width, height);
-            scene->getMainCamera()->setAspectRatio((float) width / (float) height);
+            scene->getMainCamera()->setAspectRatio((float)width / (float)height);
 
             // Render skybox if available
-            kMaterial* skyboxMaterial = scene->getSkyboxMaterial();
-            kMesh* skyboxMesh = scene->getSkyboxMesh();
+            kMaterial *skyboxMaterial = scene->getSkyboxMaterial();
+            kMesh *skyboxMesh = scene->getSkyboxMesh();
             if (skyboxMaterial != nullptr && skyboxMesh != nullptr)
             {
                 if (skyboxMesh->getLoaded())
                 {
                     if (skyboxMaterial->getShader() != nullptr)
                     {
-                        kShader* skyboxShader = skyboxMaterial->getShader();
+                        kShader *skyboxShader = skyboxMaterial->getShader();
                         skyboxShader->use();
 
                         glDepthMask(GL_FALSE);
@@ -170,14 +170,14 @@ namespace kemena
                         skyboxShader->setValue("projectionMatrix", scene->getMainCamera()->getProjectionMatrix());
 
                         // Set material attributes
-                        //skyboxShader->setValue("material.ambient", skyboxMaterial->getAmbientColor());
+                        // skyboxShader->setValue("material.ambient", skyboxMaterial->getAmbientColor());
 
                         if (skyboxMaterial->getTextures().size() > 0)
                         {
                             if (skyboxMaterial->getTexture(0)->getType() == kTextureType::TEX_TYPE_CUBE)
                             {
                                 GLuint tex = skyboxMaterial->getTexture(0)->getTextureID();
-                                //std::cout << tex << std::endl;
+                                // std::cout << tex << std::endl;
                                 glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
                                 glUniform1i(glGetUniformLocation(skyboxShader->getShaderProgram(), skyboxMaterial->getTexture(0)->getTextureName().c_str()), 0);
                             }
@@ -186,13 +186,13 @@ namespace kemena
                         skyboxMesh->calculateModelMatrix();
                         skyboxMesh->draw();
 
-                        //std::cout << skyboxMesh->getChildren().size() << std::endl;
+                        // std::cout << skyboxMesh->getChildren().size() << std::endl;
 
                         if (skyboxMesh->getChildren().size() > 0)
                         {
                             for (size_t i = 0; i < skyboxMesh->getChildren().size(); ++i)
                             {
-                                kMesh* childMesh = (kMesh*) skyboxMesh->getChildren().at(i);
+                                kMesh *childMesh = (kMesh *)skyboxMesh->getChildren().at(i);
 
                                 if (childMesh != nullptr)
                                 {
@@ -203,7 +203,7 @@ namespace kemena
                         }
 
                         skyboxShader->unuse();
-                        //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                        // glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
                     }
                 }
             }
@@ -217,7 +217,7 @@ namespace kemena
             renderSceneGraph(scene, scene->getRootNode(), false, deltaTime);
             // Sort transparent objects
             // Render transparent objects
-            //renderSceneGraph(scene, scene->getRootNode(), true, deltaTime);
+            // renderSceneGraph(scene, scene->getRootNode(), true, deltaTime);
         }
         else
         {
@@ -226,50 +226,49 @@ namespace kemena
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		if (enableScreenBuffer)
-		{
-			// Blit MSAA FBO to regular FBO
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, fboMsaa);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-			glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        if (enableScreenBuffer)
+        {
+            // Blit MSAA FBO to regular FBO
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, fboMsaa);
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+            glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
-			// Render FBO texture to screen
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glDisable(GL_DEPTH_TEST);
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
-			getScreenShader()->use();
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, fboTexColor);
-			//glBindTexture(GL_TEXTURE_2D, shadowFboTex); // Debug shadow depth map
+            // Render FBO texture to screen
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glDisable(GL_DEPTH_TEST);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            getScreenShader()->use();
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, fboTexColor);
+            // glBindTexture(GL_TEXTURE_2D, shadowFboTex); // Debug shadow depth map
 
-			// Calculate luminance for auto exposure
-			if (enableAutoExposure)
-			{
-				glGenerateMipmap(GL_TEXTURE_2D); // auto-downsamples the texture
-				int mipLevel = (int)std::floor(std::log2(std::max(width, height)));
-				glGetTexImage(GL_TEXTURE_2D, mipLevel, GL_RGBA, GL_FLOAT, &averageLuminanceColor);
-				averageLuminance = 0.2126f * averageLuminanceColor[0] + 0.7152f * averageLuminanceColor[1] + 0.0722f * averageLuminanceColor[2];
-				float targetExposure = exposureKey / (averageLuminance + 0.001);
-				exposure = glm::mix(exposure, targetExposure, deltaTime * exposureAdaptationRate);
-				//std::cout << averageLuminance << std::endl;
-				if (screenShader != nullptr)
-				{
-					screenShader->setValue("enable_autoExposure", enableAutoExposure);
-					screenShader->setValue("exposure", exposure * 3.0f);
-					screenShader->setValue("contrast", 1.01f);
-					screenShader->setValue("gamma", 2.2f);
-				}
-			}
+            // Calculate luminance for auto exposure
+            if (enableAutoExposure)
+            {
+                glGenerateMipmap(GL_TEXTURE_2D); // auto-downsamples the texture
+                int mipLevel = (int)std::floor(std::log2(std::max(width, height)));
+                glGetTexImage(GL_TEXTURE_2D, mipLevel, GL_RGBA, GL_FLOAT, &averageLuminanceColor);
+                averageLuminance = 0.2126f * averageLuminanceColor[0] + 0.7152f * averageLuminanceColor[1] + 0.0722f * averageLuminanceColor[2];
+                float targetExposure = exposureKey / (averageLuminance + 0.001);
+                exposure = glm::mix(exposure, targetExposure, deltaTime * exposureAdaptationRate);
+                // std::cout << averageLuminance << std::endl;
+                if (screenShader != nullptr)
+                {
+                    screenShader->setValue("enable_autoExposure", enableAutoExposure);
+                    screenShader->setValue("exposure", exposure * 3.0f);
+                    screenShader->setValue("contrast", 1.01f);
+                    screenShader->setValue("gamma", 2.2f);
+                }
+            }
 
-			glBindVertexArray(quadVao);
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-			getScreenShader()->unuse();
-		}
+            glBindVertexArray(quadVao);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+            getScreenShader()->unuse();
+        }
 
         // Must call this in the end to make it render
         glBindVertexArray(0);
-
 
         if (swapWindow && appWindow != nullptr)
         {
@@ -277,7 +276,7 @@ namespace kemena
         }
     }
 
-    void kRenderer::renderSceneGraph(kScene* scene, kObject* currentNode, bool transparent, float deltaTime)
+    void kRenderer::renderSceneGraph(kScene *scene, kObject *currentNode, bool transparent, float deltaTime)
     {
         // Ignore if the object is not active
         if (currentNode != nullptr)
@@ -285,13 +284,13 @@ namespace kemena
             if (currentNode->getActive())
             {
                 // Calculate model matrix
-                kObject* childNode = currentNode;
+                kObject *childNode = currentNode;
                 childNode->calculateModelMatrix();
 
                 if (currentNode->getType() == kNodeType::NODE_TYPE_MESH)
                 {
                     // Mesh
-                    kMesh* currentMesh = (kMesh*) currentNode;
+                    kMesh *currentMesh = (kMesh *)currentNode;
 
                     // Make sure mesh is fully loaded before render
                     // This will prevent crash
@@ -313,30 +312,30 @@ namespace kemena
                             // Face culling
                             if (currentMesh->getMaterial()->getSingleSided())
                             {
-                                //std::cout << "yes" << std::endl;
+                                // std::cout << "yes" << std::endl;
                                 glEnable(GL_CULL_FACE);
                                 glFrontFace(GL_CCW);
 
                                 if (currentMesh->getMaterial()->getCullBack())
                                 {
-                                    //std::cout << "back" << std::endl;
+                                    // std::cout << "back" << std::endl;
                                     glCullFace(GL_BACK);
                                 }
                                 else
                                 {
-                                    //std::cout << "front" << std::endl;
+                                    // std::cout << "front" << std::endl;
                                     glCullFace(GL_FRONT);
                                 }
                             }
                             else
                             {
-                                //std::cout << "no" << std::endl;
+                                // std::cout << "no" << std::endl;
                                 glDisable(GL_CULL_FACE);
                             }
 
                             if (currentMesh->getMaterial()->getShader() != nullptr)
                             {
-                                kShader* shader = currentMesh->getMaterial()->getShader();
+                                kShader *shader = currentMesh->getMaterial()->getShader();
                                 shader->use();
 
                                 // Set MVP matrices
@@ -452,11 +451,11 @@ namespace kemena
 
                                     // Send the shadow info
                                     shader->setValue("lightSpaceMatrix", lightSpaceMatrix);
-                                    glActiveTexture(GL_TEXTURE0 + (unsigned int) currentMesh->getMaterial()->getTextures().size());
+                                    glActiveTexture(GL_TEXTURE0 + (unsigned int)currentMesh->getMaterial()->getTextures().size());
                                     glBindTexture(GL_TEXTURE_2D, shadowFboTex);
-                                    shader->setValue("shadowMap", (unsigned int) currentMesh->getMaterial()->getTextures().size());
+                                    shader->setValue("shadowMap", (unsigned int)currentMesh->getMaterial()->getTextures().size());
 
-                                    //std::cout << countSunLight << countPointLight << countSpotLight << std::endl;
+                                    // std::cout << countSunLight << countPointLight << countSpotLight << std::endl;
                                 }
 
                                 if (currentMesh->getMaterial()->getTextures().size() > 0)
@@ -473,10 +472,10 @@ namespace kemena
                                             else if (currentMesh->getMaterial()->getTexture(k)->getType() == kTextureType::TEX_TYPE_CUBE)
                                                 glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
 
-                                            currentMesh->getMaterial()->getShader()->setValue(currentMesh->getMaterial()->getTexture(k)->getTextureName().c_str(), (unsigned int) k);
+                                            currentMesh->getMaterial()->getShader()->setValue(currentMesh->getMaterial()->getTexture(k)->getTextureName().c_str(), (unsigned int)k);
                                             currentMesh->getMaterial()->getShader()->setValue("has_" + currentMesh->getMaterial()->getTexture(k)->getTextureName(), true);
 
-                                            //std::cout << k << currentMesh->getMaterial()->getTexture2D(k)->getTextureName().c_str() << std::endl;
+                                            // std::cout << k << currentMesh->getMaterial()->getTexture2D(k)->getTextureName().c_str() << std::endl;
                                         }
                                     }
                                 }
@@ -490,14 +489,14 @@ namespace kemena
                         }
                         else
                         {
-                            //std::cout << "No material found" << std::endl;
+                            // std::cout << "No material found" << std::endl;
                         }
                     }
                 }
                 else if (currentNode->getType() == kNodeType::NODE_TYPE_LIGHT)
                 {
                     // Light
-                    kLight* currentLight = (kLight*) currentNode;
+                    kLight *currentLight = (kLight *)currentNode;
 
                     // Render icon
                     if (scene->getMainCamera() != nullptr)
@@ -519,7 +518,7 @@ namespace kemena
 
                             if (currentLight->getMaterial()->getShader() != nullptr)
                             {
-                                kShader* shader = currentLight->getMaterial()->getShader();
+                                kShader *shader = currentLight->getMaterial()->getShader();
                                 shader->use();
 
                                 shader->setValue("viewProjection", projection * view);
@@ -557,14 +556,14 @@ namespace kemena
                         }
                         else
                         {
-                            //std::cout << "No material found" << std::endl;
+                            // std::cout << "No material found" << std::endl;
                         }
                     }
                 }
                 else if (currentNode->getType() == kNodeType::NODE_TYPE_OBJECT)
                 {
                     // Empty object
-                    kObject* currentObject = currentNode;
+                    kObject *currentObject = currentNode;
 
                     // Set MVP if needed
                     if (currentObject->getMaterial() != nullptr)
@@ -581,7 +580,7 @@ namespace kemena
 
                         if (currentObject->getMaterial()->getShader() != nullptr)
                         {
-                            kShader* shader = currentObject->getMaterial()->getShader();
+                            kShader *shader = currentObject->getMaterial()->getShader();
 
                             shader->use();
 
@@ -613,7 +612,7 @@ namespace kemena
         }
     }
 
-    void kRenderer::renderSceneGraphShadow(kScene* scene, kObject* currentNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent, float deltaTime)
+    void kRenderer::renderSceneGraphShadow(kScene *scene, kObject *currentNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent, float deltaTime)
     {
         // Ignore if the object is not active
         if (currentNode != nullptr)
@@ -621,13 +620,13 @@ namespace kemena
             if (currentNode->getActive())
             {
                 // Calculate model matrix
-                kObject* childNode = currentNode;
+                kObject *childNode = currentNode;
                 childNode->calculateModelMatrix();
 
                 if (currentNode->getType() == kNodeType::NODE_TYPE_MESH)
                 {
                     // Mesh
-                    kMesh* currentMesh = (kMesh*) currentNode;
+                    kMesh *currentMesh = (kMesh *)currentNode;
 
                     if (currentMesh->getCastShadow())
                     {
@@ -691,23 +690,35 @@ namespace kemena
         clearColor = newColor;
         glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     }
-	
-	void kRenderer::setEnableScreenBuffer(bool newEnable, bool useDefaultShader)
-	{
-		enableScreenBuffer = newEnable;
-		
-		if (newEnable)
-		{
-			glDisable(GL_FRAMEBUFFER_SRGB);
-			
-			// Screen quad
+
+    void kRenderer::setEnableScreenBuffer(bool newEnable, bool useDefaultShader)
+    {
+        enableScreenBuffer = newEnable;
+
+        if (newEnable)
+        {
+            glDisable(GL_FRAMEBUFFER_SRGB);
+
+            // Screen quad
             float quadVerts[] = {
-                -1, -1,  0, 0,
-                 1, -1,  1, 0,
-                 1,  1,  1, 1,
-                -1,  1,  0, 1,
+                -1,
+                -1,
+                0,
+                0,
+                1,
+                -1,
+                1,
+                0,
+                1,
+                1,
+                1,
+                1,
+                -1,
+                1,
+                0,
+                1,
             };
-            GLuint quadIndices[] = { 0, 1, 2, 2, 3, 0 };
+            GLuint quadIndices[] = {0, 1, 2, 2, 3, 0};
 
             glGenVertexArrays(1, &quadVao);
             glGenBuffers(1, &quadVbo);
@@ -717,9 +728,9 @@ namespace kemena
             glBufferData(GL_ARRAY_BUFFER, sizeof(quadVerts), quadVerts, GL_STATIC_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEbo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
             glEnableVertexAttribArray(0);
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
             glEnableVertexAttribArray(1);
 
             // Create MSAA FBO
@@ -765,10 +776,10 @@ namespace kemena
                 return;
             }
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			
-			if (useDefaultShader)
-			{
-				string vertexShader = "#version 330 core \
+
+            if (useDefaultShader)
+            {
+                string vertexShader = "#version 330 core \
 				layout(location = 0) in vec2 aPos; \
 				layout(location = 1) in vec2 aTexCoord; \
 				out vec2 TexCoord; \
@@ -777,8 +788,8 @@ namespace kemena
 					TexCoord = aTexCoord; \
 					gl_Position = vec4(aPos, 0.0, 1.0); \
 				}";
-				
-				string fragmentShader = "#version 330 core \
+
+                string fragmentShader = "#version 330 core \
 				in vec2 TexCoord; \
 				out vec4 FragColor; \
 				uniform sampler2D screenTexture; \
@@ -795,40 +806,40 @@ namespace kemena
 					vec4 result = vec4(mapped, 1.0); \
 					FragColor = result; \
 				}";
-				
-				kShader* screenShader = new kShader();
-				screenShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());
-				setScreenShader(screenShader);
-			}
-		}
-		else
-		{
-			glEnable(GL_FRAMEBUFFER_SRGB);
-		}
-	}
-	
-	bool kRenderer::getEnableScreenBuffer()
-	{
-		return enableScreenBuffer;
-	}
 
-    void kRenderer::setScreenShader(kShader* newShader)
+                kShader *screenShader = new kShader();
+                screenShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());
+                setScreenShader(screenShader);
+            }
+        }
+        else
+        {
+            glEnable(GL_FRAMEBUFFER_SRGB);
+        }
+    }
+
+    bool kRenderer::getEnableScreenBuffer()
+    {
+        return enableScreenBuffer;
+    }
+
+    void kRenderer::setScreenShader(kShader *newShader)
     {
         screenShader = newShader;
     }
 
-    kShader* kRenderer::getScreenShader()
+    kShader *kRenderer::getScreenShader()
     {
         return screenShader;
     }
-	
-	void kRenderer::setEnableShadow(bool newEnable, bool useDefaultShader)
-	{
-		enableShadow = newEnable;
-		
-		if (newEnable)
-		{
-			// Create shadow FBO
+
+    void kRenderer::setEnableShadow(bool newEnable, bool useDefaultShader)
+    {
+        enableShadow = newEnable;
+
+        if (newEnable)
+        {
+            // Create shadow FBO
             glGenFramebuffers(1, &shadowFbo);
             glGenTextures(1, &shadowFboTex);
             glBindTexture(GL_TEXTURE_2D, shadowFboTex);
@@ -838,7 +849,7 @@ namespace kemena
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-            float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+            float borderColor[] = {1.0, 1.0, 1.0, 1.0};
             glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
             glBindFramebuffer(GL_FRAMEBUFFER, shadowFbo);
@@ -853,10 +864,10 @@ namespace kemena
             }
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			
-			if (useDefaultShader)
-			{
-				string vertexShader = "#version 330 core \
+
+            if (useDefaultShader)
+            {
+                string vertexShader = "#version 330 core \
 				layout (location = 0) in vec3 vertexPosition; \
 				layout (location = 6) in ivec4 boneIDs;  \
 				layout (location = 7) in vec4 weights; \
@@ -896,50 +907,50 @@ namespace kemena
 					vertexPositionFrag = (lightSpaceMatrix * worldPosition).xyz; \
 					gl_Position = lightSpaceMatrix * worldPosition; \
 				}";
-				
-				string fragmentShader = "#version 330 core \
+
+                string fragmentShader = "#version 330 core \
 				in vec3 vertexPositionFrag; \
 				out vec4 fragColor; \
 				void main() \
 				{ \
 				}";
-				
-				kShader* shadowShader = new kShader();
-				shadowShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());
-				setShadowShader(shadowShader);
-			}
-		}
-	}
-	
-	bool kRenderer::getEnableShadow()
-	{
-		return enableShadow;
-	}
 
-    void kRenderer::setShadowShader(kShader* newShader)
+                kShader *shadowShader = new kShader();
+                shadowShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());
+                setShadowShader(shadowShader);
+            }
+        }
+    }
+
+    bool kRenderer::getEnableShadow()
+    {
+        return enableShadow;
+    }
+
+    void kRenderer::setShadowShader(kShader *newShader)
     {
         shadowShader = newShader;
     }
 
-    kShader* kRenderer::getShadowShader()
+    kShader *kRenderer::getShadowShader()
     {
         return shadowShader;
     }
-	
-	void kRenderer::setEnableAutoExposure(bool newEnable)
-	{
-		enableAutoExposure = newEnable;
-	}
-	
-	bool kRenderer::getEnableAutoExposure()
-	{
-		return enableAutoExposure;
-	}
-	
-	SDL_GLContext kRenderer::getOpenGlContext()
-	{
-		return openglContext;
-	}
+
+    void kRenderer::setEnableAutoExposure(bool newEnable)
+    {
+        enableAutoExposure = newEnable;
+    }
+
+    bool kRenderer::getEnableAutoExposure()
+    {
+        return enableAutoExposure;
+    }
+
+    SDL_GLContext kRenderer::getOpenGlContext()
+    {
+        return openglContext;
+    }
 
     void kRenderer::resizeFbo(int newWidth, int newHeight)
     {
@@ -959,8 +970,8 @@ namespace kemena
 
     vec3 kRenderer::idToRgb(unsigned int i)
     {
-        int r = (i & 0x000000FF) >>  0;
-        int g = (i & 0x0000FF00) >>  8;
+        int r = (i & 0x000000FF) >> 0;
+        int g = (i & 0x0000FF00) >> 8;
         int b = (i & 0x00FF0000) >> 16;
 
         return vec3(r, g, b);
@@ -971,7 +982,7 @@ namespace kemena
         unsigned int pickedId =
             r +
             g * 256 +
-            b * 256*256;
+            b * 256 * 256;
 
         return pickedId;
     }

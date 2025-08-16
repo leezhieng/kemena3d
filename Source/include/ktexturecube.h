@@ -9,13 +9,12 @@ namespace kemena
 {
     class KEMENA3D_API kTextureCube : public kTexture
     {
-        public:
-            kTextureCube();
-            virtual ~kTextureCube();
+    public:
+        kTextureCube();
+        virtual ~kTextureCube();
 
-        protected:
-
-        private:
+    protected:
+    private:
     };
 }
 

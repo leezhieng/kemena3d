@@ -22,94 +22,101 @@ namespace kemena
 {
     class KEMENA3D_API kObject
     {
-        public:
-            kObject(kObject* parentNode = nullptr);
-            virtual ~kObject();
+    public:
+        kObject(kObject *parentNode = nullptr);
+        virtual ~kObject();
 
-            kObject* getParent();
-            void setParent(kObject* newParent);
-            std::vector<kObject*> getChildren();
+        kObject *getParent();
+        void setParent(kObject *newParent);
+        std::vector<kObject *> getChildren();
 
-            std::vector<kScript> getScripts();
+        std::vector<kScript> getScripts();
 
-            kNodeType getType();
-            void setType(kNodeType newType);
+        kNodeType getType();
+        void setType(kNodeType newType);
 
-            bool getActive();
-            void setActive(bool newActive);
+        bool getActive();
+        void setActive(bool newActive);
 
-            unsigned int getId();
-            void setId(unsigned int newId);
+        unsigned int getId();
+        void setId(unsigned int newId);
 
-            std::string getUuid();
-            void setUuid(std::string newUuid);
+        std::string getUuid();
+        void setUuid(std::string newUuid);
 
-            std::string getName();
-            void setName(std::string newName);
+        std::string getName();
+        void setName(std::string newName);
 
-            glm::vec3 getPosition();
-            virtual void setPosition(glm::vec3 newPosition);
-            glm::quat getRotation();
-            glm::vec3 getRotationEuler();
-            virtual void setRotation(glm::quat newRotation);
-            glm::vec3 getScale();
-            virtual void setScale(glm::vec3 newScale);
+        glm::vec3 getPosition();
+        virtual void setPosition(glm::vec3 newPosition);
+        glm::quat getRotation();
+        glm::vec3 getRotationEuler();
+        virtual void setRotation(glm::quat newRotation);
+        glm::vec3 getScale();
+        virtual void setScale(glm::vec3 newScale);
 
-            glm::vec3 calculateRight();
-            glm::vec3 calculateForward();
-            glm::vec3 calculateUp();
+        glm::vec3 calculateRight();
+        glm::vec3 calculateForward();
+        glm::vec3 calculateUp();
 
-            void rotate(glm::vec3 rotationAxis, float angularSpeed);
+        void rotate(glm::vec3 rotationAxis, float angularSpeed);
 
-            glm::vec3 getGlobalPosition();
-            glm::quat getGlobalRotation();
-            glm::vec3 getGlobalScale();
+        glm::vec3 getGlobalPosition();
+        glm::quat getGlobalRotation();
+        glm::vec3 getGlobalScale();
 
-            void setMaterial(kMaterial* newMaterial, bool setChildren = true);
-            kMaterial* getMaterial();
+        void setMaterial(kMaterial *newMaterial, bool setChildren = true);
+        kMaterial *getMaterial();
 
-            // Moved from kMesh to kObject, sometime object also need model matrix
-            void calculateModelMatrix();
-            glm::mat4 getModelMatrixWorld();
-            glm::mat4 getModelMatrixLocal();
+        // Moved from kMesh to kObject, sometime object also need model matrix
+        void calculateModelMatrix();
+        glm::mat4 getModelMatrixWorld();
+        glm::mat4 getModelMatrixLocal();
 
-            virtual void draw();
+        virtual void draw();
 
-            virtual json serialize();
-            virtual void deserialize(json data);
+        virtual json serialize();
+        virtual void deserialize(json data);
 
-        protected:
+    protected:
+    private:
+        kObject *parent = nullptr;
+        std::vector<kObject *> children;
 
-        private:
-            kObject* parent = nullptr;
-            std::vector<kObject*> children;
+        bool isActive = true;
 
-            bool isActive = true;
+        kNodeType type = NODE_TYPE_OBJECT;
+        unsigned int id;
+        std::string uuid;
+        std::string name;
 
-            kNodeType type = NODE_TYPE_OBJECT;
-            unsigned int id;
-            std::string uuid;
-            std::string name;
+        glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::quat rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
+        glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
 
-            glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-            glm::quat rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
-            glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::mat4 localTransform = glm::mat4(1.0f); // Model matrix (local space)
+        glm::mat4 worldTransform = glm::mat4(1.0f); // Model matrix (world space)
 
-            glm::mat4 localTransform = glm::mat4(1.0f);           // Model matrix (local space)
-            glm::mat4 worldTransform = glm::mat4(1.0f);          // Model matrix (world space)
+        kMaterial *material = nullptr;
 
-            kMaterial* material = nullptr;
-
-            GLuint iconVertexBuffer;
-            GLfloat iconVertices[12] =
+        GLuint iconVertexBuffer;
+        GLfloat iconVertices[12] =
             {
-                -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f,
-                -0.5f, 0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
-            };
+                -0.5f,
+                -0.5f,
+                0.0f,
+                0.5f,
+                -0.5f,
+                0.0f,
+                -0.5f,
+                0.5f,
+                0.0f,
+                0.5f,
+                0.5f,
+                0.0f,
+        };
 
-            std::vector<kScript> scripts;
+        std::vector<kScript> scripts;
     };
 }
 

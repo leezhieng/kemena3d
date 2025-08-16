@@ -2,7 +2,7 @@
 
 namespace kemena
 {
-    kCamera::kCamera(kObject* parentNode, kCameraType type)
+    kCamera::kCamera(kObject *parentNode, kCameraType type)
     {
         if (parentNode != nullptr)
             setParent(parentNode);
@@ -77,7 +77,7 @@ namespace kemena
         return aspectRatio;
     }
 
-    glm::mat4 kCamera::calculateMVP(kMesh* mesh)
+    glm::mat4 kCamera::calculateMVP(kMesh *mesh)
     {
         glm::mat4 model = mesh->getModelMatrixWorld();
         glm::mat4 view = glm::lookAt(getPosition(), lookAt, calculateUp());
@@ -163,9 +163,9 @@ namespace kemena
             for (size_t j = 0; j < getScripts().size(); ++j)
             {
                 scriptsData.push_back({
-                                        {"uuid", getScripts().at(j).uuid},
-                                        {"active", getScripts().at(j).isActive},
-                                    });
+                    {"uuid", getScripts().at(j).uuid},
+                    {"active", getScripts().at(j).isActive},
+                });
             }
         }
 
@@ -176,65 +176,44 @@ namespace kemena
             typeDisplay = "locked";
 
         json data =
-        {
-            { "type", "camera" },
-            { "uuid", getUuid() },
-            { "name", getName() },
-            { "camera_type", typeDisplay },
-            { "active", getActive() },
             {
-                "position",
-                {
-                    { "x", getPosition().x },
-                    { "y", getPosition().y },
-                    { "z", getPosition().z }
-                }
-            },
-            {
-                "rotation",
-                {
-                    { "x", getRotationEuler().x },
-                    { "y", getRotationEuler().y },
-                    { "z", getRotationEuler().z }
-                }
-            },
-            {
-                "scale",
-                {
-                    { "x", getScale().x },
-                    { "y", getScale().y },
-                    { "z", getScale().z }
-                }
-            },
-            { "children", childrenData },
-            { "script", scriptsData },
-            {
-                "look_at",
-                {
-                    { "x", getLookAt().x },
-                    { "y", getLookAt().y },
-                    { "z", getLookAt().z }
-                }
-            },
-            {
-                "up_axis",
-                {
-                    { "x", calculateUp().x },
-                    { "y", calculateUp().y },
-                    { "z", calculateUp().z }
-                }
-            },
-            { "fov", getFOV() },
-            { "near_clip", getNearClip() },
-            { "far_clip", getFarClip() },
-            { "aspect_ratio", getAspectRatio() },
-        };
+                {"type", "camera"},
+                {"uuid", getUuid()},
+                {"name", getName()},
+                {"camera_type", typeDisplay},
+                {"active", getActive()},
+                {"position",
+                 {{"x", getPosition().x},
+                  {"y", getPosition().y},
+                  {"z", getPosition().z}}},
+                {"rotation",
+                 {{"x", getRotationEuler().x},
+                  {"y", getRotationEuler().y},
+                  {"z", getRotationEuler().z}}},
+                {"scale",
+                 {{"x", getScale().x},
+                  {"y", getScale().y},
+                  {"z", getScale().z}}},
+                {"children", childrenData},
+                {"script", scriptsData},
+                {"look_at",
+                 {{"x", getLookAt().x},
+                  {"y", getLookAt().y},
+                  {"z", getLookAt().z}}},
+                {"up_axis",
+                 {{"x", calculateUp().x},
+                  {"y", calculateUp().y},
+                  {"z", calculateUp().z}}},
+                {"fov", getFOV()},
+                {"near_clip", getNearClip()},
+                {"far_clip", getFarClip()},
+                {"aspect_ratio", getAspectRatio()},
+            };
 
         return data;
     }
 
     void kCamera::deserialize(json data)
     {
-
     }
 }

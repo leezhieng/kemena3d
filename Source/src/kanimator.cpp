@@ -2,7 +2,7 @@
 
 namespace kemena
 {
-    kAnimator::kAnimator(kAnimation* newAnimation)
+    kAnimator::kAnimator(kAnimation *newAnimation)
     {
         currentTime = 0.0f;
 
@@ -18,16 +18,16 @@ namespace kemena
             finalBoneMatrices.push_back(glm::mat4(1.0f));
     }
 
-    void kAnimator::addAnimation(kAnimation* newAnimation)
+    void kAnimator::addAnimation(kAnimation *newAnimation)
     {
         animations.push_back(newAnimation);
     }
 
     void kAnimator::updateAnimation(float newDeltaTime, int frameId)
     {
-        //std::cout << "updateAnimation: " << newDeltaTime << std::endl;
+        // std::cout << "updateAnimation: " << newDeltaTime << std::endl;
 
-        //std::cout << "Current Time: " << currentTime << ", Duration: " << currentAnimation->getDuration() << std::endl;
+        // std::cout << "Current Time: " << currentTime << ", Duration: " << currentAnimation->getDuration() << std::endl;
 
         deltaTime = newDeltaTime;
         if (currentAnimation != nullptr && currentFrameId != frameId)
@@ -35,14 +35,14 @@ namespace kemena
             currentTime += currentAnimation->getTicksPerSecond() * newDeltaTime;
             currentTime = fmod(currentTime, currentAnimation->getDuration());
 
-            const kAssimpNodeData& rootNode = currentAnimation->getRootNode();
+            const kAssimpNodeData &rootNode = currentAnimation->getRootNode();
             calculateBoneTransform(&rootNode, glm::mat4(1.0f));
         }
         // Make sure it's only updated once per frame
         currentFrameId = frameId;
     }
 
-    void kAnimator::playAnimation(kAnimation* animation)
+    void kAnimator::playAnimation(kAnimation *animation)
     {
         if (animation != nullptr)
         {
@@ -51,37 +51,37 @@ namespace kemena
         }
     }
 
-    kAnimation* kAnimator::getCurrentAnimation()
+    kAnimation *kAnimator::getCurrentAnimation()
     {
         return currentAnimation;
     }
 
-    void kAnimator::calculateBoneTransform(const kAssimpNodeData* node, glm::mat4 parentTransform)
+    void kAnimator::calculateBoneTransform(const kAssimpNodeData *node, glm::mat4 parentTransform)
     {
         if (node != nullptr)
         {
             string nodeName = node->name;
             glm::mat4 nodeTransform = node->transformation;
 
-            //std::cout << "Found node: " << nodeName << ", transform: " << glm::to_string(nodeTransform) << std::endl;
+            // std::cout << "Found node: " << nodeName << ", transform: " << glm::to_string(nodeTransform) << std::endl;
 
-            kBone* bone = currentAnimation->findBone(nodeName);
+            kBone *bone = currentAnimation->findBone(nodeName);
 
             if (bone != nullptr)
             {
-                //std::cout << "Before update, nodeTransform: " << glm::to_string(nodeTransform) << std::endl;
+                // std::cout << "Before update, nodeTransform: " << glm::to_string(nodeTransform) << std::endl;
 
-                //std::cout << "Found bone: " << nodeName << std::endl;
-                //std::cout << "Updating bone: " << nodeName << " at time: " << currentTime << std::endl;
+                // std::cout << "Found bone: " << nodeName << std::endl;
+                // std::cout << "Updating bone: " << nodeName << " at time: " << currentTime << std::endl;
 
                 bone->update(currentTime);
 
                 //////////////////////////////////////
                 // Disable this then become firstframe
-                //nodeTransform = bone->getLocalTransform() * nodeTransform;
+                // nodeTransform = bone->getLocalTransform() * nodeTransform;
                 nodeTransform = bone->getLocalTransform();
 
-                //std::cout << "After update, nodeTransform: " << glm::to_string(nodeTransform) << std::endl;
+                // std::cout << "After update, nodeTransform: " << glm::to_string(nodeTransform) << std::endl;
             }
 
             // Fixed using inverse()
@@ -100,8 +100,7 @@ namespace kemena
                 globalTransformation = parentTransform * invNodeTransform * nodeTransform;
             }*/
 
-
-            //glm::mat4 globalTransformation = parentTransform * glm::inverse(node->transformation) * nodeTransform;
+            // glm::mat4 globalTransformation = parentTransform * glm::inverse(node->transformation) * nodeTransform;
             glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
             if (currentAnimation->getMeshes().size() > 0)
@@ -110,11 +109,11 @@ namespace kemena
                 {
                     if (currentAnimation->getMeshes().at(i)->getType() == kNodeType::NODE_TYPE_MESH)
                     {
-                        kMesh* childMesh = (kMesh*) currentAnimation->getMeshes().at(i);
+                        kMesh *childMesh = (kMesh *)currentAnimation->getMeshes().at(i);
 
-                        std::map<string, kBoneInfo>& boneInfoMap = childMesh->getBoneInfoMap();
+                        std::map<string, kBoneInfo> &boneInfoMap = childMesh->getBoneInfoMap();
 
-                        //std::cout << boneInfoMap.size() << std::endl;
+                        // std::cout << boneInfoMap.size() << std::endl;
 
                         if (boneInfoMap.find(nodeName) != boneInfoMap.end())
                         {
@@ -123,12 +122,11 @@ namespace kemena
 
                             finalBoneMatrices[index] = globalTransformation * offset;
 
-                            //std::cout << "Bone: " << nodeName << ", Offset: " << glm::to_string(offset) << std::endl;
+                            // std::cout << "Bone: " << nodeName << ", Offset: " << glm::to_string(offset) << std::endl;
 
-                            //std::cout << "offset: " << glm::to_string(offset) << std::endl;
-                            //std::cout << "parentTransform: " << glm::to_string(parentTransform) << ", nodeTransform: " << glm::to_string(nodeTransform) << std::endl;
-                            //std::cout << "name: " << nodeName << ", index: " << index << ", global trans: " << glm::to_string(globalTransformation) << ", offset: " << glm::to_string(offset) << ", matrix: " << glm::to_string(finalBoneMatrices[index]) << std::endl;
-
+                            // std::cout << "offset: " << glm::to_string(offset) << std::endl;
+                            // std::cout << "parentTransform: " << glm::to_string(parentTransform) << ", nodeTransform: " << glm::to_string(nodeTransform) << std::endl;
+                            // std::cout << "name: " << nodeName << ", index: " << index << ", global trans: " << glm::to_string(globalTransformation) << ", offset: " << glm::to_string(offset) << ", matrix: " << glm::to_string(finalBoneMatrices[index]) << std::endl;
                         }
                     }
                 }
@@ -138,14 +136,14 @@ namespace kemena
             {
                 calculateBoneTransform(&node->children[i], globalTransformation);
 
-                //std::cout << "i: " << i << ", globalTrans: " << glm::to_string(globalTransformation) << std::endl;
+                // std::cout << "i: " << i << ", globalTrans: " << glm::to_string(globalTransformation) << std::endl;
             }
         }
     }
 
     const std::vector<glm::mat4> kAnimator::getFinalBoneMatrices() const
     {
-        //std::cout << glm::to_string(finalBoneMatrices[0]) << std::endl;
+        // std::cout << glm::to_string(finalBoneMatrices[0]) << std::endl;
 
         /*for (size_t i = 0; i < finalBoneMatrices.size(); i++)
         {

@@ -2,10 +2,10 @@
 
 namespace kemena
 {
-    kAnimation::kAnimation(const std::string& animationPath, kMesh* newMesh)
+    kAnimation::kAnimation(const std::string &animationPath, kMesh *newMesh)
     {
         Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
+        const aiScene *scene = importer.ReadFile(animationPath, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
         assert(scene && scene->mRootNode);
 
         if (scene->mNumAnimations == 0)
@@ -20,21 +20,22 @@ namespace kemena
 
         setMesh(animation, newMesh);
 
-        //readMissingBones(animation, newMesh);
+        // readMissingBones(animation, newMesh);
 
-        //std::cout << "name: " << scene->mAnimations[0]->mName.data << ", duration: " << duration << ", ticksPerSecond: " << ticksPerSecond << std::endl;
+        // std::cout << "name: " << scene->mAnimations[0]->mName.data << ", duration: " << duration << ", ticksPerSecond: " << ticksPerSecond << std::endl;
     }
 
-    kBone* kAnimation::findBone(const std::string& name)
+    kBone *kAnimation::findBone(const std::string &name)
     {
         auto iter = std::find_if(bones.begin(), bones.end(),
-            [&](const kBone& bone)
-            {
-                return bone.getName() == name;
-            }
-        );
-        if (iter == bones.end()) return nullptr;
-        else return &(*iter);
+                                 [&](const kBone &bone)
+                                 {
+                                     return bone.getName() == name;
+                                 });
+        if (iter == bones.end())
+            return nullptr;
+        else
+            return &(*iter);
     }
 
     float kAnimation::getTicksPerSecond() const
@@ -47,12 +48,12 @@ namespace kemena
         return duration;
     }
 
-    const kAssimpNodeData& kAnimation::getRootNode() const
+    const kAssimpNodeData &kAnimation::getRootNode() const
     {
         return rootNode;
     }
 
-    void kAnimation::setMesh(const aiAnimation* animation, kMesh* newMesh)
+    void kAnimation::setMesh(const aiAnimation *animation, kMesh *newMesh)
     {
         meshes.push_back(newMesh);
         readMissingBones(animation, newMesh);
@@ -63,14 +64,14 @@ namespace kemena
             {
                 if (newMesh->getChildren().at(i)->getType() == kNodeType::NODE_TYPE_MESH)
                 {
-                    kMesh* childMesh = (kMesh*) newMesh->getChildren().at(i);
+                    kMesh *childMesh = (kMesh *)newMesh->getChildren().at(i);
                     setMesh(animation, childMesh);
                 }
             }
         }
     }
 
-    std::vector<kMesh*> kAnimation::getMeshes()
+    std::vector<kMesh *> kAnimation::getMeshes()
     {
         return meshes;
     }
@@ -85,14 +86,14 @@ namespace kemena
         return speed;
     }
 
-    void kAnimation::readMissingBones(const aiAnimation* animation, kMesh* setMesh)
+    void kAnimation::readMissingBones(const aiAnimation *animation, kMesh *setMesh)
     {
         // Only check actual meshes with vertices
         if (setMesh->getVertices().size() > 0)
         {
             size_t size = animation->mNumChannels;
 
-            std::map<string, kBoneInfo>& meshBoneInfoMap = setMesh->getBoneInfoMap();
+            std::map<string, kBoneInfo> &meshBoneInfoMap = setMesh->getBoneInfoMap();
             int boneCount = setMesh->getBoneCount();
 
             // Reading channels(bones engaged in an animation and their keyframes)
@@ -114,15 +115,15 @@ namespace kemena
                 }
                 bones.push_back(kBone(channel->mNodeName.data, meshBoneInfoMap[channel->mNodeName.data].id, channel));
 
-                //std::cout << "boneName: " << boneName << ", channel: " << channel << std::endl;
-                //std::cout << "id: " << meshBoneInfoMap[boneName].id << std::endl;
-                //std::cout << boneCount << std::endl;
+                // std::cout << "boneName: " << boneName << ", channel: " << channel << std::endl;
+                // std::cout << "id: " << meshBoneInfoMap[boneName].id << std::endl;
+                // std::cout << boneCount << std::endl;
             }
-            //std::cout << bones.size() << std::endl;
+            // std::cout << bones.size() << std::endl;
         }
     }
 
-    void kAnimation::readHierarchyData(kAssimpNodeData& dest, const aiNode* src)
+    void kAnimation::readHierarchyData(kAssimpNodeData &dest, const aiNode *src)
     {
         if (!src)
         {
@@ -138,7 +139,7 @@ namespace kemena
         for (unsigned int i = 0; i < src->mNumChildren; i++)
         {
             kAssimpNodeData newData;
-            readHierarchyData(newData, src->mChildren[i]);  // Pass updated parent transform
+            readHierarchyData(newData, src->mChildren[i]); // Pass updated parent transform
             dest.children.push_back(newData);
         }
     }

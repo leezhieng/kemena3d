@@ -27,32 +27,31 @@ namespace kemena
 {
     class KEMENA3D_API kShader
     {
-        public:
-            kShader();
-            virtual ~kShader();
+    public:
+        kShader();
+        virtual ~kShader();
 
-            std::string readFile(const std::string filePath);
-            void loadShadersFile(const std::string vertextShaderPath, const std::string fragmentShaderPath);
-            void loadShadersCode(const char* vertextShaderCode, const char* fragmentShaderCode);
-            void use();
-            void unuse();
+        std::string readFile(const std::string filePath);
+        void loadShadersFile(const std::string vertextShaderPath, const std::string fragmentShaderPath);
+        void loadShadersCode(const char *vertextShaderCode, const char *fragmentShaderCode);
+        void use();
+        void unuse();
 
-            void setShaderProgram(GLuint program);
-            GLuint getShaderProgram();
+        void setShaderProgram(GLuint program);
+        GLuint getShaderProgram();
 
-            void setValue(std::string name, std::vector<glm::mat4> value);
-            void setValue(std::string name, glm::mat4 value);
-            void setValue(std::string name, glm::vec3 value);
-            void setValue(std::string name, glm::vec2 value);
-            void setValue(std::string name, float value);
-            void setValue(std::string name, int value);
-            void setValue(std::string name, unsigned int value);
-            void setValue(std::string name, bool value);
+        void setValue(std::string name, std::vector<glm::mat4> value);
+        void setValue(std::string name, glm::mat4 value);
+        void setValue(std::string name, glm::vec3 value);
+        void setValue(std::string name, glm::vec2 value);
+        void setValue(std::string name, float value);
+        void setValue(std::string name, int value);
+        void setValue(std::string name, unsigned int value);
+        void setValue(std::string name, bool value);
 
-        protected:
-
-        private:
-            GLuint shaderProgram;
+    protected:
+    private:
+        GLuint shaderProgram;
     };
 }
 

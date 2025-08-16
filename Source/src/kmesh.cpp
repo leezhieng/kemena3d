@@ -2,7 +2,7 @@
 
 namespace kemena
 {
-    kMesh::kMesh(kObject* parentNode)
+    kMesh::kMesh(kObject *parentNode)
     {
         if (parentNode != nullptr)
             setParent(parentNode);
@@ -86,12 +86,12 @@ namespace kemena
         boneInfoMap = newBoneInfoMap;
     }
 
-    std::map<std::string, kBoneInfo>& kMesh::getBoneInfoMap()
+    std::map<std::string, kBoneInfo> &kMesh::getBoneInfoMap()
     {
         return boneInfoMap;
     }
 
-    int& kMesh::getBoneCount()
+    int &kMesh::getBoneCount()
     {
         return boneCount;
     }
@@ -171,12 +171,12 @@ namespace kemena
         return bitangents;
     }
 
-    void kMesh::addBoneID(const glm::ivec4& boneID)
+    void kMesh::addBoneID(const glm::ivec4 &boneID)
     {
         boneIDs.push_back(boneID);
     }
 
-    void kMesh::setBoneID(size_t vertexIndex, const glm::ivec4& boneID)
+    void kMesh::setBoneID(size_t vertexIndex, const glm::ivec4 &boneID)
     {
         if (vertexIndex < boneIDs.size())
         {
@@ -210,14 +210,14 @@ namespace kemena
         boneIDs = newBoneIDs;
     }
 
-    void kMesh::addWeight(const glm::vec4& weight)
+    void kMesh::addWeight(const glm::vec4 &weight)
     {
         weights.push_back(weight);
     }
 
-    void kMesh::setWeight(size_t vertexIndex, const glm::vec4& weight)
+    void kMesh::setWeight(size_t vertexIndex, const glm::vec4 &weight)
     {
-       if (vertexIndex < weights.size())
+        if (vertexIndex < weights.size())
         {
             weights[vertexIndex] = weight;
         }
@@ -291,87 +291,96 @@ namespace kemena
         glBindVertexArray(vao);
 
         // === Index Buffer ===
-        if (!indices.empty()) {
+        if (!indices.empty())
+        {
             glGenBuffers(1, &indicesEbo);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesEbo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
         }
 
         // === Vertex Position (location = 0) ===
-        if (!vertices.empty()) {
+        if (!vertices.empty())
+        {
             glGenBuffers(1, &vertexBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
         }
 
         // === Vertex Color (location = 1) ===
-        if (!vertexColors.empty()) {
+        if (!vertexColors.empty())
+        {
             glGenBuffers(1, &vertexColorBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffer);
             glBufferData(GL_ARRAY_BUFFER, vertexColors.size() * sizeof(glm::vec3), vertexColors.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
         }
 
         // === UV (location = 2) ===
-        if (!uvs.empty()) {
+        if (!uvs.empty())
+        {
             glGenBuffers(1, &uvBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
             glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), uvs.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
         }
 
         // === Normals (location = 3) ===
-        if (!normals.empty()) {
+        if (!normals.empty())
+        {
             glGenBuffers(1, &normalBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
             glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(3);
-            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
         }
 
         // === Tangents (location = 4) ===
-        if (!tangents.empty()) {
+        if (!tangents.empty())
+        {
             glGenBuffers(1, &tangentBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, tangentBuffer);
             glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(glm::vec3), tangents.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(4);
-            glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+            glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
         }
 
         // === Bitangents (location = 5) ===
-        if (!bitangents.empty()) {
+        if (!bitangents.empty())
+        {
             glGenBuffers(1, &bitangentBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, bitangentBuffer);
             glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(glm::vec3), bitangents.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(5);
-            glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+            glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
         }
 
         // === Bone IDs (location = 6) ===
-        if (!boneIDs.empty()) {
+        if (!boneIDs.empty())
+        {
             glGenBuffers(1, &boneIDBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, boneIDBuffer);
             glBufferData(GL_ARRAY_BUFFER, boneIDs.size() * sizeof(glm::ivec4), boneIDs.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(6);
-            glVertexAttribIPointer(6, 4, GL_INT, sizeof(glm::ivec4), (void*)0); // Integer pointer!
+            glVertexAttribIPointer(6, 4, GL_INT, sizeof(glm::ivec4), (void *)0); // Integer pointer!
         }
 
         // === Weights (location = 7) ===
-        if (!weights.empty()) {
+        if (!weights.empty())
+        {
             glGenBuffers(1, &weightBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, weightBuffer);
             glBufferData(GL_ARRAY_BUFFER, weights.size() * sizeof(glm::vec4), weights.data(), GL_STATIC_DRAW);
             glEnableVertexAttribArray(7);
-            glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void*)0);
+            glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void *)0);
         }
 
         // Clean up
-        glBindVertexArray(0); // Unbind VAO
-        glBindBuffer(GL_ARRAY_BUFFER, 0); // Optional
+        glBindVertexArray(0);                     // Unbind VAO
+        glBindBuffer(GL_ARRAY_BUFFER, 0);         // Optional
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Optional
 
         calculateModelMatrix();
@@ -385,10 +394,11 @@ namespace kemena
 
     void kMesh::draw()
     {
-        if (vao == 0 || indices.empty()) return;
+        if (vao == 0 || indices.empty())
+            return;
 
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, (void*)0);
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, (void *)0);
         glBindVertexArray(0); // Optional
     }
 
@@ -411,56 +421,43 @@ namespace kemena
             for (size_t j = 0; j < getScripts().size(); ++j)
             {
                 scriptsData.push_back({
-                                        {"uuid", getScripts().at(j).uuid},
-                                        {"active", getScripts().at(j).isActive},
-                                    });
+                    {"uuid", getScripts().at(j).uuid},
+                    {"active", getScripts().at(j).isActive},
+                });
             }
         }
 
         json data =
-        {
-            { "type", "mesh" },
-            { "uuid", getUuid() },
-            { "name", getName() },
-            { "active", getActive() },
-            { "visible", getVisible() },
-            { "static", getStatic() },
             {
-                "position",
-                {
-                    { "x", getPosition().x },
-                    { "y", getPosition().y },
-                    { "z", getPosition().z }
-                }
-            },
-            {
-                "rotation",
-                {
-                    { "x", getRotationEuler().x },
-                    { "y", getRotationEuler().y },
-                    { "z", getRotationEuler().z }
-                }
-            },
-            {
-                "scale",
-                {
-                    { "x", getScale().x },
-                    { "y", getScale().y },
-                    { "z", getScale().z }
-                }
-            },
-            { "children", childrenData },
-            { "script", scriptsData },
-            { "file_name", getFileName() },
-            { "reference", getRefName() },
-        };
+                {"type", "mesh"},
+                {"uuid", getUuid()},
+                {"name", getName()},
+                {"active", getActive()},
+                {"visible", getVisible()},
+                {"static", getStatic()},
+                {"position",
+                 {{"x", getPosition().x},
+                  {"y", getPosition().y},
+                  {"z", getPosition().z}}},
+                {"rotation",
+                 {{"x", getRotationEuler().x},
+                  {"y", getRotationEuler().y},
+                  {"z", getRotationEuler().z}}},
+                {"scale",
+                 {{"x", getScale().x},
+                  {"y", getScale().y},
+                  {"z", getScale().z}}},
+                {"children", childrenData},
+                {"script", scriptsData},
+                {"file_name", getFileName()},
+                {"reference", getRefName()},
+            };
 
         return data;
     }
 
     void kMesh::deserialize(json data)
     {
-
     }
 
     void kMesh::setStatic(bool newStatic)
@@ -515,7 +512,7 @@ namespace kemena
         throw std::runtime_error("Vertex already reached maximum bone influences.");
     }
 
-    void kMesh::setAnimator(kAnimator* newAnimator)
+    void kMesh::setAnimator(kAnimator *newAnimator)
     {
         animator = newAnimator;
         setSkinned(true);
@@ -526,16 +523,16 @@ namespace kemena
             {
                 if (getChildren().at(i)->getType() == NODE_TYPE_MESH)
                 {
-                    kMesh* childMesh = (kMesh*) getChildren().at(i);
+                    kMesh *childMesh = (kMesh *)getChildren().at(i);
 
-                    //childMesh->setAnimator(animator);
+                    // childMesh->setAnimator(animator);
                     childMesh->setSkinned(true);
                 }
             }
         }
     }
 
-    kAnimator* kMesh::getAnimator()
+    kAnimator *kMesh::getAnimator()
     {
         return animator;
     }

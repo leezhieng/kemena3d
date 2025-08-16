@@ -2,7 +2,7 @@
 
 namespace kemena
 {
-    kObject::kObject(kObject* parentNode)
+    kObject::kObject(kObject *parentNode)
     {
         if (parentNode != nullptr)
             setParent(parentNode);
@@ -21,18 +21,18 @@ namespace kemena
     {
     }
 
-    kObject* kObject::getParent()
+    kObject *kObject::getParent()
     {
         return parent;
     }
 
-    void kObject::setParent(kObject* newParent)
+    void kObject::setParent(kObject *newParent)
     {
         parent = newParent;
         parent->children.push_back(this);
     }
 
-    std::vector<kObject*> kObject::getChildren()
+    std::vector<kObject *> kObject::getChildren()
     {
         return children;
     }
@@ -182,7 +182,7 @@ namespace kemena
 
     glm::vec3 kObject::getGlobalPosition()
     {
-        //return globalPosition;
+        // return globalPosition;
 
         glm::vec3 globalPos = glm::vec3(worldTransform[3]);
 
@@ -191,7 +191,7 @@ namespace kemena
 
     glm::quat kObject::getGlobalRotation()
     {
-        //return glm::normalize(globalRotation);
+        // return glm::normalize(globalRotation);
 
         // Extract global scale
         glm::vec3 globalSc = glm::vec3(
@@ -204,8 +204,7 @@ namespace kemena
         glm::mat3 rotationMat = glm::mat3(
             glm::vec3(worldTransform[0]) / globalSc.x,
             glm::vec3(worldTransform[1]) / globalSc.y,
-            glm::vec3(worldTransform[2]) / globalSc.z
-        );
+            glm::vec3(worldTransform[2]) / globalSc.z);
 
         // Convert to quaternion
         glm::quat globalRot = glm::normalize(glm::quat_cast(rotationMat));
@@ -215,7 +214,7 @@ namespace kemena
 
     glm::vec3 kObject::getGlobalScale()
     {
-        //return globalScale;
+        // return globalScale;
 
         // Extract global scale
         glm::vec3 globalSc = glm::vec3(
@@ -227,7 +226,7 @@ namespace kemena
         return globalSc;
     }
 
-    void kObject::setMaterial(kMaterial* newMaterial, bool setChildren)
+    void kObject::setMaterial(kMaterial *newMaterial, bool setChildren)
     {
         material = newMaterial;
 
@@ -243,7 +242,7 @@ namespace kemena
         }
     }
 
-    kMaterial* kObject::getMaterial()
+    kMaterial *kObject::getMaterial()
     {
         return material;
     }
@@ -288,7 +287,7 @@ namespace kemena
             // Vertices
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, iconVertexBuffer);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -317,51 +316,38 @@ namespace kemena
             for (size_t j = 0; j < getScripts().size(); ++j)
             {
                 scriptsData.push_back({
-                                        {"uuid", getScripts().at(j).uuid},
-                                        {"active", getScripts().at(j).isActive},
-                                    });
+                    {"uuid", getScripts().at(j).uuid},
+                    {"active", getScripts().at(j).isActive},
+                });
             }
         }
 
         json data =
-        {
-            { "type", "object" },
-            { "uuid", getUuid() },
-            { "name", getName() },
-            { "active", getActive() },
             {
-                "position",
-                {
-                    { "x", getPosition().x },
-                    { "y", getPosition().y },
-                    { "z", getPosition().z }
-                }
-            },
-            {
-                "rotation",
-                {
-                    { "x", getRotationEuler().x },
-                    { "y", getRotationEuler().y },
-                    { "z", getRotationEuler().z }
-                }
-            },
-            {
-                "scale",
-                {
-                    { "x", getScale().x },
-                    { "y", getScale().y },
-                    { "z", getScale().z }
-                }
-            },
-            { "children", childrenData },
-            { "script", scriptsData },
-        };
+                {"type", "object"},
+                {"uuid", getUuid()},
+                {"name", getName()},
+                {"active", getActive()},
+                {"position",
+                 {{"x", getPosition().x},
+                  {"y", getPosition().y},
+                  {"z", getPosition().z}}},
+                {"rotation",
+                 {{"x", getRotationEuler().x},
+                  {"y", getRotationEuler().y},
+                  {"z", getRotationEuler().z}}},
+                {"scale",
+                 {{"x", getScale().x},
+                  {"y", getScale().y},
+                  {"z", getScale().z}}},
+                {"children", childrenData},
+                {"script", scriptsData},
+            };
 
         return data;
     }
 
     void kObject::deserialize(json data)
     {
-
     }
 }
