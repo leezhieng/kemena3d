@@ -963,6 +963,11 @@ namespace kemena
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, newWidth, newHeight);
     }
 
+    GLuint kRenderer::getFboTexture()
+    {
+        return fboTexColor;
+    }
+
     float kRenderer::srgbToLinear(float c)
     {
         return (c <= 0.04045) ? (c / 12.92) : pow((c + 0.055) / 1.055, 2.4);

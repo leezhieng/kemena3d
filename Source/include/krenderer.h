@@ -72,6 +72,7 @@ namespace kemena
         SDL_GLContext getOpenGlContext();
 
         void resizeFbo(int newWidth, int newHeight);
+        GLuint getFboTexture();
 
         float srgbToLinear(float c);
         vec3 idToRgb(unsigned int i);
