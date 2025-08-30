@@ -28,6 +28,7 @@ namespace kemena
         int getWindowWidth();
         int getWindowHeight();
         std::string getWindowTitle();
+        void setWindowTitle(std::string newTitle);
 
         SDL_Window *getSdlWindow();
 

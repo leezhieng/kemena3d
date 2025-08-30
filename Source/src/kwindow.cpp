@@ -87,6 +87,12 @@ namespace kemena
     {
         return windowTitle;
     }
+	
+	void kWindow::setWindowTitle(std::string newTitle)
+	{
+		windowTitle = newTitle;
+		SDL_SetWindowTitle(sdlWindow, newTitle.c_str());
+	}
 
     bool kWindow::getRunning()
     {
