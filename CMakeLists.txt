@@ -48,9 +48,16 @@ add_library(kemena3d ${SRC_FILES} ${HEADER_FILES} ${ANGELSCRIPT_SRC} ${ANGELSCRI
 set_target_properties(kemena3d PROPERTIES
     VERSION ${PROJECT_VERSION}
     PUBLIC_HEADER "${HEADER_FILES}"
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Output/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Output/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Output/lib"
+
+    # Debug build output
+    ARCHIVE_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/Output/lib/Debug"
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/Output/lib/Debug"
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/Output/lib/Debug"
+
+    # Release build output
+    ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Output/lib/Release"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Output/lib/Release"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/Output/lib/Release"
 )
 
 # Include directories
@@ -69,12 +76,11 @@ target_include_directories(kemena3d
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include
 )
 
-# Link directories if needed
+# Link directories (per-config)
 link_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl
-	${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/cmake
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/build_$<CONFIG>
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/build_$<CONFIG>
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_$<CONFIG>
 )
 
 # Definitions and static linking behavior
@@ -114,10 +120,19 @@ endif()
 # Link libraries
 target_link_libraries(kemena3d
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/cmake/libangelscript.dll.a
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/libSDL3.dll.a
+		$<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/build_Debug/libangelscript.dll.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/build_Release/libangelscript.dll.a
+        >
+		$<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/build_Debug/libSDL3.dll.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/build_Release/libSDL3.dll.a
+        >
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_Debug/libassimp.dll.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_Release/libassimp.dll.a
+        >
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/${GLEW_LIB}.lib
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/libassimp.dll.a
 )
 
 # Suppress some noisy warnings
@@ -128,59 +143,79 @@ if (MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT kemena3d)
 endif()
 
-# Install targets and headers
+include(GNUInstallDirs) # defines CMAKE_INSTALL_INCLUDEDIR=include, LIBDIR=lib
+
+# Install libraries → into lib/<CONFIG>
 install(TARGETS kemena3d
     EXPORT kemena3dTargets
-    ARCHIVE DESTINATION Output/lib
-    LIBRARY DESTINATION Output/lib
-    RUNTIME DESTINATION Output/lib
-    PUBLIC_HEADER DESTINATION Output/include/kemena
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION lib
+    PUBLIC_HEADER DESTINATION include/kemena
 )
 
-# Install headers
+# Headers (always into Output/include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/
-        DESTINATION Output/include FILES_MATCHING PATTERN "*.h")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/
-        DESTINATION Output/include/backends FILES_MATCHING PATTERN "*.h")
+    DESTINATION include FILES_MATCHING PATTERN "*.h*"
+)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/backends/
-        DESTINATION Output/include/backends FILES_MATCHING PATTERN "*.h")
+    DESTINATION include/backends FILES_MATCHING PATTERN "*.h*"
+)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/include/
-        DESTINATION Output/include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+    DESTINATION include FILES_MATCHING PATTERN "*.h*"
+)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/add_on/
-        DESTINATION Output/include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+    DESTINATION include FILES_MATCHING PATTERN "*.h*"
+)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/include/SDL3/
-        DESTINATION Output/include/SDL3 FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+    DESTINATION include/SDL3 FILES_MATCHING PATTERN "*.h*"
+)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/include/GL/
-        DESTINATION Output/include/GL FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+    DESTINATION include/GL FILES_MATCHING PATTERN "*.h*"
+)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include/assimp/
-        DESTINATION Output/include/assimp FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl")
+    DESTINATION include/assimp FILES_MATCHING PATTERN "*.h*" PATTERN "*.inl"
+)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glm/glm/
-        DESTINATION Output/include/glm FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl")
+    DESTINATION include/glm FILES_MATCHING PATTERN "*.h*" PATTERN "*.inl"
+)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/stb/
-        DESTINATION Output/include/stb FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt/
-#        DESTINATION Output/include/jolt FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+    DESTINATION include/stb FILES_MATCHING PATTERN "*.h*"
+)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include/nlohmann/
-        DESTINATION Output/include/nlohmann FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+    DESTINATION include/nlohmann FILES_MATCHING PATTERN "*.h*"
+)
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt/
+#	DESTINATION Output/include/jolt FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/include/
-#        DESTINATION Output/include/recast/Recast FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+#	DESTINATION Output/include/recast/Recast FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/include/
-#        DESTINATION Output/include/recast/Detour FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+#	DESTINATION Output/include/recast/Detour FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 
-# Install dependency libs
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/
-        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/cmake/
-        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/
-        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/
-        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/
-        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/
-#        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/
-#        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/
-#        DESTINATION Output/lib FILES_MATCHING PATTERN "*.lib" PATTERN "*.dll" PATTERN "*.a")
+# Dependency libs (per-config into Output/lib/{Debug,Release})
+file(GLOB_RECURSE LIBS_DEBUG
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/**/build_Debug/*.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/**/build_Debug/*.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/**/build_Debug/*.dll"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/**/build_Debug/*.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/**/build_Debug/*.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/**/build_Debug/*.dll"
+)
+file(GLOB_RECURSE LIBS_RELEASE
+	"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/**/build_Release/*.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/**/build_Release/*.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/**/build_Release/*.dll"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/**/build_Release/*.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/**/build_Release/*.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/angelscript/angelscript/projects/**/build_Release/*.dll"
+)
+install(FILES ${LIBS_DEBUG}   DESTINATION lib   CONFIGURATIONS Debug)
+install(FILES ${LIBS_RELEASE} DESTINATION lib	CONFIGURATIONS Release)
+
+# GLEW is special (not per-config, it’s in Release/x64)
+file(GLOB GLEW_LIBS
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/*.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/*.dll
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/*.a
+)
+install(FILES ${GLEW_LIBS} DESTINATION lib)

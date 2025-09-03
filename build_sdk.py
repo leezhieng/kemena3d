@@ -31,17 +31,21 @@ def choose(prompt, options: dict):
     return choice
 
 def build_with_cmake(generator, build_mode, args):
-    print(f"=== Building Kemena3D SDK ({build_mode}) ===")
-
-    if not Path("CMakeLists.txt").exists():
-        raise FileNotFoundError("CMakeLists.txt not found")
+    build_dir = f"build_{build_mode}"
+    install_prefix = os.path.join(os.getcwd(), f"Output/{build_mode}")
 
     # Configure
-    run_cmd(f'cmake -S . -B build -G "{generator}" -DCMAKE_INSTALL_PREFIX={os.getcwd()} {args}')
+    run_cmd(
+        f'cmake -S . -B {build_dir} -G "{generator}" '
+        f'-DCMAKE_INSTALL_PREFIX={install_prefix} '
+        f'-DCMAKE_BUILD_TYPE={build_mode} {args}'
+    )
+
     # Build
-    run_cmd(f'cmake --build build --config {build_mode}')
+    run_cmd(f'cmake --build {build_dir} --config {build_mode}')
+
     # Install
-    run_cmd(f'cmake --install build --config {build_mode}')
+    run_cmd(f'cmake --install {build_dir} --config {build_mode}')
 
     print("[SUCCESS] Kemena3D SDK built and installed successfully.")
 

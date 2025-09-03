@@ -68,3 +68,5 @@ glew
 glm
 jolt
 Output
+build_Debug
+build_Release
