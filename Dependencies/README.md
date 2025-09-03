@@ -21,26 +21,26 @@ If you need to build Kemena3D using multiple compilers:
 ## Windows
 
 ### 1. Visual Studio 2022 (Community Edition)
-- Run: `download_dep_windows.bat`
+- Run: `download_dep.py`
 - Choose **option 1** for compiler
 
 ### 2. MinGW (Minimalist GNU for Windows)
-- Run: `download_dep_windows.bat`
+- Run: `download_dep.py`
 - Choose **option 2** for compiler
 
 ## Linux
 
 ### 1. GCC
-- Run: `download_dep_linux.command`
+- Run: `download_dep.py`
 
 ## macOS
 
 ### 1. Xcode (Clang/LLVM from Command Line Tools)
-- Run: `download_dep_mac.command`
+- Run: `download_dep.py`
 - Choose **option 1** for compiler
 
 ### 2. GCC (via Homebrew or custom install)
-- Run: `download_dep_mac.command`
+- Run: `download_dep.py`
 - Choose **option 2** for compiler
 
 # Dependency Information
@@ -73,12 +73,12 @@ The automated batch script performs its tasks using the configurations below.  I
 - **Build Required (Windows)**: ❌ No
 - **Build Required (macOS)**: ✅ Yes
 
-### Recast Navigation
+### Dear Imgui
 
-- **Website**: [Recast GitHub](https://github.com/recastnavigation/recastnavigation)  
-- **Version**: `1.6.0`  
-- **Download**: [v1.6.0.zip](https://github.com/recastnavigation/recastnavigation/archive/refs/tags/v1.6.0.zip)  
-- **Extract to**: `recast`  
+- **Website**: [Dear Imgui GitHub](https://github.com/ocornut/imgui.git)  
+- **Branch**: `docking`  
+- **Git Clone**: `https://github.com/ocornut/imgui.git`  
+- **Extract to**: `imgui`  
 - **Build Required**: ✅ Yes
 
 ### Assimp
@@ -105,10 +105,18 @@ The automated batch script performs its tasks using the configurations below.  I
 - **Extract to**: `nlohmann`  
 - **Build Required**: ❌ No
 
-### Jolt Physics
+### Jolt Physics (Not enabled for now)
 
 - **Website**: [JoltPhysics GitHub](https://github.com/jrouwe/JoltPhysics)  
 - **Version**: `5.3.0`  
 - **Download**: [v5.3.0.zip](https://github.com/jrouwe/JoltPhysics/archive/refs/tags/v5.3.0.zip)  
 - **Extract to**: `jolt`  
+- **Build Required**: ✅ Yes
+
+### Recast Navigation (Not enabled for now)
+
+- **Website**: [Recast GitHub](https://github.com/recastnavigation/recastnavigation)  
+- **Version**: `1.6.0`  
+- **Download**: [v1.6.0.zip](https://github.com/recastnavigation/recastnavigation/archive/refs/tags/v1.6.0.zip)  
+- **Extract to**: `recast`  
 - **Build Required**: ✅ Yes
