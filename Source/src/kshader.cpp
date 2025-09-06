@@ -114,7 +114,7 @@ namespace kemena
         glDeleteShader(fragmentShader);
     }
 
-    void kShader::loadShadersCode(const char* vertextShaderCode, const char* fragmentShaderCode)
+    void kShader::loadShadersCode(const char* vertexShaderCode, const char* fragmentShaderCode)
     {
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -123,11 +123,11 @@ namespace kemena
         int logLength;
 
         // Read shaders
-        if (vertextShaderCode && strlen(vertextShaderCode) > 0)
+        if (vertexShaderCode && strlen(vertexShaderCode) > 0)
         {
             // Compile vertex shader
             //std::cout << "Compiling vertex shader." << std::endl;
-            glShaderSource(vertexShader, 1, &vertextShaderCode, nullptr);
+            glShaderSource(vertexShader, 1, &vertexShaderCode, nullptr);
             glCompileShader(vertexShader);
 
             // Check vertex shader
@@ -138,7 +138,7 @@ namespace kemena
             {
                 std::vector<char> shaderError((logLength > 1) ? logLength : 1);
                 glGetShaderInfoLog(vertexShader, logLength, nullptr, &shaderError[0]);
-                std::cout << "Vertex Shader Error: " << &shaderError[0] << "(" << vertextShaderCode << ")" << std::endl;
+                std::cout << "Vertex Shader Error: " << &shaderError[0] << "(" << vertexShaderCode << ")" << std::endl;
             }
         }
 
@@ -165,7 +165,7 @@ namespace kemena
         //std::cout << "Linking program" << std::endl;
         shaderProgram = glCreateProgram();
 
-        if (vertextShaderCode && strlen(vertextShaderCode) > 0)
+        if (vertexShaderCode && strlen(vertexShaderCode) > 0)
         {
             glAttachShader(shaderProgram, vertexShader);
         }

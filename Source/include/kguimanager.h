@@ -23,6 +23,8 @@ namespace kemena
 
 		void init(kRenderer *newRenderer);
 		void processEvent(kSystemEvent event);
+		
+		void loadDefaultFontFromResource(string resourceName);
 
 		void canvasStart();
 		void canvasEnd();

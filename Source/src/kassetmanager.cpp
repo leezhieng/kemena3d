@@ -70,6 +70,31 @@ namespace kemena
             return filePath.substr(0, filePath.find_last_of("/\\"));
         return "";
     }
+	
+	unsigned char* kAssetManager::loadImageFromResource(const char* resourceName, int& width, int& height, int& channels)
+	{
+		// Find the resource
+		HRSRC hRes = FindResource(NULL, resourceName, RT_RCDATA);
+		if (!hRes) return nullptr;
+
+		// Load the resource
+		HGLOBAL hData = LoadResource(NULL, hRes);
+		if (!hData) return nullptr;
+
+		// Get size and pointer
+		DWORD size = SizeofResource(NULL, hRes);
+		void* pData = LockResource(hData);
+
+		// Let stb_image decode from memory
+		unsigned char* data = stbi_load_from_memory(
+			reinterpret_cast<unsigned char*>(pData),
+			size,
+			&width, &height, &channels,
+			0
+		);
+
+		return data;
+	}
 
     kTexture2D *kAssetManager::loadTexture2D(const std::string fileName, const std::string textureName, const kTextureFormat format, const bool flipVertical, const bool keepData)
     {
@@ -82,7 +107,7 @@ namespace kemena
         if (flipVertical)
             stbi_set_flip_vertically_on_load(true);
 
-        unsigned char *data = stbi_load(fileName.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        unsigned char *data = stbi_load(fileName.c_str(), &width, &height, &channels, 0);
 
         GLuint textureID;
         glGenTextures(1, &textureID);
@@ -150,6 +175,63 @@ namespace kemena
         {
             data = stbi_load_from_memory(reinterpret_cast<unsigned char *>(rawData->pcData), rawData->mWidth * rawData->mHeight, &width, &height, &channels, 0);
         }
+
+        GLuint textureID;
+        glGenTextures(1, &textureID);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        if (data)
+        {
+            if (format == kTextureFormat::TEX_FORMAT_RGB)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            else if (format == kTextureFormat::TEX_FORMAT_RGBA)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            else if (format == kTextureFormat::TEX_FORMAT_SRGB)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            else if (format == kTextureFormat::TEX_FORMAT_SRGBA)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+        else
+        {
+            std::cout << "Failed to load texture from memory" << std::endl;
+        }
+
+        kTexture2D *texture = new kTexture2D();
+        texture->setTextureID(textureID);
+
+        texture->setWidth(width);
+        texture->setHeight(height);
+        texture->setChannels(channels);
+        texture->setTextureName(textureName);
+
+        // Normally no need keep the data unless you need it to modify or export the texture again later
+        if (keepData)
+            texture->setData(data);
+        else
+            stbi_image_free(data);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return texture;
+    }
+	
+	kTexture2D *kAssetManager::loadTexture2DFromResource(const std::string resourceName, const std::string textureName, const kTextureFormat format, const bool flipVertical, const bool keepData)
+    {
+        int width;
+        int height;
+        int channels;
+
+        if (flipVertical)
+            stbi_set_flip_vertically_on_load(true);
+		
+		unsigned char* data = loadImageFromResource(resourceName.c_str(), width, height, channels);
 
         GLuint textureID;
         glGenTextures(1, &textureID);
@@ -266,6 +348,57 @@ namespace kemena
 
         return newTexture;
     }
+	
+	kTextureCube* kAssetManager::loadTextureCubeFromResource(const std::string resRight, const std::string resLeft, const std::string resTop, const std::string resBottom, const std::string resFront, const std::string resBack, const std::string textureName)
+	{
+		std::vector<std::string> faces;
+		faces.push_back(resRight);
+		faces.push_back(resLeft);
+		faces.push_back(resTop);
+		faces.push_back(resBottom);
+		faces.push_back(resFront);
+		faces.push_back(resBack);
+
+		unsigned int textureID;
+		glGenTextures(1, &textureID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+		int width, height, nrChannels;
+		for (unsigned int i = 0; i < faces.size(); i++)
+		{
+			unsigned char* data = loadImageFromResource(faces[i].c_str(), width, height, nrChannels);
+			if (data)
+			{
+				glTexImage2D(
+					GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+					0, GL_SRGB8,
+					width, height,
+					0, GL_RGB, GL_UNSIGNED_BYTE,
+					data
+				);
+				stbi_image_free(data);
+			}
+			else
+			{
+				std::cout << "Cubemap tex failed to load from resource: " << faces[i] << std::endl;
+			}
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+		kTextureCube* newTexture = new kTextureCube();
+		newTexture->setType(kTextureType::TEX_TYPE_CUBE);
+		newTexture->setTextureID(textureID);
+		newTexture->setTextureName(textureName);
+
+		return newTexture;
+	}
 
     kMesh *kAssetManager::loadMesh(const std::string fileName)
     {
@@ -660,7 +793,7 @@ namespace kemena
         }
     }
 
-    kShader *kAssetManager::createShaderByFile(std::string vertexShaderPath, std::string fragmentShaderPath)
+    kShader *kAssetManager::loadShaderFromFile(std::string vertexShaderPath, std::string fragmentShaderPath)
     {
         kShader *shader = new kShader();
         shader->loadShadersFile(vertexShaderPath, fragmentShaderPath);
@@ -670,7 +803,7 @@ namespace kemena
         return shader;
     }
 
-    kShader *kAssetManager::createShaderByCode(std::string vertexShaderCode, std::string fragmentShaderCode)
+    kShader *kAssetManager::loadShaderFromCode(std::string vertexShaderCode, std::string fragmentShaderCode)
     {
         kShader *shader = new kShader();
         shader->loadShadersCode(vertexShaderCode.c_str(), fragmentShaderCode.c_str());
@@ -679,6 +812,42 @@ namespace kemena
 
         return shader;
     }
+	
+	kShader *kAssetManager::loadShaderFromResource(std::string vertexShaderName, std::string fragmentShaderName)
+	{
+		// --- Vertex shader ---
+		HRSRC vRes = FindResource(NULL, vertexShaderName.c_str(), RT_RCDATA);
+		if (!vRes) return nullptr;
+
+		HGLOBAL vhData = LoadResource(NULL, vRes);
+		if (!vhData) return nullptr;
+
+		DWORD vsize = SizeofResource(NULL, vRes);
+		void* vpData = LockResource(vhData);
+
+		// Copy into std::string to ensure null-terminated
+		std::string vertexShaderCode(reinterpret_cast<const char*>(vpData), vsize);
+
+		// --- Fragment shader ---
+		HRSRC fRes = FindResource(NULL, fragmentShaderName.c_str(), RT_RCDATA);
+		if (!fRes) return nullptr;
+
+		HGLOBAL fhData = LoadResource(NULL, fRes);
+		if (!fhData) return nullptr;
+
+		DWORD fsize = SizeofResource(NULL, fRes);
+		void* fpData = LockResource(fhData);
+
+		std::string fragmentShaderCode(reinterpret_cast<const char*>(fpData), fsize);
+
+		// --- Build shader ---
+		kShader *shader = new kShader();
+		shader->loadShadersCode(vertexShaderCode.c_str(), fragmentShaderCode.c_str());
+
+		shaders.push_back(shader);
+
+		return shader;
+	}
 
     kMaterial *kAssetManager::createMaterial(kShader *shader)
     {

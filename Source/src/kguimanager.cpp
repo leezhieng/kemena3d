@@ -55,6 +55,31 @@ namespace kemena
 	{
 		ImGui_ImplSDL3_ProcessEvent(event.getSdlEvent());
 	}
+	
+	void kGuiManager::loadDefaultFontFromResource(string resourceName)
+	{
+		HRSRC hRes = FindResource(NULL, resourceName.c_str(), RT_RCDATA);
+		if (!hRes) return;
+
+		HGLOBAL hData = LoadResource(NULL, hRes);
+		if (!hData) return;
+
+		void* pData = LockResource(hData);
+		DWORD size = SizeofResource(NULL, hRes);
+
+		if (pData && size > 0)
+		{
+			// Safer: copy into your own buffer because ImGui may rebuild fonts later
+			void* fontData = malloc(size);
+			memcpy(fontData, pData, size);
+
+			ImGuiIO& io = ImGui::GetIO();
+			io.Fonts->AddFontFromMemoryTTF(fontData, size, 16.0f);
+
+			// You must keep fontData alive as long as ImGui needs it
+			// Free after ImGui::DestroyContext()
+		}
+	}
 
 	void kGuiManager::canvasStart()
 	{

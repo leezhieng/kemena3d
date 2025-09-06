@@ -79,8 +79,24 @@ namespace kemena
     {
         return appWindow;
     }
+	
+	void kRenderer::clear()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    void kRenderer::render(kScene *scene, int x, int y, int width, int height, float deltaTime, bool swapWindow)
+        if (enableScreenBuffer)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+            glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
+        }
+		
+		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+    void kRenderer::render(kScene *scene, int x, int y, int width, int height, float deltaTime, bool autoClearSwapWindow)
     {
         if (frameId > 999999999999)
             frameId = 0;
@@ -140,8 +156,11 @@ namespace kemena
         glEnable(GL_DEPTH_TEST);
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // Ask for nicest perspective correction
 
-        glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		if (autoClearSwapWindow)
+		{
+			glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
 
         if (scene->getMainCamera() != nullptr)
         {
@@ -270,7 +289,7 @@ namespace kemena
         // Must call this in the end to make it render
         glBindVertexArray(0);
 
-        if (swapWindow && appWindow != nullptr)
+        if (autoClearSwapWindow && appWindow != nullptr)
         {
             appWindow->swap();
         }

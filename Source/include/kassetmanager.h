@@ -25,6 +25,9 @@
 #include "kanimation.h"
 #include "kanimator.h"
 
+// Windows only
+#include <windows.h>
+
 namespace kemena
 {
     class kAssetManager
@@ -39,11 +42,15 @@ namespace kemena
         std::string getExecDir();
         std::string popDir(const std::string &filePath);
 
+		unsigned char* loadImageFromResource(const char* resourceName, int& width, int& height, int& channels);
+
         kTexture2D *loadTexture2D(const std::string fileName, const std::string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
         kTexture2D *loadTexture2DFromMemory(const aiTexture *rawData, const std::string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
-        void saveTexture2D(kTexture2D *texture, const std::string fileName, std::string format);
+        kTexture2D *loadTexture2DFromResource(const std::string resourceName, const std::string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
+		void saveTexture2D(kTexture2D *texture, const std::string fileName, std::string format);
 
         kTextureCube *loadTextureCube(const std::string fileNameRight, const std::string fileNameLeft, const std::string fileNameTop, const std::string fileNameBottom, const std::string fileNameFront, const std::string fileNameBack, const std::string textureName);
+		kTextureCube *loadTextureCubeFromResource(const std::string resRight, const std::string resLeft, const std::string resTop, const std::string resBottom, const std::string resFront, const std::string resBack, const std::string textureName);
 
         kMesh *loadMesh(const std::string fileName);
         kMesh *loadMeshFileAssimp(const std::string fileName);
@@ -56,8 +63,10 @@ namespace kemena
         void extractBoneWeightForVertices(kMesh *mesh, aiMesh *meshData, const aiScene *scene);
         void setVertexBoneData(kMesh *mesh, size_t vertexID, int boneID, float weight);
 
-        kShader *createShaderByFile(std::string vertexShaderPath, std::string fragmentShaderPath);
-        kShader *createShaderByCode(std::string vertexShaderCode, std::string fragmentShaderCode);
+        kShader *loadShaderFromFile(std::string vertexShaderPath, std::string fragmentShaderPath);
+        kShader *loadShaderFromCode(std::string vertexShaderCode, std::string fragmentShaderCode);
+        kShader *loadShaderFromResource(std::string vertexShaderName, std::string fragmentShaderName);
+		
         kMaterial *createMaterial(kShader *shader);
 
         kAnimation *loadAnimation(const std::string fileName, kMesh *mesh);

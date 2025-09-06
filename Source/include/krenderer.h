@@ -51,7 +51,8 @@ namespace kemena
 
         kWindow *getWindow();
 
-        void render(kScene *scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool swapWindow = true);
+		void clear();
+        void render(kScene *scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool autoClearSwapWindow = true);
 
         glm::vec4 getClearColor();
         void setClearColor(glm::vec4 newColor);
