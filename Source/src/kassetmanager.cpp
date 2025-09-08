@@ -400,6 +400,14 @@ namespace kemena
 		return newTexture;
 	}
 
+	// You need to tell what's the extension of the file (obj, fbx, gltf, glb, etc.)
+	kMesh *kAssetManager::loadMeshFromResource(const std::string resourceName, const std::string extention)
+    {
+		std::cout << "Load mesh from resource: " << resourceName << std::endl;
+		
+		return loadMeshResourceAssimp(resourceName, extention);
+    }
+
     kMesh *kAssetManager::loadMesh(const std::string fileName)
     {
         std::cout << "Load mesh: " << fileName << std::endl;
@@ -525,12 +533,80 @@ namespace kemena
         // return model;
         return rootMesh;
     }
+	
+	kMesh* kAssetManager::loadMeshResourceAssimp(const string resourceName, const std::string extention)
+	{
+		kMesh *rootMesh;
+
+		unsigned int assimpReadFlag = aiProcess_Triangulate |
+                                      aiProcess_FlipUVs |
+                                      aiProcess_GenSmoothNormals |
+                                      aiProcess_CalcTangentSpace |
+                                      aiProcess_JoinIdenticalVertices |
+                                      aiProcess_LimitBoneWeights |
+                                      aiProcess_ImproveCacheLocality |
+                                      aiProcess_RemoveRedundantMaterials |
+                                      aiProcess_FixInfacingNormals |
+                                      aiProcess_TransformUVCoords |
+                                      aiProcess_SortByPType;
+
+		// Find and load resource
+		HRSRC hRes = FindResource(NULL, resourceName.c_str(), RT_RCDATA);
+		if (!hRes)
+		{
+			std::cerr << "Failed to find resource " << resourceName << std::endl;
+			return nullptr;
+		}
+
+		HGLOBAL hResData = LoadResource(NULL, hRes);
+		DWORD size = SizeofResource(NULL, hRes);
+		void* pResData = LockResource(hResData);
+
+		if (!pResData || size == 0)
+		{
+			std::cerr << "Failed to load resource " << resourceName << std::endl;
+			return nullptr;
+		}
+		
+		std::cout << "Loaded resource: " << resourceName << " (size=" << size << " bytes)" << std::endl;
+
+		//std::string objData((const char*)pResData, size);
+		//std::cout << "Mesh content:\n" << objData << std::endl;
+
+		Assimp::Importer import;
+		import.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+
+		// Use ReadFileFromMemory instead of ReadFile
+		const aiScene* scene = import.ReadFileFromMemory(pResData, size, assimpReadFlag, extention.c_str());
+		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+		{
+			std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
+			return nullptr;
+		}
+		
+		if (scene && scene->HasMeshes())
+		{
+			std::cout << "Loaded mesh count: " << scene->mNumMeshes << std::endl;
+			for (unsigned int i = 0; i < scene->mNumMeshes; i++)
+			{
+				std::cout << "Mesh " << i << ": vertices=" << scene->mMeshes[i]->mNumVertices
+						  << " faces=" << scene->mMeshes[i]->mNumFaces << std::endl;
+			}
+		}
+		else
+		{
+			std::cout << "Scene has no meshes!" << std::endl;
+		}
+
+		rootMesh = processNode(scene->mRootNode, scene, nullptr);
+		return rootMesh;
+	}
 
     kMesh *kAssetManager::processNode(aiNode *node, const aiScene *scene, kMesh *parent)
     {
         kMesh *newMesh;
 
-        // std::cout << "Mesh count:" << node->mNumMeshes << std::endl;
+        //std::cout << "Mesh count:" << node->mNumMeshes << std::endl;
 
         if (node->mNumMeshes > 0)
         {
@@ -562,6 +638,8 @@ namespace kemena
                 }
             }
         }
+		
+		//std::cout << newMesh->getVertices().size() << std::endl;
 
         return newMesh;
     }

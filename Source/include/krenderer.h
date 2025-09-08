@@ -103,7 +103,9 @@ namespace kemena
         kShader *screenShader = nullptr;
         GLuint quadVao, quadVbo, quadEbo;
         GLuint fbo, fboTexColor, rboDepth;
-        GLuint fboMsaa, fboTexColorMsaa, rboMsaa;
+        GLuint fboMsaa, fboTexColorMsaa, rboMsaa, rboDepthMsaa;
+		
+		int fboWidth, fboHeight; // FBO may not be the same size as the window, saved but not in use now
 
         // Shadow FBO
         bool enableShadow = false;

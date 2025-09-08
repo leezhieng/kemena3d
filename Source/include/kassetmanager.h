@@ -53,7 +53,9 @@ namespace kemena
 		kTextureCube *loadTextureCubeFromResource(const std::string resRight, const std::string resLeft, const std::string resTop, const std::string resBottom, const std::string resFront, const std::string resBack, const std::string textureName);
 
         kMesh *loadMesh(const std::string fileName);
+		kMesh *loadMeshFromResource(const std::string resourceName, const std::string extention);
         kMesh *loadMeshFileAssimp(const std::string fileName);
+		kMesh *loadMeshResourceAssimp(const string resourceName, const std::string extention);
         kMesh *processNode(aiNode *node, const aiScene *scene, kMesh *parent);
         kMesh *processMesh(aiMesh *mesh, const aiScene *scene);
 

@@ -45,6 +45,9 @@ namespace kemena
                     std::cout << "GLEW Error: " << glewGetErrorString(status) << std::endl;
                     return false;
                 }
+				
+				fboWidth = window->getWindowWidth();
+				fboHeight = window->getWindowHeight();
             }
 
             std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
@@ -757,14 +760,19 @@ namespace kemena
             glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
             glGenTextures(1, &fboTexColorMsaa);
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGB, appWindow->getWindowWidth(), appWindow->getWindowHeight(), GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGB, fboWidth, fboHeight, GL_TRUE);
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa, 0);
 
             glGenRenderbuffers(1, &rboMsaa);
             glBindRenderbuffer(GL_RENDERBUFFER, rboMsaa);
-            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, appWindow->getWindowWidth(), appWindow->getWindowHeight());
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboMsaa);
+
+			glGenRenderbuffers(1, &rboDepthMsaa);
+			glBindRenderbuffer(GL_RENDERBUFFER, rboDepthMsaa);
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthMsaa);
 
             if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             {
@@ -779,14 +787,14 @@ namespace kemena
 
             glGenTextures(1, &fboTexColor);
             glBindTexture(GL_TEXTURE_2D, fboTexColor);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, appWindow->getWindowWidth(), appWindow->getWindowHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fboWidth, fboHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexColor, 0);
 
             glGenRenderbuffers(1, &rboDepth);
             glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, appWindow->getWindowWidth(), appWindow->getWindowHeight()); // depth + stencil
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fboWidth, fboHeight); // depth + stencil
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
             if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -972,15 +980,65 @@ namespace kemena
     }
 
     void kRenderer::resizeFbo(int newWidth, int newHeight)
-    {
-        // Resize color attachment
-        glBindTexture(GL_TEXTURE_2D, fboTexColor);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	{
+		if (newWidth == fboWidth && newHeight == fboHeight) return;
+		if (newWidth <= 0 || newHeight <= 0) return;
 
-        // Resize depth renderbuffer if you have one
-        glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, newWidth, newHeight);
-    }
+		// --- Resize MSAA color attachment ---
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB,
+								newWidth, newHeight, GL_TRUE);
+
+		// --- Resize MSAA depth/stencil attachment ---
+		glBindRenderbuffer(GL_RENDERBUFFER, rboDepthMsaa);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4,
+										 GL_DEPTH24_STENCIL8,
+										 newWidth, newHeight);
+
+		// --- Re-attach MSAA buffers ---
+		glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+							   GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+								  GL_RENDERBUFFER, rboDepthMsaa);
+		
+		glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthMsaa);
+
+		// --- Resize resolve FBO (single-sample) ---
+		glBindTexture(GL_TEXTURE_2D, fboTexColor);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newWidth, newHeight, 0,
+					 GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+		glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
+							  newWidth, newHeight);
+
+		// --- Re-attach resolve FBO ---
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+							   GL_TEXTURE_2D, fboTexColor, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+								  GL_RENDERBUFFER, rboDepth);
+
+		// Reset
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		fboWidth  = newWidth;
+		fboHeight = newHeight;
+
+		// (Optional) Debug check
+		glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			std::cerr << "MSAA FBO incomplete after resize!" << std::endl;
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			std::cerr << "Resolve FBO incomplete after resize!" << std::endl;
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 
     GLuint kRenderer::getFboTexture()
     {
