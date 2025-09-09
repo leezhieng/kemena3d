@@ -1,11 +1,14 @@
 #ifndef KDATATYPE_H
 #define KDATATYPE_H
 
+#include "md5.h"
+
 #include <string>
 #include <vector>
 #include <iostream>
 #include <random>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 
 #include <assimp/quaternion.h>
@@ -482,32 +485,84 @@ namespace kemena
         float tx, ty; // texture coordinates
         int w, h, xoff, yoff;
     };
+	
+	inline std::string generateFileChecksum(const std::string& fileName)
+	{
+		std::ifstream file(fileName, std::ios::binary);
+		if (!file.is_open())
+			return "";
+
+		const size_t bufferSize = 8192;
+		std::vector<uint8_t> buffer(bufferSize);
+
+		MD5 md5;
+
+		while (file)
+		{
+			file.read(reinterpret_cast<char*>(buffer.data()), bufferSize);
+			std::streamsize bytesRead = file.gcount();
+			if (bytesRead > 0)
+			{
+				md5.update(buffer.data(), static_cast<size_t>(bytesRead));
+			}
+		}
+
+		return md5.final();
+	}
+	
+    inline std::string generateRandomString(int stringLength)
+	{
+		const std::string possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+
+		std::string randomString;
+		randomString.reserve(stringLength);
+
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_int_distribution<> dist(0, (int)possibleCharacters.length() - 1);
+
+		for (int i = 0; i < stringLength; ++i)
+		{
+			char nextChar = possibleCharacters.at(dist(gen));
+			randomString.push_back(nextChar);
+		}
+
+		return randomString;
+	}
 
     inline std::string generateUuid()
     {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<uint32_t> dis(0, 15);
-        std::uniform_int_distribution<uint32_t> dis2(8, 11); // for variant
+		// Generates UUID v4
+		static std::random_device rd;
+		static std::mt19937_64 gen(rd());
+		static std::uniform_int_distribution<uint64_t> dist;
 
-        std::stringstream ss;
-        ss << std::hex;
-        for (int i = 0; i < 8; ++i)
-            ss << dis(gen);
-        ss << "-";
-        for (int i = 0; i < 4; ++i)
-            ss << dis(gen);
-        ss << "-4"; // UUID version 4
-        for (int i = 0; i < 3; ++i)
-            ss << dis(gen);
-        ss << "-";
-        ss << dis2(gen); // variant 10xx
-        for (int i = 0; i < 3; ++i)
-            ss << dis(gen);
-        ss << "-";
-        for (int i = 0; i < 12; ++i)
-            ss << dis(gen);
-        return ss.str();
+		// Generate 128 bits (UUID is 128-bit)
+		uint64_t high = dist(gen);
+		uint64_t low  = dist(gen);
+
+		// Set version (UUID v4 -> bits 12–15 of time_hi_and_version)
+		high &= 0xFFFFFFFFFFFF0FFFULL;
+		high |= 0x0000000000004000ULL;
+
+		// Set variant (10xx -> bits 62–63)
+		low &= 0x3FFFFFFFFFFFFFFFULL;
+		low |= 0x8000000000000000ULL;
+
+		std::stringstream ss;
+		ss << std::hex << std::setfill('0');
+
+		ss << std::setw(8) << (uint32_t)(high >> 32);
+		ss << "-";
+		ss << std::setw(4) << (uint16_t)(high >> 16);
+		ss << "-";
+		ss << std::setw(4) << (uint16_t)(high);
+		ss << "-";
+		ss << std::setw(4) << (uint16_t)(low >> 48);
+		ss << "-";
+		ss << std::setw(12) << (low & 0x0000FFFFFFFFFFFFULL);
+
+		return ss.str();
     }
 
     class kAssimpGLMHelpers
