@@ -15,7 +15,7 @@ namespace kemena
     {
         cameraType = newType;
 
-        setLookAt(getLookAt());
+        //setLookAt(getLookAt());
     }
 
     kCameraType kCamera::getCameraType()
@@ -25,16 +25,29 @@ namespace kemena
 
     void kCamera::setLookAt(glm::vec3 newLookAt)
     {
-        lookAt = newLookAt;
-
         // Look at is always the front of the camera, otherwise gizmo and icons will display at the wrong position
         if (cameraType == kCameraType::CAMERA_TYPE_FREE)
-            lookAt = getPosition() + calculateForward();
+		{
+			glm::vec3 forward = glm::normalize(newLookAt - getPosition());
+			glm::vec3 defaultForward(0.0f, 0.0f, -1.0f);
+			glm::quat rotQuat = glm::rotation(defaultForward, forward);
+			
+			setRotation(rotQuat);
+		}
+		else
+			lookAt = newLookAt;
     }
 
     glm::vec3 kCamera::getLookAt()
     {
-        return lookAt;
+		// Free camera will always return the forward direction as lookAt
+		
+		if (cameraType == kCameraType::CAMERA_TYPE_LOCKED)
+			return lookAt;
+		else if (cameraType == kCameraType::CAMERA_TYPE_FREE)
+			return getPosition() + calculateForward();
+		
+		return lookAt;
     }
 
     void kCamera::setFOV(float newFOV)
@@ -129,19 +142,11 @@ namespace kemena
     void kCamera::setPosition(glm::vec3 newPosition)
     {
         kObject::setPosition(newPosition);
-
-        // Override lookAt manually so that the view is the same when switching from free to fixed camera
-        if (cameraType == kCameraType::CAMERA_TYPE_FREE)
-            setLookAt(getPosition() + calculateForward());
     }
 
     void kCamera::setRotation(glm::quat newRotation)
     {
         kObject::setRotation(newRotation);
-
-        // Override lookAt manually so that the view is the same when switching from free to fixed camera
-        if (cameraType == kCameraType::CAMERA_TYPE_FREE)
-            setLookAt(getPosition() + calculateForward());
     }
 
     json kCamera::serialize()

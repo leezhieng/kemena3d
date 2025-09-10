@@ -112,14 +112,10 @@ namespace kemena
     kCamera *kScene::addCamera(glm::vec3 position, glm::vec3 lookAt, kCameraType type, std::string objectUuid)
     {
         kCamera *camera = new kCamera();
-        camera->setCameraType(kCameraType::CAMERA_TYPE_LOCKED);
+        camera->setCameraType(type);
         camera->setPosition(position);
         camera->setLookAt(lookAt);
         camera->setParent(rootNode);
-		
-		// Currently LookAt doesn't work on free camera, need to set to locked first, set the LookAt then set back to free. Will fix in the future.
-		if (type == kCameraType::CAMERA_TYPE_FREE)
-			camera->setCameraType(type);
 
         if (objectUuid.empty())
             camera->setUuid(generateUuid());
