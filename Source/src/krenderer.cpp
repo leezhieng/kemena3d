@@ -151,7 +151,7 @@ namespace kemena
         if (enableScreenBuffer)
         {
             // Render to MSAA FBO
-            resizeFbo(width, height);
+            resizeFbo(width, height); // Manually resize fbo yourself if screenbuffer is enabled?
             glBindFramebuffer(GL_FRAMEBUFFER, fbo);
             glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
         }
@@ -253,7 +253,7 @@ namespace kemena
             // Blit MSAA FBO to regular FBO
             glBindFramebuffer(GL_READ_FRAMEBUFFER, fboMsaa);
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-            glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            glBlitFramebuffer(0, 0, fboWidth, fboHeight, 0, 0, fboWidth, fboHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
             // Render FBO texture to screen
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -270,7 +270,7 @@ namespace kemena
             {
                 glGenerateMipmap(GL_TEXTURE_2D); // auto-downsamples the texture
                 int mipLevel = (int)std::floor(std::log2(std::max(width, height)));
-                glGetTexImage(GL_TEXTURE_2D, mipLevel, GL_RGBA, GL_FLOAT, &averageLuminanceColor);
+                glGetTexImage(GL_TEXTURE_2D, mipLevel, GL_RGB, GL_FLOAT, &averageLuminanceColor);
                 averageLuminance = 0.2126f * averageLuminanceColor[0] + 0.7152f * averageLuminanceColor[1] + 0.0722f * averageLuminanceColor[2];
                 float targetExposure = exposureKey / (averageLuminance + 0.001);
                 exposure = glm::mix(exposure, targetExposure, deltaTime * exposureAdaptationRate);
@@ -719,6 +719,12 @@ namespace kemena
 
         if (newEnable)
         {
+			glEnable(GL_MULTISAMPLE);
+			
+			GLint maxSamples = 0;
+			glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+			int samples = std::min(4, maxSamples); // choose 4 or whatever's supported
+			
             glDisable(GL_FRAMEBUFFER_SRGB);
 
             // Screen quad
@@ -760,18 +766,18 @@ namespace kemena
             glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
             glGenTextures(1, &fboTexColorMsaa);
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGB, fboWidth, fboHeight, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 8, GL_RGBA8, fboWidth, fboHeight, GL_TRUE);
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa, 0);
 
             glGenRenderbuffers(1, &rboMsaa);
             glBindRenderbuffer(GL_RENDERBUFFER, rboMsaa);
-            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboMsaa);
 
 			glGenRenderbuffers(1, &rboDepthMsaa);
 			glBindRenderbuffer(GL_RENDERBUFFER, rboDepthMsaa);
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER, 16, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthMsaa);
 
             if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -787,7 +793,7 @@ namespace kemena
 
             glGenTextures(1, &fboTexColor);
             glBindTexture(GL_TEXTURE_2D, fboTexColor);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, fboWidth, fboHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, fboWidth, fboHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexColor, 0);
@@ -806,33 +812,35 @@ namespace kemena
 
             if (useDefaultShader)
             {
-                string vertexShader = "#version 330 core \
-				layout(location = 0) in vec2 aPos; \
-				layout(location = 1) in vec2 aTexCoord; \
-				out vec2 TexCoord; \
-				void main() \
-				{ \
-					TexCoord = aTexCoord; \
-					gl_Position = vec4(aPos, 0.0, 1.0); \
-				}";
+                std::string vertexShader = R"(#version 330 core
+				layout(location = 0) in vec2 aPos;
+				layout(location = 1) in vec2 aTexCoord;
+				out vec2 TexCoord;
 
-                string fragmentShader = "#version 330 core \
-				in vec2 TexCoord; \
-				out vec4 FragColor; \
-				uniform sampler2D screenTexture; \
-				uniform int enable_autoExposure; \
-				uniform float exposure; \
-				uniform float contrast; \
-				uniform float gamma; \
-				void main() \
-				{ \
-					vec3 color = texture(screenTexture, TexCoord).rgb; \
-					vec3 mapped = color * exposure; \
-					mapped = (mapped - 0.5) * contrast + 0.5; \
-					mapped = pow(mapped, vec3(1.0 / gamma)); \
-					vec4 result = vec4(mapped, 1.0); \
-					FragColor = result; \
-				}";
+				void main()
+				{
+					TexCoord = aTexCoord;
+					gl_Position = vec4(aPos, 0.0, 1.0);
+				})";
+
+				std::string fragmentShader = R"(#version 330 core
+				in vec2 TexCoord;
+				out vec4 FragColor;
+
+				uniform sampler2D screenTexture;
+				uniform int enable_autoExposure;
+				uniform float exposure;
+				uniform float contrast;
+				uniform float gamma;
+
+				void main()
+				{
+					vec3 color = texture(screenTexture, TexCoord).rgb;
+					vec3 mapped = color * exposure;
+					mapped = (mapped - 0.5) * contrast + 0.5;
+					mapped = pow(mapped, vec3(1.0 / gamma));
+					FragColor = vec4(mapped, 1.0);
+				})";
 
                 kShader *screenShader = new kShader();
                 screenShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());
@@ -894,53 +902,66 @@ namespace kemena
 
             if (useDefaultShader)
             {
-                string vertexShader = "#version 330 core \
-				layout (location = 0) in vec3 vertexPosition; \
-				layout (location = 6) in ivec4 boneIDs;  \
-				layout (location = 7) in vec4 weights; \
-				uniform mat4 lightSpaceMatrix; \
-				uniform mat4 modelMatrix; \
-				uniform mat4 viewMatrix; \
-				uniform mat4 projectionMatrix; \
-				const int MAX_BONES = 128; \
-				const int MAX_BONE_INFLUENCE = 4; \
-				uniform mat4 finalBonesMatrices[MAX_BONES]; \
-				out vec3 vertexPositionFrag; \
-				void main() \
-				{ \
-					vec4 totalPosition = vec4(vertexPosition, 1.0f); \
-					float totalWeight = 0.0; \
-					for(int i = 0 ; i < MAX_BONE_INFLUENCE; i++) \
-					{ \
-						int boneID = boneIDs[i]; \
-						float weight = weights[i]; \
-						if(boneID == -1 || weight <= 0.0) \
-							continue; \
-						if(boneID >= MAX_BONES) \
-						{ \
-							totalPosition = vec4(vertexPosition, 1.0f); \
-							break; \
-						} \
-						totalPosition += (finalBonesMatrices[boneID] * vec4(vertexPosition, 1.0f)) * weight; \
-						mat3 normalMatrixBone = transpose(inverse(mat3(finalBonesMatrices[boneID]))); \
-						totalWeight += weight; \
-					} \
-					if (totalWeight == 0.0) \
-					{ \
-						totalPosition = vec4(vertexPosition, 1.0f); \
-					} \
-					mat4 mvp = projectionMatrix * viewMatrix * modelMatrix; \
-					vec4 worldPosition = modelMatrix * totalPosition; \
-					vertexPositionFrag = (lightSpaceMatrix * worldPosition).xyz; \
-					gl_Position = lightSpaceMatrix * worldPosition; \
-				}";
+                std::string vertexShader = R"(#version 330 core
+				layout (location = 0) in vec3 vertexPosition;
+				layout (location = 6) in ivec4 boneIDs;
+				layout (location = 7) in vec4 weights;
 
-                string fragmentShader = "#version 330 core \
-				in vec3 vertexPositionFrag; \
-				out vec4 fragColor; \
-				void main() \
-				{ \
-				}";
+				uniform mat4 lightSpaceMatrix;
+				uniform mat4 modelMatrix;
+				uniform mat4 viewMatrix;
+				uniform mat4 projectionMatrix;
+
+				const int MAX_BONES = 128;
+				const int MAX_BONE_INFLUENCE = 4;
+
+				uniform mat4 finalBonesMatrices[MAX_BONES];
+
+				out vec3 vertexPositionFrag;
+
+				void main()
+				{
+					vec4 totalPosition = vec4(vertexPosition, 1.0f);
+					float totalWeight = 0.0;
+
+					for(int i = 0; i < MAX_BONE_INFLUENCE; i++)
+					{
+						int boneID = boneIDs[i];
+						float weight = weights[i];
+
+						if(boneID == -1 || weight <= 0.0)
+							continue;
+
+						if(boneID >= MAX_BONES)
+						{
+							totalPosition = vec4(vertexPosition, 1.0f);
+							break;
+						}
+
+						totalPosition += (finalBonesMatrices[boneID] * vec4(vertexPosition, 1.0f)) * weight;
+						mat3 normalMatrixBone = transpose(inverse(mat3(finalBonesMatrices[boneID])));
+						totalWeight += weight;
+					}
+
+					if (totalWeight == 0.0)
+					{
+						totalPosition = vec4(vertexPosition, 1.0f);
+					}
+
+					mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
+					vec4 worldPosition = modelMatrix * totalPosition;
+					vertexPositionFrag = (lightSpaceMatrix * worldPosition).xyz;
+					gl_Position = lightSpaceMatrix * worldPosition;
+				})";
+
+					std::string fragmentShader = R"(#version 330 core
+				in vec3 vertexPositionFrag;
+				out vec4 fragColor;
+
+				void main()
+				{
+				}
+				)";
 
                 kShader *shadowShader = new kShader();
                 shadowShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());
@@ -979,71 +1000,81 @@ namespace kemena
         return openglContext;
     }
 
-    void kRenderer::resizeFbo(int newWidth, int newHeight)
+	void kRenderer::resizeFbo(int newWidth, int newHeight)
 	{
 		if (newWidth == fboWidth && newHeight == fboHeight) return;
 		if (newWidth <= 0 || newHeight <= 0) return;
 
-		// --- Resize MSAA color attachment ---
+		// make sure multisample is enabled
+		glEnable(GL_MULTISAMPLE);
+
+		// query a safe sample count (choose 4 or less)
+		GLint maxSamples = 0;
+		glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+		int samples = std::min(4, (int)maxSamples);
+
+		// --- MSAA color texture ---
+		if (fboTexColorMsaa == 0) glGenTextures(1, &fboTexColorMsaa);
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa);
-		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB,
-								newWidth, newHeight, GL_TRUE);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 8, GL_RGBA8, newWidth, newHeight, GL_TRUE);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 
-		// --- Resize MSAA depth/stencil attachment ---
+		// --- MSAA depth/stencil RBO (single rbo only) ---
+		if (rboDepthMsaa == 0) glGenRenderbuffers(1, &rboDepthMsaa);
 		glBindRenderbuffer(GL_RENDERBUFFER, rboDepthMsaa);
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4,
-										 GL_DEPTH24_STENCIL8,
-										 newWidth, newHeight);
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_DEPTH24_STENCIL8, newWidth, newHeight);
 
-		// --- Re-attach MSAA buffers ---
-		glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-							   GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa, 0);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-								  GL_RENDERBUFFER, rboDepthMsaa);
-		
+		// --- attach to MSAA FBO ---
+		if (fboMsaa == 0) glGenFramebuffers(1, &fboMsaa);
 		glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa, 0);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthMsaa);
+		GLenum db = GL_COLOR_ATTACHMENT0;
+		glDrawBuffers(1, &db);
 
-		// --- Resize resolve FBO (single-sample) ---
+		// --- Resolve (single-sample) color texture ---
+		if (fboTexColor == 0) glGenTextures(1, &fboTexColor);
 		glBindTexture(GL_TEXTURE_2D, fboTexColor);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newWidth, newHeight, 0,
-					 GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // or GL_LINEAR_MIPMAP_LINEAR if you mipmap
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
+		// --- resolve FBO ---
+		if (fbo == 0) glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexColor, 0);
+
+		// single-sample depth RBO
+		if (rboDepth == 0) glGenRenderbuffers(1, &rboDepth);
 		glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
-							  newWidth, newHeight);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, newWidth, newHeight);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
-		// --- Re-attach resolve FBO ---
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-							   GL_TEXTURE_2D, fboTexColor, 0);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-								  GL_RENDERBUFFER, rboDepth);
+		glDrawBuffers(1, &db);
 
-		// Reset
+		// Unbind
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		fboWidth  = newWidth;
+		// store
+		fboWidth = newWidth;
 		fboHeight = newHeight;
-
-		// (Optional) Debug check
-		glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			std::cerr << "MSAA FBO incomplete after resize!" << std::endl;
-		}
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			std::cerr << "Resolve FBO incomplete after resize!" << std::endl;
-		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
     GLuint kRenderer::getFboTexture()
     {
         return fboTexColor;
     }
+	
+	int kRenderer::getFboWidth()
+	{
+		return fboWidth;
+	}
+	
+	int kRenderer::getFboHeight()
+	{
+		return fboHeight;
+	}
 
     float kRenderer::srgbToLinear(float c)
     {

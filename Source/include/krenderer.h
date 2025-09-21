@@ -74,6 +74,8 @@ namespace kemena
 
         void resizeFbo(int newWidth, int newHeight);
         GLuint getFboTexture();
+		int getFboWidth();
+		int getFboHeight();
 
         float srgbToLinear(float c);
         vec3 idToRgb(unsigned int i);
@@ -105,7 +107,7 @@ namespace kemena
         GLuint fbo, fboTexColor, rboDepth;
         GLuint fboMsaa, fboTexColorMsaa, rboMsaa, rboDepthMsaa;
 		
-		int fboWidth, fboHeight; // FBO may not be the same size as the window, saved but not in use now
+		int fboWidth, fboHeight; // FBO may not be the same size as the window, for example when used in Dear Imgui panel or render to texture
 
         // Shadow FBO
         bool enableShadow = false;

@@ -7,14 +7,26 @@ namespace kemena
         if (parentNode != nullptr)
             setParent(parentNode);
         setType(kNodeType::NODE_TYPE_OBJECT);
+		
+		// Generate VAO (required by OGL 3.x core above
+		glGenVertexArrays(1, &iconVAO);
+		glBindVertexArray(iconVAO);
 
         // Generate VBO for icon
         // UV for icon is not needed as it's calculated by shader
         // Vertices
         glGenBuffers(1, &iconVertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, iconVertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(glm::vec3), iconVertices, GL_DYNAMIC_DRAW);
+		
+        //glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(glm::vec3), iconVertices, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(iconVertices), iconVertices, GL_STATIC_DRAW);
+		
+		// Define layout for attribute 0
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
     }
 
     kObject::~kObject()
@@ -285,7 +297,7 @@ namespace kemena
         if (material != nullptr)
         {
             // Vertices
-            glEnableVertexAttribArray(0);
+            /*glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, iconVertexBuffer);
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
@@ -293,7 +305,11 @@ namespace kemena
 
             glDisableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);*/
+			
+			glBindVertexArray(iconVAO);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glBindVertexArray(0);
         }
     }
 

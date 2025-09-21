@@ -99,6 +99,7 @@ namespace kemena
 
         kMaterial *material = nullptr;
 
+		GLuint iconVAO;
         GLuint iconVertexBuffer;
         GLfloat iconVertices[12] =
             {
