@@ -164,6 +164,69 @@ namespace kemena
 #define K_KEY_Y 121
 #define K_KEY_Z 122
 
+// Function keys
+#define K_KEY_F1  1073741882
+#define K_KEY_F2  1073741883
+#define K_KEY_F3  1073741884
+#define K_KEY_F4  1073741885
+#define K_KEY_F5  1073741886
+#define K_KEY_F6  1073741887
+#define K_KEY_F7  1073741888
+#define K_KEY_F8  1073741889
+#define K_KEY_F9  1073741890
+#define K_KEY_F10 1073741891
+#define K_KEY_F11 1073741892
+#define K_KEY_F12 1073741893
+
+// Modifier keys
+#define K_KEY_CAPSLOCK  1073741881
+#define K_KEY_LSHIFT    1073742049
+#define K_KEY_RSHIFT    1073742053
+#define K_KEY_LCTRL     1073742048
+#define K_KEY_RCTRL     1073742052
+#define K_KEY_LALT      1073742050
+#define K_KEY_RALT      1073742054
+#define K_KEY_LGUI      1073742051  // Windows / Command key
+#define K_KEY_RGUI      1073742055
+
+// Navigation / Editing
+#define K_KEY_INSERT    1073741897
+#define K_KEY_DELETE    127
+#define K_KEY_HOME      1073741898
+#define K_KEY_END       1073741901
+#define K_KEY_PAGEUP    1073741899
+#define K_KEY_PAGEDOWN  1073741902
+
+// Arrow keys
+#define K_KEY_RIGHT 1073741903
+#define K_KEY_LEFT  1073741904
+#define K_KEY_DOWN  1073741905
+#define K_KEY_UP    1073741906
+
+// Keypad (Numpads)
+#define K_KEY_NUMLOCKCLEAR 1073741907
+#define K_KEY_KP_DIVIDE    1073741908
+#define K_KEY_KP_MULTIPLY  1073741909
+#define K_KEY_KP_MINUS     1073741910
+#define K_KEY_KP_PLUS      1073741911
+#define K_KEY_KP_ENTER     1073741912
+#define K_KEY_KP_1         1073741913
+#define K_KEY_KP_2         1073741914
+#define K_KEY_KP_3         1073741915
+#define K_KEY_KP_4         1073741916
+#define K_KEY_KP_5         1073741917
+#define K_KEY_KP_6         1073741918
+#define K_KEY_KP_7         1073741919
+#define K_KEY_KP_8         1073741920
+#define K_KEY_KP_9         1073741921
+#define K_KEY_KP_0         1073741922
+#define K_KEY_KP_PERIOD    1073741923
+
+// Others
+#define K_KEY_PRINTSCREEN 1073741894
+#define K_KEY_SCROLLLOCK  1073741895
+#define K_KEY_PAUSE       1073741896
+
 // Scan Code (physical key location)
 #define K_SCANCODE_UNKNOWN 0
 #define K_SCANCODE_A 4

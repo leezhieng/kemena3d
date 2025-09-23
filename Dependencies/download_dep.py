@@ -51,6 +51,10 @@ STB_GIT = "https://github.com/nothings/stb.git"
 STB_REV = "f58f558c120e9b32c217290b80bad1a0729fbb2c"
 NLOHMANN_GIT = "https://github.com/nlohmann/json.git"
 NLOHMANN_TAG = "v3.12.0"
+PFD_GIT = "https://github.com/samhocevar/portable-file-dialogs.git"
+PFD_TAG = "main"
+IMGUIZMO_GIT = "https://github.com/CedricGuillemet/ImGuizmo.git"
+IMGUIZMO_TAG = "master"
 
 # Optional (commented in batch script)
 RECAST_ZIP = "https://github.com/recastnavigation/recastnavigation/archive/refs/tags/v1.6.0.zip"
@@ -198,6 +202,25 @@ target_compile_definitions(imgui PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLEW)
 """
     (imgui_dir / "CMakeLists.txt").write_text(cmake_txt, encoding="utf-8")
     print(f"[OK] Generated ImGui CMakeLists.txt at '{imgui_dir / 'CMakeLists.txt'}'")
+
+def write_imguizmo_cmakelists(imguizmo_dir: Path, imgui_dir: Path, linking: str):
+    add_lib = "add_library(imguizmo STATIC ${IMGUI_SRC})" if linking == "1" else "add_library(imguizmo SHARED ${IMGUI_SRC})"
+
+    cmake_txt = f"""cmake_minimum_required(VERSION 3.10)
+project(ImGuiLib LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+file(GLOB IMGUI_SRC
+    GraphEditor.cpp
+    ImCurveEdit.cpp
+    ImGradient.cpp
+    ImGuizmo.cpp
+    ImSequencer.cpp
+)
+{add_lib}
+target_include_directories(imguizmo PUBLIC ${{CMAKE_CURRENT_SOURCE_DIR}} {imgui_dir.as_posix()})
+"""
+    (imguizmo_dir / "CMakeLists.txt").write_text(cmake_txt, encoding="utf-8")
+    print(f"[OK] Generated ImGuizmo CMakeLists.txt at '{imguizmo_dir / 'CMakeLists.txt'}'")
 
 def choose(prompt: str, options: dict[str, str]) -> str:
     print(prompt)
@@ -420,6 +443,31 @@ def main():
     # nlohmann/json (header-only library with CMake package)
     # --------------------------------------------------------------------
     clone_git("nlohmann JSON", "v3.12.0", NLOHMANN_GIT, ROOT / "nlohmann", revision=NLOHMANN_TAG)
+    
+    # --------------------------------------------------------------------
+    # Portable File Dialogs (header-only)
+    # --------------------------------------------------------------------
+    clone_git("Portable File Dialogs", "main", PFD_GIT, ROOT / "portable-file-dialogs", revision=PFD_TAG)
+    
+    # --------------------------------------------------------------------
+    # ImGuizmo (header-only)
+    # --------------------------------------------------------------------
+    clone_git("imGuizmo", "master", IMGUIZMO_GIT, ROOT / "imguizmo", revision=IMGUIZMO_TAG)
+    write_imguizmo_cmakelists(ROOT / "imguizmo", ROOT / "imgui", linking)
+    if compiler == "1":
+        if linking == "1":
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Debug",  f"-DBUILD_SHARED_LIBS=OFF", generator)
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Release",f"-DBUILD_SHARED_LIBS=OFF", generator)
+        else:
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Debug",  f"-DBUILD_SHARED_LIBS=ON", generator)
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
+    else:
+        if linking == "1":
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Debug",  f"-DBUILD_SHARED_LIBS=OFF", generator)
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Release",f"-DBUILD_SHARED_LIBS=OFF", generator)
+        else:
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Debug",  f"-DBUILD_SHARED_LIBS=ON", generator)
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
 
     # --------------------------------------------------------------------
     # Optional: Recast Navigation / JoltPhysics (kept commented like batch)

@@ -42,8 +42,12 @@ file(GLOB IMGUI_BACKENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui/backends/imgui_impl_opengl3.cpp
 )
 
+# ImGuizmo sources
+file(GLOB IMGUIZMO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo/*.cpp)
+file(GLOB IMGUIZMO_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo/*.h)
+
 # Create library target
-add_library(kemena3d ${SRC_FILES} ${HEADER_FILES} ${ANGELSCRIPT_SRC} ${ANGELSCRIPT_HEADERS} ${IMGUI_SRC} ${IMGUI_HEADERS} ${IMGUI_BACKENDS})
+add_library(kemena3d ${SRC_FILES} ${HEADER_FILES} ${ANGELSCRIPT_SRC} ${ANGELSCRIPT_HEADERS} ${IMGUI_SRC} ${IMGUI_HEADERS} ${IMGUI_BACKENDS} ${IMGUIZMO_SRC} ${IMGUIZMO_HEADERS})
 
 set_target_properties(kemena3d PROPERTIES
     VERSION ${PROJECT_VERSION}
@@ -74,6 +78,8 @@ target_include_directories(kemena3d
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include
+		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/portable-file-dialogs
+		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo
 )
 
 # Link directories (per-config)
@@ -184,6 +190,12 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/stb/
 )
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include/nlohmann/
     DESTINATION include/nlohmann FILES_MATCHING PATTERN "*.h*"
+)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/portable-file-dialogs/
+    DESTINATION include FILES_MATCHING PATTERN "*.h*"
+)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo/
+    DESTINATION include FILES_MATCHING PATTERN "*.h*"
 )
 #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt/
 #	DESTINATION Output/include/jolt FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
