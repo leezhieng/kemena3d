@@ -8,6 +8,7 @@
 #include "kdatatype.h"
 #include "kassetmanager.h"
 #include "kscene.h"
+#include "kcamera.h"
 
 // Export macro
 #ifdef _WIN32
@@ -37,11 +38,18 @@ namespace kemena
 
     kScene *createScene(std::string sceneName, std::string sceneUuid = "");
     void addScene(kScene *scene, std::string sceneUuid = "");
+	
+	kCamera *addCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 lookAt = glm::vec3(0.0f, 0.0f, 0.0f), kCameraType type = kCameraType::CAMERA_TYPE_FREE, std::string objectUuid = "");
+    void addCamera(kCamera *camera, std::string objectUuid = "");
+
+    kCamera *getMainCamera();
+    void setMainCamera(kCamera *camera);
 
     void setAssetManager(kAssetManager *manager);
     kAssetManager *getAssetManager();
 
     std::vector<kScene *> getScenes();
+    std::vector<kCamera *> getCameras();
 
     virtual json serialize(int startScene = 0);
     virtual void deserialize(json data);
@@ -49,7 +57,11 @@ namespace kemena
   protected:
   private:
     kAssetManager *assetManager = nullptr;
+	
     std::vector<kScene *> scenes;
+    std::vector<kCamera *> cameras;
+	
+	kCamera *mainCamera = nullptr;
 
     std::string uuid;
   };

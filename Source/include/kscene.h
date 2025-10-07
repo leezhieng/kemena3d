@@ -44,8 +44,9 @@ namespace kemena
         unsigned int getIncrement();
         void setIncrement(unsigned int newIncrement);
 
+        std::vector<kObject *> getObjects();
+		
         std::vector<kMesh *> getMeshes();
-        std::vector<kCamera *> getCameras();
         std::vector<kLight *> getLights();
 
         kObject *getRootNode();
@@ -54,12 +55,6 @@ namespace kemena
 
         kMesh *addMesh(std::string fileName, std::string objectUuid = "");
         void addMesh(kMesh *mesh, std::string objectUuid = "");
-
-        kCamera *addCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 lookAt = glm::vec3(0.0f, 0.0f, 0.0f), kCameraType type = kCameraType::CAMERA_TYPE_FREE, std::string objectUuid = "");
-        void addCamera(kCamera *camera, std::string objectUuid = "");
-
-        kCamera *getMainCamera();
-        void setMainCamera(kCamera *camera);
 
         glm::vec3 getAmbientLightColor();
         void setAmbientLightColor(glm::vec3 newColor);
@@ -84,13 +79,13 @@ namespace kemena
 
         std::string uuid;
         std::string name;
+		
+		std::vector<kObject *> objects;
 
         std::vector<kMesh *> meshes;
-        std::vector<kCamera *> cameras;
         std::vector<kLight *> lights;
 
         kObject *rootNode = nullptr;
-        kCamera *mainCamera = nullptr;
 
         glm::vec3 ambientLightColor = glm::vec3(0.0f, 0.0f, 0.0f);
 

@@ -44,6 +44,54 @@ namespace kemena
         scene->setWorld(this);
         scenes.push_back(scene);
     }
+	
+	kCamera *kWorld::addCamera(glm::vec3 position, glm::vec3 lookAt, kCameraType type, std::string objectUuid)
+    {
+        kCamera *camera = new kCamera();
+        camera->setCameraType(type);
+        camera->setPosition(position);
+        camera->setLookAt(lookAt);
+        //camera->setParent(rootNode);
+
+        if (objectUuid.empty())
+            camera->setUuid(generateUuid());
+        else
+            camera->setUuid(objectUuid);
+
+        cameras.push_back(camera);
+
+        // Set it as main camera if there is no main camera
+        if (mainCamera == nullptr)
+            mainCamera = camera;
+
+        return camera;
+    }
+
+    void kWorld::addCamera(kCamera *camera, std::string objectUuid)
+    {
+        //camera->setParent(rootNode);
+
+        if (objectUuid.empty())
+            camera->setUuid(generateUuid());
+        else
+            camera->setUuid(objectUuid);
+
+        cameras.push_back(camera);
+
+        // Set it as main camera if there is no main camera
+        if (mainCamera == nullptr)
+            mainCamera = camera;
+    }
+
+    kCamera *kWorld::getMainCamera()
+    {
+        return mainCamera;
+    }
+
+    void kWorld::setMainCamera(kCamera *camera)
+    {
+        mainCamera = camera;
+    }
 
     void kWorld::setAssetManager(kAssetManager *manager)
     {
@@ -58,6 +106,11 @@ namespace kemena
     std::vector<kScene *> kWorld::getScenes()
     {
         return scenes;
+    }
+	
+	std::vector<kCamera *> kWorld::getCameras()
+    {
+        return cameras;
     }
 
     json kWorld::serialize(int startScene)

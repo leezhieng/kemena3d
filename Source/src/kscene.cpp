@@ -60,10 +60,15 @@ namespace kemena
     {
         name = newName;
     }
-
-    std::vector<kCamera *> kScene::getCameras()
+	
+	std::vector<kObject *> kScene::getObjects()
+	{
+		return objects;
+	}
+	
+	std::vector<kMesh *> kScene::getMeshes()
     {
-        return cameras;
+        return meshes;
     }
 
     std::vector<kLight *> kScene::getLights()
@@ -107,54 +112,6 @@ namespace kemena
             mesh->setUuid(generateUuid());
         else
             mesh->setUuid(objectUuid);
-    }
-
-    kCamera *kScene::addCamera(glm::vec3 position, glm::vec3 lookAt, kCameraType type, std::string objectUuid)
-    {
-        kCamera *camera = new kCamera();
-        camera->setCameraType(type);
-        camera->setPosition(position);
-        camera->setLookAt(lookAt);
-        camera->setParent(rootNode);
-
-        if (objectUuid.empty())
-            camera->setUuid(generateUuid());
-        else
-            camera->setUuid(objectUuid);
-
-        cameras.push_back(camera);
-
-        // Set it as main camera if there is no main camera
-        if (mainCamera == nullptr)
-            mainCamera = camera;
-
-        return camera;
-    }
-
-    void kScene::addCamera(kCamera *camera, std::string objectUuid)
-    {
-        camera->setParent(rootNode);
-
-        if (objectUuid.empty())
-            camera->setUuid(generateUuid());
-        else
-            camera->setUuid(objectUuid);
-
-        cameras.push_back(camera);
-
-        // Set it as main camera if there is no main camera
-        if (mainCamera == nullptr)
-            mainCamera = camera;
-    }
-
-    kCamera *kScene::getMainCamera()
-    {
-        return mainCamera;
-    }
-
-    void kScene::setMainCamera(kCamera *camera)
-    {
-        mainCamera = camera;
     }
 
     glm::vec3 kScene::getAmbientLightColor()

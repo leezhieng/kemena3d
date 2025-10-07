@@ -33,6 +33,7 @@
 #include "kcamera.h"
 #include "kshader.h"
 #include "klight.h"
+#include "kworld.h"
 #include "kscene.h"
 #include "kobject.h"
 
@@ -52,7 +53,7 @@ namespace kemena
         kWindow *getWindow();
 
 		void clear();
-        void render(kScene *scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool autoClearSwapWindow = true);
+        void render(kWorld *world, kScene *scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool autoClearSwapWindow = true);
 
         glm::vec4 getClearColor();
         void setClearColor(glm::vec4 newColor);
@@ -94,8 +95,8 @@ namespace kemena
         // This is used to determine if we're still on the same frame
         int frameId = 0;
 
-        void renderSceneGraph(kScene *scene, kObject *rootNode, bool transparent = false, float deltaTime = 0.0f);
-        void renderSceneGraphShadow(kScene *scene, kObject *rootNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent = false, float deltaTime = 0.0f);
+        void renderSceneGraph(kWorld *world, kScene *scene, kObject *rootNode, bool transparent = false, float deltaTime = 0.0f);
+        void renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *rootNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent = false, float deltaTime = 0.0f);
 
         // OpenGL
         SDL_GLContext openglContext;

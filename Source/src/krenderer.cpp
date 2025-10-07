@@ -99,7 +99,7 @@ namespace kemena
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-    void kRenderer::render(kScene *scene, int x, int y, int width, int height, float deltaTime, bool autoClearSwapWindow)
+    void kRenderer::render(kWorld *world, kScene *scene, int x, int y, int width, int height, float deltaTime, bool autoClearSwapWindow)
     {
         if (frameId > 999999999999)
             frameId = 0;
@@ -138,7 +138,7 @@ namespace kemena
                         // Later send this to meshes for shadow calculation
                         lightSpaceMatrix = lightProjection * lightView;
 
-                        renderSceneGraphShadow(scene, scene->getRootNode(), lightSpaceMatrix, lightView, lightProjection, false, deltaTime);
+                        renderSceneGraphShadow(world, scene, scene->getRootNode(), lightSpaceMatrix, lightView, lightProjection, false, deltaTime);
 
                         shadowShader->unuse();
                     }
@@ -165,12 +165,12 @@ namespace kemena
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 
-        if (scene->getMainCamera() != nullptr)
+        if (world->getMainCamera() != nullptr)
         {
             // Use viewport instead of window?
             // Can set which camera to use for render?
             glViewport(x, y, width, height);
-            scene->getMainCamera()->setAspectRatio((float)width / (float)height);
+            world->getMainCamera()->setAspectRatio((float)width / (float)height);
 
             // Render skybox if available
             kMaterial *skyboxMaterial = scene->getSkyboxMaterial();
@@ -188,8 +188,8 @@ namespace kemena
                         glDisable(GL_CULL_FACE);
 
                         // Set VP matrices
-                        skyboxShader->setValue("viewMatrix", mat4(mat3(scene->getMainCamera()->getViewMatrix())));
-                        skyboxShader->setValue("projectionMatrix", scene->getMainCamera()->getProjectionMatrix());
+                        skyboxShader->setValue("viewMatrix", mat4(mat3(world->getMainCamera()->getViewMatrix())));
+                        skyboxShader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
 
                         // Set material attributes
                         // skyboxShader->setValue("material.ambient", skyboxMaterial->getAmbientColor());
@@ -236,10 +236,10 @@ namespace kemena
 
             // Starting from root node, render everything recursively
             // Render non-transparent objects first
-            renderSceneGraph(scene, scene->getRootNode(), false, deltaTime);
+            renderSceneGraph(world, scene, scene->getRootNode(), false, deltaTime);
             // Sort transparent objects
             // Render transparent objects
-            // renderSceneGraph(scene, scene->getRootNode(), true, deltaTime);
+            // renderSceneGraph(world, scene, scene->getRootNode(), true, deltaTime);
         }
         else
         {
@@ -298,7 +298,7 @@ namespace kemena
         }
     }
 
-    void kRenderer::renderSceneGraph(kScene *scene, kObject *currentNode, bool transparent, float deltaTime)
+    void kRenderer::renderSceneGraph(kWorld *world, kScene *scene, kObject *currentNode, bool transparent, float deltaTime)
     {
         // Ignore if the object is not active
         if (currentNode != nullptr)
@@ -363,13 +363,13 @@ namespace kemena
                                 // Set MVP matrices
                                 shader->setValue("normalMatrix", currentMesh->getNormalMatrix());
                                 shader->setValue("modelMatrix", currentMesh->getModelMatrixWorld());
-                                shader->setValue("viewMatrix", scene->getMainCamera()->getViewMatrix());
-                                shader->setValue("projectionMatrix", scene->getMainCamera()->getProjectionMatrix());
+                                shader->setValue("viewMatrix", world->getMainCamera()->getViewMatrix());
+                                shader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
 
                                 // Set camera position
-                                if (scene->getMainCamera() != nullptr)
+                                if (world->getMainCamera() != nullptr)
                                 {
-                                    shader->setValue("viewPos", scene->getMainCamera()->getPosition());
+                                    shader->setValue("viewPos", world->getMainCamera()->getPosition());
                                 }
 
                                 // Set material attributes
@@ -521,10 +521,10 @@ namespace kemena
                     kLight *currentLight = (kLight *)currentNode;
 
                     // Render icon
-                    if (scene->getMainCamera() != nullptr)
+                    if (world->getMainCamera() != nullptr)
                     {
-                        mat4 view = lookAt(scene->getMainCamera()->getPosition(), scene->getMainCamera()->getLookAt(), scene->getMainCamera()->calculateUp());
-                        mat4 projection = glm::perspective(glm::radians(scene->getMainCamera()->getFOV()), scene->getMainCamera()->getAspectRatio(), scene->getMainCamera()->getNearClip(), scene->getMainCamera()->getFarClip());
+                        mat4 view = lookAt(world->getMainCamera()->getPosition(), world->getMainCamera()->getLookAt(), world->getMainCamera()->calculateUp());
+                        mat4 projection = glm::perspective(glm::radians(world->getMainCamera()->getFOV()), world->getMainCamera()->getAspectRatio(), world->getMainCamera()->getNearClip(), world->getMainCamera()->getFarClip());
 
                         if (currentLight->getMaterial() != nullptr)
                         {
@@ -608,8 +608,8 @@ namespace kemena
 
                             // Set MVP matrices
                             shader->setValue("modelMatrix", currentObject->getModelMatrixWorld());
-                            shader->setValue("viewMatrix", scene->getMainCamera()->getViewMatrix());
-                            shader->setValue("projectionMatrix", scene->getMainCamera()->getProjectionMatrix());
+                            shader->setValue("viewMatrix", world->getMainCamera()->getViewMatrix());
+                            shader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
 
                             currentObject->draw();
 
@@ -626,7 +626,7 @@ namespace kemena
                     {
                         if (currentNode->getChildren().at(i) != nullptr)
                         {
-                            renderSceneGraph(scene, currentNode->getChildren().at(i), transparent, deltaTime);
+                            renderSceneGraph(world, scene, currentNode->getChildren().at(i), transparent, deltaTime);
                         }
                     }
                 }
@@ -634,7 +634,7 @@ namespace kemena
         }
     }
 
-    void kRenderer::renderSceneGraphShadow(kScene *scene, kObject *currentNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent, float deltaTime)
+    void kRenderer::renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *currentNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent, float deltaTime)
     {
         // Ignore if the object is not active
         if (currentNode != nullptr)
@@ -689,7 +689,7 @@ namespace kemena
                     {
                         if (currentNode->getChildren().at(i) != nullptr)
                         {
-                            renderSceneGraphShadow(scene, currentNode->getChildren().at(i), lightSpaceMatrix, lightView, lightProjection, transparent, deltaTime);
+                            renderSceneGraphShadow(world, scene, currentNode->getChildren().at(i), lightSpaceMatrix, lightView, lightProjection, transparent, deltaTime);
                         }
                     }
                 }
