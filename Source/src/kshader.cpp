@@ -10,7 +10,10 @@ namespace kemena
     kShader::~kShader()
     {
         if (shaderProgram)
-            glDeleteProgram(shaderProgram);
+        {
+            kDriver::getCurrent()->deleteShaderProgram(shaderProgram);
+            shaderProgram = 0;
+        }
     }
 
     string kShader::readFile(const string filePath)
@@ -18,14 +21,14 @@ namespace kemena
         string content;
         std::ifstream fileStream(filePath.c_str(), std::ios::in);
 
-        if(!fileStream.is_open())
+        if (!fileStream.is_open())
         {
             std::cout << "Could not read file " << filePath << ". File does not exist." << std::endl;
             return "";
         }
 
         string line = "";
-        while(!fileStream.eof())
+        while (!fileStream.eof())
         {
             std::getline(fileStream, line);
             content.append(line + "\n");
@@ -37,283 +40,86 @@ namespace kemena
 
     void kShader::loadShadersFile(const string vertexShaderPath, const string fragmentShaderPath)
     {
-        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        const char *vertSrc = nullptr;
+        const char *fragSrc = nullptr;
+        string vertStr, fragStr;
 
-        GLint result = GL_FALSE;
-        int logLength;
-
-        // Read shaders
-        if (vertexShaderPath != "")
+        if (!vertexShaderPath.empty())
         {
-            string vertexShaderStr = readFile(vertexShaderPath);
-            const char *vertexShaderSrc = vertexShaderStr.c_str();
-
-            // Compile vertex shader
-            //std::cout << "Compiling vertex shader." << std::endl;
-            glShaderSource(vertexShader, 1, &vertexShaderSrc, nullptr);
-            glCompileShader(vertexShader);
-
-            // Check vertex shader
-            glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &result);
-            glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logLength);
-
-            if (result == GL_FALSE && logLength > 1)
-            {
-                std::vector<char> shaderError((logLength > 1) ? logLength : 1);
-                glGetShaderInfoLog(vertexShader, logLength, nullptr, &shaderError[0]);
-                std::cout << "Vertex Shader Error: " << &shaderError[0] << "(" << vertexShaderPath << ")" << std::endl;
-            }
+            vertStr = readFile(vertexShaderPath);
+            vertSrc = vertStr.c_str();
+        }
+        if (!fragmentShaderPath.empty())
+        {
+            fragStr = readFile(fragmentShaderPath);
+            fragSrc = fragStr.c_str();
         }
 
-        if (fragmentShaderPath != "")
-        {
-            string fragmentShaderStr = readFile(fragmentShaderPath);
-            const char *fragmentShaderSrc = fragmentShaderStr.c_str();
-
-            // Compile fragment shader
-            //std::cout << "Compiling fragment shader." << std::endl;
-            glShaderSource(fragmentShader, 1, &fragmentShaderSrc, nullptr);
-            glCompileShader(fragmentShader);
-
-            // Check fragment shader
-            glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &result);
-            glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logLength);
-
-            if (result == GL_FALSE && logLength > 1)
-            {
-                std::vector<char> shaderError((logLength > 1) ? logLength : 1);
-                glGetShaderInfoLog(fragmentShader, logLength, nullptr, &shaderError[0]);
-                std::cout << "Fragment Shader Error: " << &shaderError[0] << "(" << fragmentShaderPath << ")" << std::endl;
-            }
-        }
-
-        // Program
-        //std::cout << "Linking program" << std::endl;
-        shaderProgram = glCreateProgram();
-
-        if (vertexShaderPath != "")
-        {
-            glAttachShader(shaderProgram, vertexShader);
-        }
-        if (fragmentShaderPath != "")
-        {
-            glAttachShader(shaderProgram, fragmentShader);
-        }
-
-        glLinkProgram(shaderProgram);
-
-        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
-        glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
-
-        if (result == GL_FALSE && logLength > 1)
-        {
-            std::vector<char> programError( (logLength > 1) ? logLength : 1 );
-            glGetProgramInfoLog(shaderProgram, logLength, nullptr, &programError[0]);
-            std::cout << "Link Shader Program Error: " << &programError[0] << std::endl;
-        }
-
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
+        shaderProgram = kDriver::getCurrent()->compileShaderProgram(vertSrc, fragSrc);
     }
 
-    void kShader::loadShadersCode(const char* vertexShaderCode, const char* fragmentShaderCode)
+    void kShader::loadShadersCode(const char *vertexShaderCode, const char *fragmentShaderCode)
     {
-        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-        GLint result = GL_FALSE;
-        int logLength;
-
-        // Read shaders
-        if (vertexShaderCode && strlen(vertexShaderCode) > 0)
-        {
-            // Compile vertex shader
-            //std::cout << "Compiling vertex shader." << std::endl;
-            glShaderSource(vertexShader, 1, &vertexShaderCode, nullptr);
-            glCompileShader(vertexShader);
-
-            // Check vertex shader
-            glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &result);
-            glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, &logLength);
-
-            if (result == GL_FALSE && logLength > 1)
-            {
-                std::vector<char> shaderError((logLength > 1) ? logLength : 1);
-                glGetShaderInfoLog(vertexShader, logLength, nullptr, &shaderError[0]);
-                std::cout << "Vertex Shader Error: " << &shaderError[0] << "(" << vertexShaderCode << ")" << std::endl;
-            }
-        }
-
-        if (fragmentShaderCode && strlen(fragmentShaderCode) > 0)
-        {
-            // Compile fragment shader
-            //std::cout << "Compiling fragment shader." << std::endl;
-            glShaderSource(fragmentShader, 1, &fragmentShaderCode, nullptr);
-            glCompileShader(fragmentShader);
-
-            // Check fragment shader
-            glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &result);
-            glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, &logLength);
-
-            if (result == GL_FALSE && logLength > 1)
-            {
-                std::vector<char> shaderError((logLength > 1) ? logLength : 1);
-                glGetShaderInfoLog(fragmentShader, logLength, nullptr, &shaderError[0]);
-                std::cout << "Fragment Shader Error: " << &shaderError[0] << "(" << fragmentShaderCode << ")" << std::endl;
-            }
-        }
-
-        // Program
-        //std::cout << "Linking program" << std::endl;
-        shaderProgram = glCreateProgram();
-
-        if (vertexShaderCode && strlen(vertexShaderCode) > 0)
-        {
-            glAttachShader(shaderProgram, vertexShader);
-        }
-        if (fragmentShaderCode && strlen(fragmentShaderCode) > 0)
-        {
-            glAttachShader(shaderProgram, fragmentShader);
-        }
-
-        glLinkProgram(shaderProgram);
-
-        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
-        glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
-
-        if (result == GL_FALSE && logLength > 1)
-        {
-            std::vector<char> programError( (logLength > 1) ? logLength : 1 );
-            glGetProgramInfoLog(shaderProgram, logLength, nullptr, &programError[0]);
-            std::cout << "Link Shader Program Error: " << &programError[0] << std::endl;
-        }
-
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
+        shaderProgram = kDriver::getCurrent()->compileShaderProgram(vertexShaderCode, fragmentShaderCode);
     }
 
     void kShader::use()
     {
-        glUseProgram(shaderProgram);
+        kDriver::getCurrent()->bindShaderProgram(shaderProgram);
     }
 
     void kShader::unuse()
     {
-        glUseProgram(0);
+        kDriver::getCurrent()->unbindShaderProgram();
     }
 
-    void kShader::setShaderProgram(GLuint program)
+    void kShader::setShaderProgram(uint32_t program)
     {
         shaderProgram = program;
     }
 
-    GLuint kShader::getShaderProgram()
+    uint32_t kShader::getShaderProgram()
     {
         return shaderProgram;
     }
 
     void kShader::setValue(string name, std::vector<mat4> value)
     {
-        GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
-
-        /*if (loc == -1)
-        {
-            std::cerr << "Uniform '" << name << "' not found in shader program!" << std::endl;
-            return;
-        }*/
-
-        glUniformMatrix4fv(loc, static_cast<GLsizei>(value.size()), GL_FALSE, glm::value_ptr(value[0]));
+        kDriver::getCurrent()->setUniformMat4Array(shaderProgram, name, value);
     }
 
     void kShader::setValue(string name, mat4 value)
     {
-        GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
-
-        /*if (loc == -1)
-        {
-            std::cerr << "Uniform '" << name << "' not found in shader program!" << std::endl;
-            return;
-        }*/
-
-        glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
+        kDriver::getCurrent()->setUniformMat4(shaderProgram, name, value);
     }
 
     void kShader::setValue(string name, vec3 value)
     {
-        GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
-
-        /*if (loc == -1)
-        {
-            std::cerr << "Uniform '" << name << "' not found in shader program!" << std::endl;
-            return;
-        }*/
-
-        glUniform3fv(loc, 1, glm::value_ptr(value));
+        kDriver::getCurrent()->setUniformVec3(shaderProgram, name, value);
     }
 
     void kShader::setValue(string name, vec2 value)
     {
-        GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
-
-        /*if (loc == -1)
-        {
-            std::cerr << "Uniform '" << name << "' not found in shader program!" << std::endl;
-            return;
-        }*/
-
-        glUniform2fv(loc, 1, glm::value_ptr(value));
+        kDriver::getCurrent()->setUniformVec2(shaderProgram, name, value);
     }
 
     void kShader::setValue(string name, float value)
     {
-        GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
-
-        /*if (loc == -1)
-        {
-            std::cerr << "Uniform '" << name << "' not found in shader program!" << std::endl;
-            return;
-        }*/
-
-        glUniform1f(loc, value);
+        kDriver::getCurrent()->setUniformFloat(shaderProgram, name, value);
     }
 
     void kShader::setValue(string name, int value)
     {
-        GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
-
-        /*if (loc == -1)
-        {
-            std::cerr << "Uniform '" << name << "' not found in shader program!" << std::endl;
-            return;
-        }*/
-
-        glUniform1i(loc, value);
+        kDriver::getCurrent()->setUniformInt(shaderProgram, name, value);
     }
 
     void kShader::setValue(string name, unsigned int value)
     {
-        GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
-
-        /*if (loc == -1)
-        {
-            std::cerr << "Uniform '" << name << "' not found in shader program!" << std::endl;
-            return;
-        }*/
-
-        glUniform1i(loc, value);
+        kDriver::getCurrent()->setUniformUint(shaderProgram, name, value);
     }
 
     void kShader::setValue(string name, bool value)
     {
-        GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
-
-        /*if (loc == -1)
-        {
-            std::cerr << "Uniform '" << name << "' not found in shader program!" << std::endl;
-            return;
-        }*/
-
-        glUniform1i(loc, value);
+        kDriver::getCurrent()->setUniformBool(shaderProgram, name, value);
     }
 }

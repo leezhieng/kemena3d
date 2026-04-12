@@ -2,6 +2,7 @@
 #define KOBJECT_H
 
 #include "kexport.h"
+#include "kdriver.h"
 
 #include <iostream>
 #include <string>
@@ -99,9 +100,9 @@ namespace kemena
 
         kMaterial *material = nullptr;
 
-		GLuint iconVAO;
-        GLuint iconVertexBuffer;
-        GLfloat iconVertices[12] =
+        uint32_t iconVAO = 0;
+        uint32_t iconVertexBuffer = 0;
+        float iconVertices[12] =
             {
                 -0.5f,
                 -0.5f,

@@ -13,16 +13,19 @@ namespace kemena
 
     kMesh::~kMesh()
     {
-        if (vao)            glDeleteVertexArrays(1, &vao);
-        if (indicesEbo)     glDeleteBuffers(1, &indicesEbo);
-        if (vertexBuffer)   glDeleteBuffers(1, &vertexBuffer);
-        if (vertexColorBuffer) glDeleteBuffers(1, &vertexColorBuffer);
-        if (uvBuffer)       glDeleteBuffers(1, &uvBuffer);
-        if (normalBuffer)   glDeleteBuffers(1, &normalBuffer);
-        if (tangentBuffer)  glDeleteBuffers(1, &tangentBuffer);
-        if (bitangentBuffer) glDeleteBuffers(1, &bitangentBuffer);
-        if (boneIDBuffer)   glDeleteBuffers(1, &boneIDBuffer);
-        if (weightBuffer)   glDeleteBuffers(1, &weightBuffer);
+        kDriver *driver = kDriver::getCurrent();
+        if (driver == nullptr) return;
+
+        if (vao)               driver->deleteVertexArray(vao);
+        if (indicesEbo)        driver->deleteBuffer(indicesEbo);
+        if (vertexBuffer)      driver->deleteBuffer(vertexBuffer);
+        if (vertexColorBuffer) driver->deleteBuffer(vertexColorBuffer);
+        if (uvBuffer)          driver->deleteBuffer(uvBuffer);
+        if (normalBuffer)      driver->deleteBuffer(normalBuffer);
+        if (tangentBuffer)     driver->deleteBuffer(tangentBuffer);
+        if (bitangentBuffer)   driver->deleteBuffer(bitangentBuffer);
+        if (boneIDBuffer)      driver->deleteBuffer(boneIDBuffer);
+        if (weightBuffer)      driver->deleteBuffer(weightBuffer);
     }
 
     void kMesh::setLoaded(bool newLoaded)
@@ -268,17 +271,17 @@ namespace kemena
         return vertices.size();
     }
 
-    GLuint kMesh::getVertexArrayObject()
+    uint32_t kMesh::getVertexArrayObject()
     {
         return vao;
     }
 
-    GLuint kMesh::getVertexBuffer()
+    uint32_t kMesh::getVertexBuffer()
     {
         return vertexBuffer;
     }
 
-    GLuint kMesh::getVertexColorBuffer()
+    uint32_t kMesh::getVertexColorBuffer()
     {
         return vertexColorBuffer;
     }
@@ -295,107 +298,88 @@ namespace kemena
 
     void kMesh::generateVbo()
     {
-        // Make sure required buffers are valid
         assert(vertices.size() == normals.size());
         assert(vertices.size() == uvs.size());
         assert(vertices.size() == boneIDs.size());
         assert(vertices.size() == weights.size());
 
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        kDriver *driver = kDriver::getCurrent();
 
-        // === Index Buffer ===
+        vao = driver->createVertexArray();
+        driver->bindVertexArray(vao);
+
+        // Index buffer
         if (!indices.empty())
         {
-            glGenBuffers(1, &indicesEbo);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesEbo);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+            indicesEbo = driver->createBuffer();
+            driver->uploadIndexBuffer(indicesEbo, indices.data(), indices.size() * sizeof(uint32_t));
         }
 
-        // === Vertex Position (location = 0) ===
+        // Vertex position (location 0)
         if (!vertices.empty())
         {
-            glGenBuffers(1, &vertexBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), vertices.data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void *)0);
+            vertexBuffer = driver->createBuffer();
+            driver->uploadVertexBuffer(vertexBuffer, vertices.data(), vertices.size() * sizeof(vec3));
+            driver->setVertexAttribFloat(0, 3, sizeof(vec3), 0);
         }
 
-        // === Vertex Color (location = 1) ===
+        // Vertex color (location 1)
         if (!vertexColors.empty())
         {
-            glGenBuffers(1, &vertexColorBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, vertexColorBuffer);
-            glBufferData(GL_ARRAY_BUFFER, vertexColors.size() * sizeof(vec3), vertexColors.data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void *)0);
+            vertexColorBuffer = driver->createBuffer();
+            driver->uploadVertexBuffer(vertexColorBuffer, vertexColors.data(), vertexColors.size() * sizeof(vec3));
+            driver->setVertexAttribFloat(1, 3, sizeof(vec3), 0);
         }
 
-        // === UV (location = 2) ===
+        // UV (location 2)
         if (!uvs.empty())
         {
-            glGenBuffers(1, &uvBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-            glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(vec2), uvs.data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vec2), (void *)0);
+            uvBuffer = driver->createBuffer();
+            driver->uploadVertexBuffer(uvBuffer, uvs.data(), uvs.size() * sizeof(vec2));
+            driver->setVertexAttribFloat(2, 2, sizeof(vec2), 0);
         }
 
-        // === Normals (location = 3) ===
+        // Normals (location 3)
         if (!normals.empty())
         {
-            glGenBuffers(1, &normalBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
-            glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), normals.data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(3);
-            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void *)0);
+            normalBuffer = driver->createBuffer();
+            driver->uploadVertexBuffer(normalBuffer, normals.data(), normals.size() * sizeof(vec3));
+            driver->setVertexAttribFloat(3, 3, sizeof(vec3), 0);
         }
 
-        // === Tangents (location = 4) ===
+        // Tangents (location 4)
         if (!tangents.empty())
         {
-            glGenBuffers(1, &tangentBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, tangentBuffer);
-            glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(vec3), tangents.data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(4);
-            glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void *)0);
+            tangentBuffer = driver->createBuffer();
+            driver->uploadVertexBuffer(tangentBuffer, tangents.data(), tangents.size() * sizeof(vec3));
+            driver->setVertexAttribFloat(4, 3, sizeof(vec3), 0);
         }
 
-        // === Bitangents (location = 5) ===
+        // Bitangents (location 5)
         if (!bitangents.empty())
         {
-            glGenBuffers(1, &bitangentBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, bitangentBuffer);
-            glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(vec3), bitangents.data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(5);
-            glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void *)0);
+            bitangentBuffer = driver->createBuffer();
+            driver->uploadVertexBuffer(bitangentBuffer, bitangents.data(), bitangents.size() * sizeof(vec3));
+            driver->setVertexAttribFloat(5, 3, sizeof(vec3), 0);
         }
 
-        // === Bone IDs (location = 6) ===
+        // Bone IDs (location 6) — integer attrib
         if (!boneIDs.empty())
         {
-            glGenBuffers(1, &boneIDBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, boneIDBuffer);
-            glBufferData(GL_ARRAY_BUFFER, boneIDs.size() * sizeof(ivec4), boneIDs.data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(6);
-            glVertexAttribIPointer(6, 4, GL_INT, sizeof(ivec4), (void *)0); // Integer pointer!
+            boneIDBuffer = driver->createBuffer();
+            driver->uploadVertexBuffer(boneIDBuffer, boneIDs.data(), boneIDs.size() * sizeof(ivec4));
+            driver->setVertexAttribInt(6, 4, sizeof(ivec4), 0);
         }
 
-        // === Weights (location = 7) ===
+        // Weights (location 7)
         if (!weights.empty())
         {
-            glGenBuffers(1, &weightBuffer);
-            glBindBuffer(GL_ARRAY_BUFFER, weightBuffer);
-            glBufferData(GL_ARRAY_BUFFER, weights.size() * sizeof(vec4), weights.data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(7);
-            glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(vec4), (void *)0);
+            weightBuffer = driver->createBuffer();
+            driver->uploadVertexBuffer(weightBuffer, weights.data(), weights.size() * sizeof(vec4));
+            driver->setVertexAttribFloat(7, 4, sizeof(vec4), 0);
         }
 
-        // Unbind — VAO must be unbound before EBO to preserve the EBO binding inside the VAO
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        driver->unbindVertexArray();
 
         calculateModelMatrix();
         calculateNormalMatrix();
@@ -411,9 +395,7 @@ namespace kemena
         if (vao == 0 || indices.empty())
             return;
 
-        glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, (void *)0);
-        glBindVertexArray(0);
+        kDriver::getCurrent()->drawIndexed(vao, (int)indices.size());
     }
 
     json kMesh::serialize()

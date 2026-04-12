@@ -46,7 +46,7 @@ namespace kemena
 		style.FontScaleDpi = mainScale; // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
 
 		// Setup Platform/Renderer backends
-		ImGui_ImplSDL3_InitForOpenGL(renderer->getWindow()->getSdlWindow(), renderer->getOpenGlContext());
+		ImGui_ImplSDL3_InitForOpenGL(renderer->getWindow()->getSdlWindow(), (SDL_GLContext)renderer->getDriver()->getNativeContext());
 		const char *glsl_version = "#version 150";
 		ImGui_ImplOpenGL3_Init(glsl_version);
 	}
@@ -83,8 +83,8 @@ namespace kemena
 
 	void kGuiManager::canvasStart()
 	{
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
+		renderer->getDriver()->setDepthTest(false);
+		renderer->getDriver()->setCullFace(false);
 
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();

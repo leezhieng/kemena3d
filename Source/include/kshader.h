@@ -2,26 +2,13 @@
 #define KSHADER_H
 
 #include "kexport.h"
+#include "kdriver.h"
+#include "kdatatype.h"
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
-
-#include "glm/glm.hpp"
-#include <GL/glew.h>
-
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
-
-#include <glm/gtc/type_ptr.hpp>
-
-#include "kdatatype.h"
 
 namespace kemena
 {
@@ -32,13 +19,13 @@ namespace kemena
         virtual ~kShader();
 
         string readFile(const string filePath);
-        void loadShadersFile(const string vertextShaderPath, const string fragmentShaderPath);
-        void loadShadersCode(const char *vertextShaderCode, const char *fragmentShaderCode);
+        void loadShadersFile(const string vertexShaderPath, const string fragmentShaderPath);
+        void loadShadersCode(const char *vertexShaderCode, const char *fragmentShaderCode);
         void use();
         void unuse();
 
-        void setShaderProgram(GLuint program);
-        GLuint getShaderProgram();
+        void setShaderProgram(uint32_t program);
+        uint32_t getShaderProgram();
 
         void setValue(string name, std::vector<mat4> value);
         void setValue(string name, mat4 value);
@@ -51,7 +38,7 @@ namespace kemena
 
     protected:
     private:
-        GLuint shaderProgram;
+        uint32_t shaderProgram = 0;
     };
 }
 

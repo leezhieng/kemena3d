@@ -2,6 +2,7 @@
 #define KMESH_H
 
 #include "kexport.h"
+#include "kdriver.h"
 
 #include <map>
 #include <vector>
@@ -78,9 +79,9 @@ namespace kemena
 
         int getVertexCount();
 
-        GLuint getVertexArrayObject();
-        GLuint getVertexBuffer();
-        GLuint getVertexColorBuffer();
+        uint32_t getVertexArrayObject();
+        uint32_t getVertexBuffer();
+        uint32_t getVertexColorBuffer();
 
         void setNormalMatrix(mat4 newNormalMatrix);
         mat4 getNormalMatrix();
@@ -127,17 +128,17 @@ namespace kemena
         std::vector<ivec4> boneIDs;
         std::vector<vec4> weights;
 
-        GLuint vao = 0;
-        GLuint indicesEbo = 0;
+        uint32_t vao = 0;
+        uint32_t indicesEbo = 0;
 
-        GLuint vertexBuffer = 0;
-        GLuint vertexColorBuffer = 0;
-        GLuint uvBuffer = 0;
-        GLuint normalBuffer = 0;
-        GLuint tangentBuffer = 0;
-        GLuint bitangentBuffer = 0;
-        GLuint boneIDBuffer = 0;
-        GLuint weightBuffer = 0;
+        uint32_t vertexBuffer = 0;
+        uint32_t vertexColorBuffer = 0;
+        uint32_t uvBuffer = 0;
+        uint32_t normalBuffer = 0;
+        uint32_t tangentBuffer = 0;
+        uint32_t bitangentBuffer = 0;
+        uint32_t boneIDBuffer = 0;
+        uint32_t weightBuffer = 0;
 
         mat3 normalMatrix;
 
