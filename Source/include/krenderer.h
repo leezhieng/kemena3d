@@ -104,18 +104,18 @@ namespace kemena
         // Screen FBO
         bool enableScreenBuffer = false;
         kShader *screenShader = nullptr;
-        GLuint quadVao, quadVbo, quadEbo;
-        GLuint fbo, fboTexColor, rboDepth;
-        GLuint fboMsaa, fboTexColorMsaa, rboMsaa, rboDepthMsaa;
-		
-		int fboWidth, fboHeight; // FBO may not be the same size as the window, for example when used in Dear Imgui panel or render to texture
+        GLuint quadVao = 0, quadVbo = 0, quadEbo = 0;
+        GLuint fbo = 0, fboTexColor = 0, rboDepth = 0;
+        GLuint fboMsaa = 0, fboTexColorMsaa = 0, rboMsaa = 0, rboDepthMsaa = 0;
+
+        int fboWidth = 0, fboHeight = 0; // FBO may not be the same size as the window, for example when used in Dear Imgui panel or render to texture
 
         // Shadow FBO
         bool enableShadow = false;
         kShader *shadowShader = nullptr;
-        GLuint shadowFbo;
+        GLuint shadowFbo = 0;
         const unsigned int shadowWidth = 1024, shadowHeight = 1024;
-        GLuint shadowFboTex;
+        GLuint shadowFboTex = 0;
         mat4 lightSpaceMatrix;
 
         // For auto exposure

@@ -4,10 +4,13 @@ namespace kemena
 {
     kShader::kShader()
     {
+        shaderProgram = 0;
     }
 
     kShader::~kShader()
     {
+        if (shaderProgram)
+            glDeleteProgram(shaderProgram);
     }
 
     std::string kShader::readFile(const std::string filePath)
@@ -93,7 +96,7 @@ namespace kemena
         {
             glAttachShader(shaderProgram, vertexShader);
         }
-        if (vertexShaderPath != "")
+        if (fragmentShaderPath != "")
         {
             glAttachShader(shaderProgram, fragmentShader);
         }

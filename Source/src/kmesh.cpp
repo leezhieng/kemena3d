@@ -11,6 +11,20 @@ namespace kemena
         calculateNormalMatrix();
     }
 
+    kMesh::~kMesh()
+    {
+        if (vao)            glDeleteVertexArrays(1, &vao);
+        if (indicesEbo)     glDeleteBuffers(1, &indicesEbo);
+        if (vertexBuffer)   glDeleteBuffers(1, &vertexBuffer);
+        if (vertexColorBuffer) glDeleteBuffers(1, &vertexColorBuffer);
+        if (uvBuffer)       glDeleteBuffers(1, &uvBuffer);
+        if (normalBuffer)   glDeleteBuffers(1, &normalBuffer);
+        if (tangentBuffer)  glDeleteBuffers(1, &tangentBuffer);
+        if (bitangentBuffer) glDeleteBuffers(1, &bitangentBuffer);
+        if (boneIDBuffer)   glDeleteBuffers(1, &boneIDBuffer);
+        if (weightBuffer)   glDeleteBuffers(1, &weightBuffer);
+    }
+
     void kMesh::setLoaded(bool newLoaded)
     {
         loaded = newLoaded;
@@ -378,10 +392,10 @@ namespace kemena
             glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), (void *)0);
         }
 
-        // Clean up
-        glBindVertexArray(0);                     // Unbind VAO
-        glBindBuffer(GL_ARRAY_BUFFER, 0);         // Optional
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Optional
+        // Unbind — VAO must be unbound before EBO to preserve the EBO binding inside the VAO
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         calculateModelMatrix();
         calculateNormalMatrix();
@@ -399,7 +413,7 @@ namespace kemena
 
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, (void *)0);
-        glBindVertexArray(0); // Optional
+        glBindVertexArray(0);
     }
 
     json kMesh::serialize()

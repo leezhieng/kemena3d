@@ -70,6 +70,27 @@ namespace kemena
 
     void kRenderer::destroy()
     {
+        if (enableScreenBuffer)
+        {
+            if (fboMsaa)        { glDeleteFramebuffers(1, &fboMsaa);       fboMsaa = 0; }
+            if (fboTexColorMsaa){ glDeleteTextures(1, &fboTexColorMsaa);   fboTexColorMsaa = 0; }
+            if (rboMsaa)        { glDeleteRenderbuffers(1, &rboMsaa);      rboMsaa = 0; }
+            if (rboDepthMsaa)   { glDeleteRenderbuffers(1, &rboDepthMsaa); rboDepthMsaa = 0; }
+
+            if (fbo)            { glDeleteFramebuffers(1, &fbo);           fbo = 0; }
+            if (fboTexColor)    { glDeleteTextures(1, &fboTexColor);       fboTexColor = 0; }
+            if (rboDepth)       { glDeleteRenderbuffers(1, &rboDepth);     rboDepth = 0; }
+
+            if (quadVao)        { glDeleteVertexArrays(1, &quadVao);       quadVao = 0; }
+            if (quadVbo)        { glDeleteBuffers(1, &quadVbo);            quadVbo = 0; }
+            if (quadEbo)        { glDeleteBuffers(1, &quadEbo);            quadEbo = 0; }
+        }
+
+        if (enableShadow)
+        {
+            if (shadowFbo)    { glDeleteFramebuffers(1, &shadowFbo);   shadowFbo = 0; }
+            if (shadowFboTex) { glDeleteTextures(1, &shadowFboTex);    shadowFboTex = 0; }
+        }
     }
 
     void kRenderer::setEngineInfo(const std::string name, uint32_t version)
@@ -85,17 +106,18 @@ namespace kemena
 	
 	void kRenderer::clear()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
         if (enableScreenBuffer)
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
             glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
         }
-		
+        else
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+
 		glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -152,7 +174,6 @@ namespace kemena
         {
             // Render to MSAA FBO
             resizeFbo(width, height); // Manually resize fbo yourself if screenbuffer is enabled?
-            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
             glBindFramebuffer(GL_FRAMEBUFFER, fboMsaa);
         }
 
@@ -504,9 +525,18 @@ namespace kemena
 
                                 currentMesh->draw();
 
+                                // Unbind all texture units that were bound (material textures + shadow map)
+                                {
+                                    int totalUnits = (int)currentMesh->getMaterial()->getTextures().size() + 1;
+                                    for (int k = totalUnits - 1; k >= 0; k--)
+                                    {
+                                        glActiveTexture(GL_TEXTURE0 + k);
+                                        glBindTexture(GL_TEXTURE_2D, 0);
+                                        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+                                    }
+                                }
+
                                 shader->unuse();
-                                glActiveTexture(GL_TEXTURE0);
-                                glBindTexture(GL_TEXTURE_2D, 0);
                             }
                         }
                         else
@@ -770,15 +800,10 @@ namespace kemena
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, fboTexColorMsaa, 0);
 
-            glGenRenderbuffers(1, &rboMsaa);
-            glBindRenderbuffer(GL_RENDERBUFFER, rboMsaa);
+            glGenRenderbuffers(1, &rboDepthMsaa);
+            glBindRenderbuffer(GL_RENDERBUFFER, rboDepthMsaa);
             glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboMsaa);
-
-			glGenRenderbuffers(1, &rboDepthMsaa);
-			glBindRenderbuffer(GL_RENDERBUFFER, rboDepthMsaa);
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER, 8, GL_DEPTH24_STENCIL8, fboWidth, fboHeight);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthMsaa);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboDepthMsaa);
 
             if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             {

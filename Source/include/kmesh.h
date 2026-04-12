@@ -20,6 +20,7 @@ namespace kemena
     {
     public:
         kMesh(kObject *parentNode = nullptr);
+        ~kMesh();
 
         void setLoaded(bool newLoaded);
         bool getLoaded();
@@ -126,17 +127,17 @@ namespace kemena
         std::vector<ivec4> boneIDs;
         std::vector<vec4> weights;
 
-        GLuint vao;
-        GLuint indicesEbo;
+        GLuint vao = 0;
+        GLuint indicesEbo = 0;
 
-        GLuint vertexBuffer;
-        GLuint vertexColorBuffer;
-        GLuint uvBuffer;
-        GLuint normalBuffer;
-        GLuint tangentBuffer;
-        GLuint bitangentBuffer;
-        GLuint boneIDBuffer;
-        GLuint weightBuffer;
+        GLuint vertexBuffer = 0;
+        GLuint vertexColorBuffer = 0;
+        GLuint uvBuffer = 0;
+        GLuint normalBuffer = 0;
+        GLuint tangentBuffer = 0;
+        GLuint bitangentBuffer = 0;
+        GLuint boneIDBuffer = 0;
+        GLuint weightBuffer = 0;
 
         mat3 normalMatrix;
 
