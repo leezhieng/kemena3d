@@ -41,37 +41,37 @@ namespace kemena
         unsigned int getId();
         void setId(unsigned int newId);
 
-        std::string getUuid();
-        void setUuid(std::string newUuid);
+        string getUuid();
+        void setUuid(string newUuid);
 
-        std::string getName();
-        void setName(std::string newName);
+        string getName();
+        void setName(string newName);
 
-        glm::vec3 getPosition();
-        virtual void setPosition(glm::vec3 newPosition);
-        glm::quat getRotation();
-        glm::vec3 getRotationEuler();
-        virtual void setRotation(glm::quat newRotation);
-        glm::vec3 getScale();
-        virtual void setScale(glm::vec3 newScale);
+        vec3 getPosition();
+        virtual void setPosition(vec3 newPosition);
+        quat getRotation();
+        vec3 getRotationEuler();
+        virtual void setRotation(quat newRotation);
+        vec3 getScale();
+        virtual void setScale(vec3 newScale);
 
-        glm::vec3 calculateRight();
-        glm::vec3 calculateForward();
-        glm::vec3 calculateUp();
+        vec3 calculateRight();
+        vec3 calculateForward();
+        vec3 calculateUp();
 
-        void rotate(glm::vec3 rotationAxis, float angularSpeed);
+        void rotate(vec3 rotationAxis, float angularSpeed);
 
-        glm::vec3 getGlobalPosition();
-        glm::quat getGlobalRotation();
-        glm::vec3 getGlobalScale();
+        vec3 getGlobalPosition();
+        quat getGlobalRotation();
+        vec3 getGlobalScale();
 
         void setMaterial(kMaterial *newMaterial, bool setChildren = true);
         kMaterial *getMaterial();
 
         // Moved from kMesh to kObject, sometime object also need model matrix
         void calculateModelMatrix();
-        glm::mat4 getModelMatrixWorld();
-        glm::mat4 getModelMatrixLocal();
+        mat4 getModelMatrixWorld();
+        mat4 getModelMatrixLocal();
 
         virtual void draw();
 
@@ -87,15 +87,15 @@ namespace kemena
 
         kNodeType type = NODE_TYPE_OBJECT;
         unsigned int id;
-        std::string uuid;
-        std::string name;
+        string uuid;
+        string name;
 
-        glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::quat rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
-        glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        vec3 position = vec3(0.0f, 0.0f, 0.0f);
+        quat rotation = quat(vec3(0.0f, 0.0f, 0.0f));
+        vec3 scale = vec3(1.0f, 1.0f, 1.0f);
 
-        glm::mat4 localTransform = glm::mat4(1.0f); // Model matrix (local space)
-        glm::mat4 worldTransform = glm::mat4(1.0f); // Model matrix (world space)
+        mat4 localTransform = mat4(1.0f); // Model matrix (local space)
+        mat4 worldTransform = mat4(1.0f); // Model matrix (world space)
 
         kMaterial *material = nullptr;
 

@@ -30,7 +30,7 @@ namespace kemena
         int channels;
 
         GLuint textureID;
-        std::string textureName;
+        string textureName;
 
         unsigned char *data;
     };

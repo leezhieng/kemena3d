@@ -22,13 +22,13 @@ namespace kemena
         kWindow();
         virtual ~kWindow();
 
-        bool init(int width, int height, std::string title, bool maximized = false, kWindowType type = kWindowType::WINDOW_DEFAULT, void *nativeHandle = nullptr);
+        bool init(int width, int height, string title, bool maximized = false, kWindowType type = kWindowType::WINDOW_DEFAULT, void *nativeHandle = nullptr);
         void destroy();
         void swap();
         int getWindowWidth();
         int getWindowHeight();
-        std::string getWindowTitle();
-        void setWindowTitle(std::string newTitle);
+        string getWindowTitle();
+        void setWindowTitle(string newTitle);
 
         SDL_Window *getSdlWindow();
 
@@ -41,7 +41,7 @@ namespace kemena
     private:
         SDL_Window *sdlWindow = NULL;
 
-        std::string windowTitle;
+        string windowTitle;
         int windowWidth;
         int windowHeight;
 

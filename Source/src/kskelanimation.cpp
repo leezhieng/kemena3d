@@ -10,7 +10,7 @@ namespace kemena
     {
     }
 
-    void kSkeletalAnimation::loadAnimation(const std::string& animationPath, kMesh* model)
+    void kSkeletalAnimation::loadAnimation(const string& animationPath, kMesh* model)
     {
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
@@ -22,7 +22,7 @@ namespace kemena
         readMissingBones(animation, *model);
     }
 
-    kBone* kSkeletalAnimation::findBone(std::string& name)
+    kBone* kSkeletalAnimation::findBone(string& name)
     {
         auto iter = std::find_if(bones.begin(), bones.end(), [&](kBone& bone)
         {
@@ -49,7 +49,7 @@ namespace kemena
         return rootNode;
     }
 
-    const std::map<std::string, kBoneInfo>& kSkeletalAnimation::getBoneIDMap()
+    const std::map<string, kBoneInfo>& kSkeletalAnimation::getBoneIDMap()
     {
         return boneInfoMap;
     }
@@ -65,7 +65,7 @@ namespace kemena
         for (int i = 0; i < size; i++)
         {
             auto channel = animation->mChannels[i];
-            std::string boneName = channel->mNodeName.data;
+            string boneName = channel->mNodeName.data;
 
             if (boneInfoMap.find(boneName) == boneInfoMap.end())
             {

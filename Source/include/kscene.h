@@ -35,11 +35,11 @@ namespace kemena
         bool getActive();
         void setActive(bool newActive);
 
-        std::string getUuid();
-        void setUuid(std::string newUuid);
+        string getUuid();
+        void setUuid(string newUuid);
 
-        std::string getName();
-        void setName(std::string newName);
+        string getName();
+        void setName(string newName);
 
         unsigned int getIncrement();
         void setIncrement(unsigned int newIncrement);
@@ -51,17 +51,17 @@ namespace kemena
 
         kObject *getRootNode();
 
-        void addObject(kObject *object, std::string objectUuid = "");
+        void addObject(kObject *object, string objectUuid = "");
 
-        kMesh *addMesh(std::string fileName, std::string objectUuid = "");
-        void addMesh(kMesh *mesh, std::string objectUuid = "");
+        kMesh *addMesh(string fileName, string objectUuid = "");
+        void addMesh(kMesh *mesh, string objectUuid = "");
 
-        glm::vec3 getAmbientLightColor();
-        void setAmbientLightColor(glm::vec3 newColor);
+        vec3 getAmbientLightColor();
+        void setAmbientLightColor(vec3 newColor);
 
-        kLight *addSunLight(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 direction = glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3 ambientColor = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 specularColor = glm::vec3(1.0f, 1.0f, 1.0f), std::string objectUuid = "");
-        kLight *addPointLight(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 ambientColor = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 specularColor = glm::vec3(1.0f, 1.0f, 1.0f), std::string objectUuid = "");
-        kLight *addSpotLight(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 direction = glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3 ambientColor = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3 specularColor = glm::vec3(1.0f, 1.0f, 1.0f), std::string objectUuid = "");
+        kLight *addSunLight(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 direction = vec3(0.0f, -1.0f, 0.0f), vec3 ambientColor = vec3(1.0f, 1.0f, 1.0f), vec3 diffuseColor = vec3(1.0f, 1.0f, 1.0f), vec3 specularColor = vec3(1.0f, 1.0f, 1.0f), string objectUuid = "");
+        kLight *addPointLight(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 ambientColor = vec3(1.0f, 1.0f, 1.0f), vec3 diffuseColor = vec3(1.0f, 1.0f, 1.0f), vec3 specularColor = vec3(1.0f, 1.0f, 1.0f), string objectUuid = "");
+        kLight *addSpotLight(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 direction = vec3(0.0f, 1.0f, 0.0f), vec3 ambientColor = vec3(1.0f, 1.0f, 1.0f), vec3 diffuseColor = vec3(1.0f, 1.0f, 1.0f), vec3 specularColor = vec3(1.0f, 1.0f, 1.0f), string objectUuid = "");
 
         void setSkybox(kMaterial *newMaterial, kMesh *newMesh);
         kMaterial *getSkyboxMaterial();
@@ -77,8 +77,8 @@ namespace kemena
 
         bool isActive = true;
 
-        std::string uuid;
-        std::string name;
+        string uuid;
+        string name;
 		
 		std::vector<kObject *> objects;
 
@@ -87,7 +87,7 @@ namespace kemena
 
         kObject *rootNode = nullptr;
 
-        glm::vec3 ambientLightColor = glm::vec3(0.0f, 0.0f, 0.0f);
+        vec3 ambientLightColor = vec3(0.0f, 0.0f, 0.0f);
 
         kMaterial *skyMaterial = nullptr;
         kMesh *skyMesh = nullptr;

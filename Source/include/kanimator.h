@@ -25,8 +25,8 @@ namespace kemena
         void playAnimation(kAnimation *animation);
         kAnimation *getCurrentAnimation();
 
-        void calculateBoneTransform(const kAssimpNodeData *node, glm::mat4 parentTransform);
-        const std::vector<glm::mat4> getFinalBoneMatrices() const;
+        void calculateBoneTransform(const kAssimpNodeData *node, mat4 parentTransform);
+        const std::vector<mat4> getFinalBoneMatrices() const;
 
         void setCurrentTime(float newTime);
 
@@ -35,7 +35,7 @@ namespace kemena
 
     protected:
     private:
-        std::vector<glm::mat4> finalBoneMatrices;
+        std::vector<mat4> finalBoneMatrices;
         kAnimation *currentAnimation = nullptr;
         float currentTime;
         float deltaTime;

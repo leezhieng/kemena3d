@@ -25,56 +25,56 @@ namespace kemena
         void setLoaded(bool newLoaded);
         bool getLoaded();
 
-        void setFileName(std::string newFileName);
-        std::string getFileName();
+        void setFileName(string newFileName);
+        string getFileName();
 
-        void setRefName(std::string newRefName);
-        std::string getRefName();
+        void setRefName(string newRefName);
+        string getRefName();
 
-        void setPosition(glm::vec3 newPosition);
-        void setRotation(glm::quat newRotation);
-        void setScale(glm::vec3 newScale);
+        void setPosition(vec3 newPosition);
+        void setRotation(quat newRotation);
+        void setScale(vec3 newScale);
 
         void reserveBoneData(size_t vertexCount);
         void reserveSpace(size_t vertexCount);
 
-        void setBoneInfoMap(std::map<std::string, kBoneInfo> newBoneInfoMap);
-        std::map<std::string, kBoneInfo> &getBoneInfoMap();
+        void setBoneInfoMap(std::map<string, kBoneInfo> newBoneInfoMap);
+        std::map<string, kBoneInfo> &getBoneInfoMap();
         int &getBoneCount();
         void setBoneCount(int newBoneCount);
 
         void addIndex(uint32_t index);
         std::vector<uint32_t> getIndices();
 
-        void addVertex(glm::vec3 vertex);
-        std::vector<glm::vec3> getVertices();
+        void addVertex(vec3 vertex);
+        std::vector<vec3> getVertices();
 
-        void addUV(glm::vec2 uv);
-        std::vector<glm::vec2> getUVs();
+        void addUV(vec2 uv);
+        std::vector<vec2> getUVs();
 
-        void addVertexColor(glm::vec3 color);
-        std::vector<glm::vec3> getVertexColors();
+        void addVertexColor(vec3 color);
+        std::vector<vec3> getVertexColors();
 
-        void addNormal(glm::vec3 normal);
-        std::vector<glm::vec3> getNormals();
+        void addNormal(vec3 normal);
+        std::vector<vec3> getNormals();
 
-        void addTangent(glm::vec3 tangent);
-        std::vector<glm::vec3> getTangents();
+        void addTangent(vec3 tangent);
+        std::vector<vec3> getTangents();
 
-        void addBitangent(glm::vec3 bitangent);
-        std::vector<glm::vec3> getBitangents();
+        void addBitangent(vec3 bitangent);
+        std::vector<vec3> getBitangents();
 
-        void addBoneID(const glm::ivec4 &boneID);
-        void setBoneID(size_t vertexIndex, const glm::ivec4 &boneID);
-        glm::ivec4 getBoneID(size_t vertexIndex);
-        std::vector<glm::ivec4> getBoneIDs();
-        void setBoneIDs(std::vector<glm::ivec4> newBoneIDs);
+        void addBoneID(const ivec4 &boneID);
+        void setBoneID(size_t vertexIndex, const ivec4 &boneID);
+        ivec4 getBoneID(size_t vertexIndex);
+        std::vector<ivec4> getBoneIDs();
+        void setBoneIDs(std::vector<ivec4> newBoneIDs);
 
-        void addWeight(const glm::vec4 &weight);
-        void setWeight(size_t vertexIndex, const glm::vec4 &weight);
-        glm::vec4 getWeight(size_t vertexIndex);
-        std::vector<glm::vec4> getWeights();
-        void setWeights(std::vector<glm::vec4> newWeights);
+        void addWeight(const vec4 &weight);
+        void setWeight(size_t vertexIndex, const vec4 &weight);
+        vec4 getWeight(size_t vertexIndex);
+        std::vector<vec4> getWeights();
+        void setWeights(std::vector<vec4> newWeights);
 
         int getVertexCount();
 
@@ -82,8 +82,8 @@ namespace kemena
         GLuint getVertexBuffer();
         GLuint getVertexColorBuffer();
 
-        void setNormalMatrix(glm::mat4 newNormalMatrix);
-        glm::mat4 getNormalMatrix();
+        void setNormalMatrix(mat4 newNormalMatrix);
+        mat4 getNormalMatrix();
 
         void generateVbo();
         void calculateNormalMatrix();
@@ -114,8 +114,8 @@ namespace kemena
     private:
         bool loaded = false;
 
-        std::string fileName;
-        std::string refName;
+        string fileName;
+        string refName;
 
         std::vector<vec3> vertices;
         std::vector<uint32_t> indices;

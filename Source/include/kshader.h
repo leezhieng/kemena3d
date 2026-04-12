@@ -31,8 +31,8 @@ namespace kemena
         kShader();
         virtual ~kShader();
 
-        std::string readFile(const std::string filePath);
-        void loadShadersFile(const std::string vertextShaderPath, const std::string fragmentShaderPath);
+        string readFile(const string filePath);
+        void loadShadersFile(const string vertextShaderPath, const string fragmentShaderPath);
         void loadShadersCode(const char *vertextShaderCode, const char *fragmentShaderCode);
         void use();
         void unuse();
@@ -40,14 +40,14 @@ namespace kemena
         void setShaderProgram(GLuint program);
         GLuint getShaderProgram();
 
-        void setValue(std::string name, std::vector<glm::mat4> value);
-        void setValue(std::string name, glm::mat4 value);
-        void setValue(std::string name, glm::vec3 value);
-        void setValue(std::string name, glm::vec2 value);
-        void setValue(std::string name, float value);
-        void setValue(std::string name, int value);
-        void setValue(std::string name, unsigned int value);
-        void setValue(std::string name, bool value);
+        void setValue(string name, std::vector<mat4> value);
+        void setValue(string name, mat4 value);
+        void setValue(string name, vec3 value);
+        void setValue(string name, vec2 value);
+        void setValue(string name, float value);
+        void setValue(string name, int value);
+        void setValue(string name, unsigned int value);
+        void setValue(string name, bool value);
 
     protected:
     private:

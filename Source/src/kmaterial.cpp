@@ -55,17 +55,17 @@ namespace kemena
         return uvTiling;
     }
 
-    void kMaterial::setAmbientColor(glm::vec3 color)
+    void kMaterial::setAmbientColor(vec3 color)
     {
         ambientColor = color;
     }
 
-    void kMaterial::setDiffuseColor(glm::vec3 color)
+    void kMaterial::setDiffuseColor(vec3 color)
     {
         diffuseColor = color;
     }
 
-    void kMaterial::setSpecularColor(glm::vec3 color)
+    void kMaterial::setSpecularColor(vec3 color)
     {
         specularColor = color;
     }
@@ -85,17 +85,17 @@ namespace kemena
         roughness = value;
     }
 
-    glm::vec3 kMaterial::getAmbientColor()
+    vec3 kMaterial::getAmbientColor()
     {
         return ambientColor;
     }
 
-    glm::vec3 kMaterial::getDiffuseColor()
+    vec3 kMaterial::getDiffuseColor()
     {
         return diffuseColor;
     }
 
-    glm::vec3 kMaterial::getSpecularColor()
+    vec3 kMaterial::getSpecularColor()
     {
         return specularColor;
     }

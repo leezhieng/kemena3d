@@ -19,7 +19,7 @@ namespace kemena
 {
     struct KEMENA3D_API kScriptFunc
     {
-        std::string decl;
+        string decl;
         asIScriptFunction *asFunc;
         asSFuncPtr cFunc;
 
@@ -44,19 +44,19 @@ namespace kemena
 
     struct KEMENA3D_API kScript
     {
-        std::string uuid;
+        string uuid;
         bool isActive = true;
-        std::string checksum;
+        string checksum;
 
-        std::string fileName;
-        std::string moduleName;
+        string fileName;
+        string moduleName;
         asIScriptEngine *engine;
         asIScriptContext *context;
         asIScriptModule *module;
         // std::vector<kScriptFunc> functions;
         bool loaded = false;
 
-        void call(std::string declaration)
+        void call(string declaration)
         {
             context->Prepare(module->GetFunctionByDecl(declaration.c_str()));
 
@@ -109,8 +109,8 @@ namespace kemena
         kScriptManager();
         virtual ~kScriptManager();
 
-        kScript loadScript(std::string fileName);
-        void registerGlobalFunction(std::string declaration, asSFuncPtr func);
+        kScript loadScript(string fileName);
+        void registerGlobalFunction(string declaration, asSFuncPtr func);
         void runAll();
         void destroy();
 

@@ -9,32 +9,32 @@ namespace kemena
         setType(kNodeType::NODE_TYPE_LIGHT);
     }
 
-    glm::vec3 kLight::getAmbientColor()
+    vec3 kLight::getAmbientColor()
     {
         return ambientColor;
     }
 
-    void kLight::setAmbientColor(glm::vec3 newColor)
+    void kLight::setAmbientColor(vec3 newColor)
     {
         ambientColor = newColor;
     }
 
-    glm::vec3 kLight::getDiffuseColor()
+    vec3 kLight::getDiffuseColor()
     {
         return diffuseColor;
     }
 
-    void kLight::setDiffuseColor(glm::vec3 newColor)
+    void kLight::setDiffuseColor(vec3 newColor)
     {
         diffuseColor = newColor;
     }
 
-    glm::vec3 kLight::getSpecularColor()
+    vec3 kLight::getSpecularColor()
     {
         return specularColor;
     }
 
-    void kLight::setSpecularColor(glm::vec3 newColor)
+    void kLight::setSpecularColor(vec3 newColor)
     {
         specularColor = newColor;
     }
@@ -79,12 +79,12 @@ namespace kemena
         quadratic = newValue;
     }
 
-    glm::vec3 kLight::getDirection()
+    vec3 kLight::getDirection()
     {
         return direction;
     }
 
-    void kLight::setDirection(glm::vec3 newValue)
+    void kLight::setDirection(vec3 newValue)
     {
         direction = newValue;
     }

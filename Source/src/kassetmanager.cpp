@@ -14,14 +14,14 @@ namespace kemena
     {
     }
 
-    std::string kAssetManager::getFileExtension(const std::string &fileName)
+    string kAssetManager::getFileExtension(const string &fileName)
     {
-        std::string::size_type idx;
+        string::size_type idx;
         idx = fileName.rfind('.');
 
-        if (idx != std::string::npos)
+        if (idx != string::npos)
         {
-            std::string extension = fileName.substr(idx + 1);
+            string extension = fileName.substr(idx + 1);
             return extension;
         }
 
@@ -29,7 +29,7 @@ namespace kemena
         return "";
     }
 
-    bool kAssetManager::fileExists(const std::string &fileName)
+    bool kAssetManager::fileExists(const string &fileName)
     {
         bool ret;
         FILE *fp = fopen(fileName.c_str(), "rb");
@@ -45,28 +45,28 @@ namespace kemena
         return ret;
     }
 
-    std::string kAssetManager::getBaseDir(const std::string &filePath)
+    string kAssetManager::getBaseDir(const string &filePath)
     {
-        if (filePath.find_last_of("/\\") != std::string::npos)
+        if (filePath.find_last_of("/\\") != string::npos)
             return filePath.substr(0, filePath.find_last_of("/\\"));
         return "";
     }
 
-    std::string kAssetManager::getBaseFilename(const std::string &filePath)
+    string kAssetManager::getBaseFilename(const string &filePath)
     {
-        if (filePath.find_last_of("/\\") != std::string::npos)
+        if (filePath.find_last_of("/\\") != string::npos)
             return filePath.substr(filePath.find_last_of("/\\") + 1, filePath.size());
         return "";
     }
 
-    std::string kAssetManager::getExecDir()
+    string kAssetManager::getExecDir()
     {
-        return std::string(SDL_GetBasePath());
+        return string(SDL_GetBasePath());
     }
 
-    std::string kAssetManager::popDir(const std::string &filePath)
+    string kAssetManager::popDir(const string &filePath)
     {
-        if (filePath.find_last_of("/\\") != std::string::npos)
+        if (filePath.find_last_of("/\\") != string::npos)
             return filePath.substr(0, filePath.find_last_of("/\\"));
         return "";
     }
@@ -96,7 +96,7 @@ namespace kemena
 		return data;
 	}
 
-    kTexture2D *kAssetManager::loadTexture2D(const std::string fileName, const std::string textureName, const kTextureFormat format, const bool flipVertical, const bool keepData)
+    kTexture2D *kAssetManager::loadTexture2D(const string fileName, const string textureName, const kTextureFormat format, const bool flipVertical, const bool keepData)
     {
         // std::cout << textureName << std::endl;
 
@@ -156,7 +156,7 @@ namespace kemena
         return texture;
     }
 
-    kTexture2D *kAssetManager::loadTexture2DFromMemory(const aiTexture *rawData, const std::string textureName, const kTextureFormat format, const bool flipVertical, const bool keepData)
+    kTexture2D *kAssetManager::loadTexture2DFromMemory(const aiTexture *rawData, const string textureName, const kTextureFormat format, const bool flipVertical, const bool keepData)
     {
         unsigned char *data = nullptr;
 
@@ -222,7 +222,7 @@ namespace kemena
         return texture;
     }
 	
-	kTexture2D *kAssetManager::loadTexture2DFromResource(const std::string resourceName, const std::string textureName, const kTextureFormat format, const bool flipVertical, const bool keepData)
+	kTexture2D *kAssetManager::loadTexture2DFromResource(const string resourceName, const string textureName, const kTextureFormat format, const bool flipVertical, const bool keepData)
     {
         int width;
         int height;
@@ -279,7 +279,7 @@ namespace kemena
         return texture;
     }
 
-    void kAssetManager::saveTexture2D(kTexture2D *texture, const std::string fileName, std::string format)
+    void kAssetManager::saveTexture2D(kTexture2D *texture, const string fileName, string format)
     {
         if (format == "png")
         {
@@ -303,9 +303,9 @@ namespace kemena
         }
     }
 
-    kTextureCube *kAssetManager::loadTextureCube(const std::string fileNameRight, const std::string fileNameLeft, const std::string fileNameTop, const std::string fileNameBottom, const std::string fileNameFront, const std::string fileNameBack, const std::string textureName)
+    kTextureCube *kAssetManager::loadTextureCube(const string fileNameRight, const string fileNameLeft, const string fileNameTop, const string fileNameBottom, const string fileNameFront, const string fileNameBack, const string textureName)
     {
-        std::vector<std::string> faces;
+        std::vector<string> faces;
         faces.push_back(fileNameRight);
         faces.push_back(fileNameLeft);
         faces.push_back(fileNameTop);
@@ -349,9 +349,9 @@ namespace kemena
         return newTexture;
     }
 	
-	kTextureCube* kAssetManager::loadTextureCubeFromResource(const std::string resRight, const std::string resLeft, const std::string resTop, const std::string resBottom, const std::string resFront, const std::string resBack, const std::string textureName)
+	kTextureCube* kAssetManager::loadTextureCubeFromResource(const string resRight, const string resLeft, const string resTop, const string resBottom, const string resFront, const string resBack, const string textureName)
 	{
-		std::vector<std::string> faces;
+		std::vector<string> faces;
 		faces.push_back(resRight);
 		faces.push_back(resLeft);
 		faces.push_back(resTop);
@@ -401,18 +401,18 @@ namespace kemena
 	}
 
 	// You need to tell what's the extension of the file (obj, fbx, gltf, glb, etc.)
-	kMesh *kAssetManager::loadMeshFromResource(const std::string resourceName, const std::string extention)
+	kMesh *kAssetManager::loadMeshFromResource(const string resourceName, const string extention)
     {
 		std::cout << "Load mesh from resource: " << resourceName << std::endl;
 		
 		return loadMeshResourceAssimp(resourceName, extention);
     }
 
-    kMesh *kAssetManager::loadMesh(const std::string fileName)
+    kMesh *kAssetManager::loadMesh(const string fileName)
     {
         std::cout << "Load mesh: " << fileName << std::endl;
 
-        std::string ext = getFileExtension(fileName);
+        string ext = getFileExtension(fileName);
 
         kMesh *mesh;
 
@@ -432,7 +432,7 @@ namespace kemena
         return mesh;
     }
 
-    kMesh *kAssetManager::loadMeshFileAssimp(const std::string fileName)
+    kMesh *kAssetManager::loadMeshFileAssimp(const string fileName)
     {
         // kMesh* rootMesh = new kMesh();
         kMesh *rootMesh;
@@ -459,7 +459,7 @@ namespace kemena
             std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
             return nullptr;
         }
-        std::string directory;
+        string directory;
         directory = fileName.substr(0, fileName.find_last_of('/'));
 
         // kMesh* model = processNode(scene->mRootNode, scene, rootMesh);
@@ -496,7 +496,7 @@ namespace kemena
                 {
                     for (int j = 0; j < scene->mMaterials[i]->mNumProperties; ++j)
                     {
-                        std::string typeName = "";
+                        string typeName = "";
                         aiPropertyTypeInfo type = scene->mMaterials[i]->mProperties[j]->mType;
 
                         if (type == aiPropertyTypeInfo::aiPTI_Buffer)
@@ -534,7 +534,7 @@ namespace kemena
         return rootMesh;
     }
 	
-	kMesh* kAssetManager::loadMeshResourceAssimp(const string resourceName, const std::string extention)
+	kMesh* kAssetManager::loadMeshResourceAssimp(const string resourceName, const string extention)
 	{
 		kMesh *rootMesh;
 
@@ -570,7 +570,7 @@ namespace kemena
 		
 		std::cout << "Loaded resource: " << resourceName << " (size=" << size << " bytes)" << std::endl;
 
-		//std::string objData((const char*)pResData, size);
+		//string objData((const char*)pResData, size);
 		//std::cout << "Mesh content:\n" << objData << std::endl;
 
 		Assimp::Importer import;
@@ -647,7 +647,7 @@ namespace kemena
     kMesh *kAssetManager::processMesh(aiMesh *mesh, const aiScene *scene)
     {
         kMesh *newMesh = new kMesh();
-        newMesh->setName(std::string(mesh->mName.C_Str()));
+        newMesh->setName(string(mesh->mName.C_Str()));
 
         if (mesh->mNumVertices > 0)
         {
@@ -660,38 +660,38 @@ namespace kemena
             for (int i = 0; i < (int)mesh->mNumVertices; ++i)
             {
                 // Vertex
-                glm::vec3 position = kAssimpGLMHelpers::getGLMVec3(mesh->mVertices[i]);
+                vec3 position = kAssimpGLMHelpers::getGLMVec3(mesh->mVertices[i]);
                 newMesh->addVertex(position);
 
                 // Normal
-                glm::vec3 normal = kAssimpGLMHelpers::getGLMVec3(mesh->mNormals[i]);
+                vec3 normal = kAssimpGLMHelpers::getGLMVec3(mesh->mNormals[i]);
                 newMesh->addNormal(normal);
 
                 // UV
                 if (mesh->HasTextureCoords(0))
                 {
-                    glm::vec2 texCoord = kAssimpGLMHelpers::getGLMVec2(mesh->mTextureCoords[0][i]);
+                    vec2 texCoord = kAssimpGLMHelpers::getGLMVec2(mesh->mTextureCoords[0][i]);
                     newMesh->addUV(texCoord);
                 }
                 else
                 {
-                    newMesh->addUV(glm::vec2(0.0f, 0.0f));
+                    newMesh->addUV(vec2(0.0f, 0.0f));
                 }
 
                 // Tangent and Bitangent
-                glm::vec3 tangent = glm::vec3(0.0f);
-                glm::vec3 bitangent = glm::vec3(0.0f);
+                vec3 tangent = vec3(0.0f);
+                vec3 bitangent = vec3(0.0f);
                 if (mesh->HasTangentsAndBitangents())
                 {
-                    tangent = glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
-                    bitangent = glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
+                    tangent = vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+                    bitangent = vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
                 }
                 newMesh->addTangent(tangent);
                 newMesh->addBitangent(bitangent);
 
                 // Initialize bone IDs and weights
-                newMesh->addBoneID(glm::ivec4(-1, -1, -1, -1));
-                newMesh->addWeight(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+                newMesh->addBoneID(ivec4(-1, -1, -1, -1));
+                newMesh->addWeight(vec4(0.0f, 0.0f, 0.0f, 0.0f));
             }
 
             // Debug: Print bone data after initialization
@@ -768,7 +768,7 @@ namespace kemena
         }
     }
 
-    void kAssetManager::normalizeVector(glm::vec3 &v)
+    void kAssetManager::normalizeVector(vec3 &v)
     {
         float len2 = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
         if (len2 > 0.0f)
@@ -788,14 +788,14 @@ namespace kemena
             for (unsigned int boneIndex = 0; boneIndex < meshData->mNumBones; ++boneIndex)
             {
                 int boneID = -1;
-                std::string boneName = meshData->mBones[boneIndex]->mName.C_Str();
+                string boneName = meshData->mBones[boneIndex]->mName.C_Str();
 
                 // Debug: Print bone name and offset matrix
                 // std::cout << "Processing bone: " << boneName << std::endl;
-                glm::mat4 offset = kAssimpGLMHelpers::convertMatrixToGLMFormat(meshData->mBones[boneIndex]->mOffsetMatrix);
+                mat4 offset = kAssimpGLMHelpers::convertMatrixToGLMFormat(meshData->mBones[boneIndex]->mOffsetMatrix);
                 // std::cout << "Offset matrix: " << glm::to_string(offset) << std::endl;
 
-                std::map<std::string, kBoneInfo> &boneInfoMap = mesh->getBoneInfoMap();
+                std::map<string, kBoneInfo> &boneInfoMap = mesh->getBoneInfoMap();
 
                 // Check if the bone already exists in the boneInfoMap
                 if (boneInfoMap.find(boneName) == boneInfoMap.end())
@@ -871,7 +871,7 @@ namespace kemena
         }
     }
 
-    kShader *kAssetManager::loadShaderFromFile(std::string vertexShaderPath, std::string fragmentShaderPath)
+    kShader *kAssetManager::loadShaderFromFile(string vertexShaderPath, string fragmentShaderPath)
     {
         kShader *shader = new kShader();
         shader->loadShadersFile(vertexShaderPath, fragmentShaderPath);
@@ -881,7 +881,7 @@ namespace kemena
         return shader;
     }
 
-    kShader *kAssetManager::loadShaderFromCode(std::string vertexShaderCode, std::string fragmentShaderCode)
+    kShader *kAssetManager::loadShaderFromCode(string vertexShaderCode, string fragmentShaderCode)
     {
         kShader *shader = new kShader();
         shader->loadShadersCode(vertexShaderCode.c_str(), fragmentShaderCode.c_str());
@@ -891,7 +891,7 @@ namespace kemena
         return shader;
     }
 	
-	kShader *kAssetManager::loadShaderFromResource(std::string vertexShaderName, std::string fragmentShaderName)
+	kShader *kAssetManager::loadShaderFromResource(string vertexShaderName, string fragmentShaderName)
 	{
 		// --- Vertex shader ---
 		HRSRC vRes = FindResource(NULL, vertexShaderName.c_str(), RT_RCDATA);
@@ -903,8 +903,8 @@ namespace kemena
 		DWORD vsize = SizeofResource(NULL, vRes);
 		void* vpData = LockResource(vhData);
 
-		// Copy into std::string to ensure null-terminated
-		std::string vertexShaderCode(reinterpret_cast<const char*>(vpData), vsize);
+		// Copy into string to ensure null-terminated
+		string vertexShaderCode(reinterpret_cast<const char*>(vpData), vsize);
 
 		// --- Fragment shader ---
 		HRSRC fRes = FindResource(NULL, fragmentShaderName.c_str(), RT_RCDATA);
@@ -916,7 +916,7 @@ namespace kemena
 		DWORD fsize = SizeofResource(NULL, fRes);
 		void* fpData = LockResource(fhData);
 
-		std::string fragmentShaderCode(reinterpret_cast<const char*>(fpData), fsize);
+		string fragmentShaderCode(reinterpret_cast<const char*>(fpData), fsize);
 
 		// --- Build shader ---
 		kShader *shader = new kShader();
@@ -937,7 +937,7 @@ namespace kemena
         return material;
     }
 
-    kAnimation *kAssetManager::loadAnimation(const std::string fileName, kMesh *mesh)
+    kAnimation *kAssetManager::loadAnimation(const string fileName, kMesh *mesh)
     {
         kAnimation *animation = new kAnimation(fileName, mesh);
 

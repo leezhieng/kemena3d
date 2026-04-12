@@ -2,7 +2,7 @@
 
 namespace kemena
 {
-    kWindow *createWindow(int width, int height, std::string title)
+    kWindow *createWindow(int width, int height, string title)
     {
         kWindow *window = new kWindow;
         bool done = window->init(width, height, title);
@@ -12,7 +12,7 @@ namespace kemena
             return nullptr;
     }
 
-    kWindow *createWindow(int width, int height, std::string title, bool maximized, kWindowType type, void *nativeHandle)
+    kWindow *createWindow(int width, int height, string title, bool maximized, kWindowType type, void *nativeHandle)
     {
         kWindow *window = new kWindow;
         bool done = window->init(width, height, title, maximized, type, nativeHandle);

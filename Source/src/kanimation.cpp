@@ -2,7 +2,7 @@
 
 namespace kemena
 {
-    kAnimation::kAnimation(const std::string &animationPath, kMesh *newMesh)
+    kAnimation::kAnimation(const string &animationPath, kMesh *newMesh)
     {
         Assimp::Importer importer;
         const aiScene *scene = importer.ReadFile(animationPath, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
@@ -25,7 +25,7 @@ namespace kemena
         // std::cout << "name: " << scene->mAnimations[0]->mName.data << ", duration: " << duration << ", ticksPerSecond: " << ticksPerSecond << std::endl;
     }
 
-    kBone *kAnimation::findBone(const std::string &name)
+    kBone *kAnimation::findBone(const string &name)
     {
         auto iter = std::find_if(bones.begin(), bones.end(),
                                  [&](const kBone &bone)
@@ -132,7 +132,7 @@ namespace kemena
 
         dest.name = src->mName.data;
 
-        glm::mat4 nodeTransform = kAssimpGLMHelpers::convertMatrixToGLMFormat(src->mTransformation);
+        mat4 nodeTransform = kAssimpGLMHelpers::convertMatrixToGLMFormat(src->mTransformation);
         dest.transformation = nodeTransform;
 
         dest.childrenCount = src->mNumChildren;

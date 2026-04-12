@@ -35,43 +35,43 @@ namespace kemena
     public:
         kAssetManager();
 
-        std::string getFileExtension(const std::string &fileName);
-        bool fileExists(const std::string &fileName);
-        std::string getBaseDir(const std::string &filePath);
-        std::string getBaseFilename(const std::string &filePath);
-        std::string getExecDir();
-        std::string popDir(const std::string &filePath);
+        string getFileExtension(const string &fileName);
+        bool fileExists(const string &fileName);
+        string getBaseDir(const string &filePath);
+        string getBaseFilename(const string &filePath);
+        string getExecDir();
+        string popDir(const string &filePath);
 
 		unsigned char* loadImageFromResource(const char* resourceName, int& width, int& height, int& channels);
 
-        kTexture2D *loadTexture2D(const std::string fileName, const std::string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
-        kTexture2D *loadTexture2DFromMemory(const aiTexture *rawData, const std::string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
-        kTexture2D *loadTexture2DFromResource(const std::string resourceName, const std::string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
-		void saveTexture2D(kTexture2D *texture, const std::string fileName, std::string format);
+        kTexture2D *loadTexture2D(const string fileName, const string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
+        kTexture2D *loadTexture2DFromMemory(const aiTexture *rawData, const string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
+        kTexture2D *loadTexture2DFromResource(const string resourceName, const string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
+		void saveTexture2D(kTexture2D *texture, const string fileName, string format);
 
-        kTextureCube *loadTextureCube(const std::string fileNameRight, const std::string fileNameLeft, const std::string fileNameTop, const std::string fileNameBottom, const std::string fileNameFront, const std::string fileNameBack, const std::string textureName);
-		kTextureCube *loadTextureCubeFromResource(const std::string resRight, const std::string resLeft, const std::string resTop, const std::string resBottom, const std::string resFront, const std::string resBack, const std::string textureName);
+        kTextureCube *loadTextureCube(const string fileNameRight, const string fileNameLeft, const string fileNameTop, const string fileNameBottom, const string fileNameFront, const string fileNameBack, const string textureName);
+		kTextureCube *loadTextureCubeFromResource(const string resRight, const string resLeft, const string resTop, const string resBottom, const string resFront, const string resBack, const string textureName);
 
-        kMesh *loadMesh(const std::string fileName);
-		kMesh *loadMeshFromResource(const std::string resourceName, const std::string extention);
-        kMesh *loadMeshFileAssimp(const std::string fileName);
-		kMesh *loadMeshResourceAssimp(const string resourceName, const std::string extention);
+        kMesh *loadMesh(const string fileName);
+		kMesh *loadMeshFromResource(const string resourceName, const string extention);
+        kMesh *loadMeshFileAssimp(const string fileName);
+		kMesh *loadMeshResourceAssimp(const string resourceName, const string extention);
         kMesh *processNode(aiNode *node, const aiScene *scene, kMesh *parent);
         kMesh *processMesh(aiMesh *mesh, const aiScene *scene);
 
         void calculateNormal(float N[3], float v0[3], float v1[3], float v2[3]);
-        void normalizeVector(glm::vec3 &v);
+        void normalizeVector(vec3 &v);
 
         void extractBoneWeightForVertices(kMesh *mesh, aiMesh *meshData, const aiScene *scene);
         void setVertexBoneData(kMesh *mesh, size_t vertexID, int boneID, float weight);
 
-        kShader *loadShaderFromFile(std::string vertexShaderPath, std::string fragmentShaderPath);
-        kShader *loadShaderFromCode(std::string vertexShaderCode, std::string fragmentShaderCode);
-        kShader *loadShaderFromResource(std::string vertexShaderName, std::string fragmentShaderName);
+        kShader *loadShaderFromFile(string vertexShaderPath, string fragmentShaderPath);
+        kShader *loadShaderFromCode(string vertexShaderCode, string fragmentShaderCode);
+        kShader *loadShaderFromResource(string vertexShaderName, string fragmentShaderName);
 		
         kMaterial *createMaterial(kShader *shader);
 
-        kAnimation *loadAnimation(const std::string fileName, kMesh *mesh);
+        kAnimation *loadAnimation(const string fileName, kMesh *mesh);
 
         // GUI
 

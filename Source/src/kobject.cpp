@@ -18,7 +18,7 @@ namespace kemena
         glGenBuffers(1, &iconVertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, iconVertexBuffer);
 		
-        //glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(glm::vec3), iconVertices, GL_DYNAMIC_DRAW);
+        //glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(vec3), iconVertices, GL_DYNAMIC_DRAW);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(iconVertices), iconVertices, GL_STATIC_DRAW);
 		
 		// Define layout for attribute 0
@@ -84,94 +84,94 @@ namespace kemena
         id = newId;
     }
 
-    std::string kObject::getUuid()
+    string kObject::getUuid()
     {
         return uuid;
     }
 
-    void kObject::setUuid(std::string newUuid)
+    void kObject::setUuid(string newUuid)
     {
         uuid = newUuid;
     }
 
-    std::string kObject::getName()
+    string kObject::getName()
     {
         return name;
     }
 
-    void kObject::setName(std::string newName)
+    void kObject::setName(string newName)
     {
         name = newName;
     }
 
-    glm::vec3 kObject::getPosition()
+    vec3 kObject::getPosition()
     {
         return position;
     }
 
-    void kObject::setPosition(glm::vec3 newPosition)
+    void kObject::setPosition(vec3 newPosition)
     {
         position = newPosition;
     }
 
-    glm::quat kObject::getRotation()
+    quat kObject::getRotation()
     {
         return rotation;
     }
 
-    glm::vec3 kObject::getRotationEuler()
+    vec3 kObject::getRotationEuler()
     {
-        glm::vec3 eulerAngles = glm::eulerAngles(rotation);
-        glm::vec3 eulerAnglesDegrees = glm::degrees(eulerAngles);
+        vec3 eulerAngles = glm::eulerAngles(rotation);
+        vec3 eulerAnglesDegrees = glm::degrees(eulerAngles);
 
         return eulerAnglesDegrees;
     }
 
-    void kObject::setRotation(glm::quat newRotation)
+    void kObject::setRotation(quat newRotation)
     {
         rotation = glm::normalize(newRotation);
     }
 
-    glm::vec3 kObject::getScale()
+    vec3 kObject::getScale()
     {
         return scale;
     }
 
-    void kObject::setScale(glm::vec3 newScale)
+    void kObject::setScale(vec3 newScale)
     {
         scale = newScale;
     }
 
-    glm::vec3 kObject::calculateRight()
+    vec3 kObject::calculateRight()
     {
         return glm::normalize(glm::cross(calculateUp(), calculateForward()));
     }
 
-    glm::vec3 kObject::calculateForward()
+    vec3 kObject::calculateForward()
     {
         vec3 worldForwardAxis = vec3(0.0f, 0.0f, -1.0f); // Default forward direction in OpenGL (negative Z axis)
 
         // Rotate forward vector by quaternion
-        glm::vec3 front = getRotation() * worldForwardAxis;
+        vec3 front = getRotation() * worldForwardAxis;
 
         return glm::normalize(front);
     }
 
-    glm::vec3 kObject::calculateUp()
+    vec3 kObject::calculateUp()
     {
         vec3 worldUpAxis = vec3(0.0f, 1.0f, 0.0f);
 
         return getRotation() * worldUpAxis;
     }
 
-    void kObject::rotate(glm::vec3 rotationAxis, float angularSpeed)
+    void kObject::rotate(vec3 rotationAxis, float angularSpeed)
     {
         /*
         // Convert Euler angles from degrees to radians
-        glm::vec3 eulerAnglesRadians = glm::radians(eulerAnglesDegrees);
+        vec3 eulerAnglesRadians = glm::radians(eulerAnglesDegrees);
 
         // Create a quaternion from the Euler angles
-        glm::quat newRotation(eulerAnglesRadians);
+        quat newRotation(eulerAnglesRadians);
 
         if (newRotation.w < 0)
         {
@@ -186,53 +186,53 @@ namespace kemena
         float angle = angularSpeed;
 
         // Create a quaternion representing the small rotation
-        glm::quat deltaRotation = glm::angleAxis(angle, glm::normalize(rotationAxis));
+        quat deltaRotation = glm::angleAxis(angle, glm::normalize(rotationAxis));
 
         // Apply the incremental rotation
         setRotation(deltaRotation * getRotation());
     }
 
-    glm::vec3 kObject::getGlobalPosition()
+    vec3 kObject::getGlobalPosition()
     {
         // return globalPosition;
 
-        glm::vec3 globalPos = glm::vec3(worldTransform[3]);
+        vec3 globalPos = vec3(worldTransform[3]);
 
         return globalPos;
     }
 
-    glm::quat kObject::getGlobalRotation()
+    quat kObject::getGlobalRotation()
     {
         // return glm::normalize(globalRotation);
 
         // Extract global scale
-        glm::vec3 globalSc = glm::vec3(
-            glm::length(glm::vec3(worldTransform[0])), // X axis scale
-            glm::length(glm::vec3(worldTransform[1])), // Y axis scale
-            glm::length(glm::vec3(worldTransform[2]))  // Z axis scale
+        vec3 globalSc = vec3(
+            glm::length(vec3(worldTransform[0])), // X axis scale
+            glm::length(vec3(worldTransform[1])), // Y axis scale
+            glm::length(vec3(worldTransform[2]))  // Z axis scale
         );
 
         // Normalize rotation matrix by removing scaling
-        glm::mat3 rotationMat = glm::mat3(
-            glm::vec3(worldTransform[0]) / globalSc.x,
-            glm::vec3(worldTransform[1]) / globalSc.y,
-            glm::vec3(worldTransform[2]) / globalSc.z);
+        mat3 rotationMat = mat3(
+            vec3(worldTransform[0]) / globalSc.x,
+            vec3(worldTransform[1]) / globalSc.y,
+            vec3(worldTransform[2]) / globalSc.z);
 
         // Convert to quaternion
-        glm::quat globalRot = glm::normalize(glm::quat_cast(rotationMat));
+        quat globalRot = glm::normalize(glm::quat_cast(rotationMat));
 
         return globalRot;
     }
 
-    glm::vec3 kObject::getGlobalScale()
+    vec3 kObject::getGlobalScale()
     {
         // return globalScale;
 
         // Extract global scale
-        glm::vec3 globalSc = glm::vec3(
-            glm::length(glm::vec3(worldTransform[0])), // X axis scale
-            glm::length(glm::vec3(worldTransform[1])), // Y axis scale
-            glm::length(glm::vec3(worldTransform[2]))  // Z axis scale
+        vec3 globalSc = vec3(
+            glm::length(vec3(worldTransform[0])), // X axis scale
+            glm::length(vec3(worldTransform[1])), // Y axis scale
+            glm::length(vec3(worldTransform[2]))  // Z axis scale
         );
 
         return globalSc;
@@ -262,10 +262,10 @@ namespace kemena
     void kObject::calculateModelMatrix()
     {
         // Local transformations
-        glm::mat4 trans = glm::translate(glm::mat4(1.0), getPosition());
-        glm::quat quat = glm::quat(getRotation());
-        glm::mat4 rot = glm::toMat4(quat);
-        glm::mat4 scale = glm::scale(glm::mat4(1.0), getScale());
+        mat4 trans = glm::translate(mat4(1.0), getPosition());
+        quat quat = quat(getRotation());
+        mat4 rot = glm::toMat4(quat);
+        mat4 scale = glm::scale(mat4(1.0), getScale());
 
         localTransform = trans * rot * scale;
 
@@ -281,12 +281,12 @@ namespace kemena
         }
     }
 
-    glm::mat4 kObject::getModelMatrixWorld()
+    mat4 kObject::getModelMatrixWorld()
     {
         return worldTransform;
     }
 
-    glm::mat4 kObject::getModelMatrixLocal()
+    mat4 kObject::getModelMatrixLocal()
     {
         return localTransform;
     }

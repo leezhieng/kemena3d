@@ -93,7 +93,7 @@ namespace kemena
         }
     }
 
-    void kRenderer::setEngineInfo(const std::string name, uint32_t version)
+    void kRenderer::setEngineInfo(const string name, uint32_t version)
     {
         engineName = name;
         engineVersion = version;
@@ -150,12 +150,12 @@ namespace kemena
                         shadowShader->use();
 
                         // Configure shader and matrices
-                        glm::vec3 lightPos = currentLight->getPosition();
-                        glm::vec3 lightDir = glm::normalize(currentLight->getDirection());
+                        vec3 lightPos = currentLight->getPosition();
+                        vec3 lightDir = glm::normalize(currentLight->getDirection());
 
                         float near_plane = 1.0f, far_plane = 20.0f;
-                        glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-                        glm::mat4 lightView = glm::lookAt(lightPos, lightPos + lightDir, glm::vec3(0.0f, 1.0f, 0.0f));
+                        mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+                        mat4 lightView = glm::lookAt(lightPos, lightPos + lightDir, vec3(0.0f, 1.0f, 0.0f));
 
                         // Later send this to meshes for shadow calculation
                         lightSpaceMatrix = lightProjection * lightView;
@@ -837,7 +837,7 @@ namespace kemena
 
             if (useDefaultShader)
             {
-                std::string vertexShader = R"(#version 330 core
+                string vertexShader = R"(#version 330 core
 				layout(location = 0) in vec2 aPos;
 				layout(location = 1) in vec2 aTexCoord;
 				out vec2 TexCoord;
@@ -848,7 +848,7 @@ namespace kemena
 					gl_Position = vec4(aPos, 0.0, 1.0);
 				})";
 
-				std::string fragmentShader = R"(#version 330 core
+				string fragmentShader = R"(#version 330 core
 				in vec2 TexCoord;
 				out vec4 FragColor;
 
@@ -927,7 +927,7 @@ namespace kemena
 
             if (useDefaultShader)
             {
-                std::string vertexShader = R"(#version 330 core
+                string vertexShader = R"(#version 330 core
 				layout (location = 0) in vec3 vertexPosition;
 				layout (location = 6) in ivec4 boneIDs;
 				layout (location = 7) in vec4 weights;
@@ -979,7 +979,7 @@ namespace kemena
 					gl_Position = lightSpaceMatrix * worldPosition;
 				})";
 
-					std::string fragmentShader = R"(#version 330 core
+					string fragmentShader = R"(#version 330 core
 				in vec3 vertexPositionFrag;
 				out vec4 fragColor;
 

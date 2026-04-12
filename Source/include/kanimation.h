@@ -16,9 +16,9 @@ namespace kemena
     class kAnimation
     {
     public:
-        kAnimation(const std::string &animationPath, kMesh *setMesh);
+        kAnimation(const string &animationPath, kMesh *setMesh);
 
-        kBone *findBone(const std::string &name);
+        kBone *findBone(const string &name);
         float getTicksPerSecond() const;
         float getDuration() const;
         const kAssimpNodeData &getRootNode() const;
@@ -41,7 +41,7 @@ namespace kemena
         void readMissingBones(const aiAnimation *animation, kMesh *setMesh);
         void readHierarchyData(kAssimpNodeData &dest, const aiNode *src);
 
-        std::map<std::string, kBoneInfo> boneInfoMap;
+        std::map<string, kBoneInfo> boneInfoMap;
 
         float speed = 1.0f;
     };

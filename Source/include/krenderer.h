@@ -48,15 +48,15 @@ namespace kemena
 
         bool init(kWindow *window = nullptr, kRendererType type = kRendererType::RENDERER_GL);
         void destroy();
-        void setEngineInfo(const std::string name, uint32_t version);
+        void setEngineInfo(const string name, uint32_t version);
 
         kWindow *getWindow();
 
 		void clear();
         void render(kWorld *world, kScene *scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool autoClearSwapWindow = true);
 
-        glm::vec4 getClearColor();
-        void setClearColor(glm::vec4 newColor);
+        vec4 getClearColor();
+        void setClearColor(vec4 newColor);
 
         void setEnableScreenBuffer(bool newEnable, bool useDefaultShader = true);
         bool getEnableScreenBuffer();
@@ -84,7 +84,7 @@ namespace kemena
 
     protected:
     private:
-        std::string engineName;
+        string engineName;
         uint32_t engineVersion;
         kWindow *appWindow;
 

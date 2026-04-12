@@ -3,7 +3,7 @@
 namespace kemena
 {
 
-    kBone::kBone(const std::string &boneName, int boneID, aiNodeAnim *channel)
+    kBone::kBone(const string &boneName, int boneID, aiNodeAnim *channel)
     {
         name = boneName;
         id = boneID;
@@ -47,18 +47,18 @@ namespace kemena
 
     void kBone::update(float animationTime)
     {
-        glm::mat4 translation = interpolatePosition(animationTime);
-        glm::mat4 rotation = interpolateRotation(animationTime);
-        glm::mat4 scale = interpolateScale(animationTime);
+        mat4 translation = interpolatePosition(animationTime);
+        mat4 rotation = interpolateRotation(animationTime);
+        mat4 scale = interpolateScale(animationTime);
         localTransform = translation * rotation * scale;
     }
 
-    const glm::mat4 kBone::getLocalTransform() const
+    const mat4 kBone::getLocalTransform() const
     {
         return localTransform;
     }
 
-    const std::string kBone::getName() const
+    const string kBone::getName() const
     {
         return name;
     }
@@ -199,24 +199,24 @@ namespace kemena
         return midWayLength / framesDiff;
     }
 
-    glm::mat4 kBone::interpolatePosition(float animationTime)
+    mat4 kBone::interpolatePosition(float animationTime)
     {
         /*if (positionCount == 1)
-            return glm::translate(glm::mat4(1.0f), positions[0].position);
+            return glm::translate(mat4(1.0f), positions[0].position);
 
         int p0Index = getPositionIndex(animationTime);
         int p1Index = p0Index + 1;
 
         // Handle looping case: if p1Index goes beyond last frame, snap to first frame
         if (p1Index >= positionCount)
-            return glm::translate(glm::mat4(1.0f), positions[0].position);
+            return glm::translate(mat4(1.0f), positions[0].position);
 
         float scaleFactor = getScaleFactor(positions[p0Index].timeStamp, positions[p1Index].timeStamp, animationTime);
-        glm::vec3 finalPosition = glm::mix(positions[p0Index].position, positions[p1Index].position, scaleFactor);
-        return glm::translate(glm::mat4(1.0f), finalPosition);*/
+        vec3 finalPosition = glm::mix(positions[p0Index].position, positions[p1Index].position, scaleFactor);
+        return glm::translate(mat4(1.0f), finalPosition);*/
 
         if (positionCount == 1)
-            return glm::translate(glm::mat4(1.0f), positions[0].position);
+            return glm::translate(mat4(1.0f), positions[0].position);
 
         int p0Index = getPositionIndex(animationTime);
         int p1Index = p0Index + 1;
@@ -231,16 +231,16 @@ namespace kemena
             float lastTime = positions[p0Index].timeStamp;
             float firstTime = positions[p1Index].timeStamp + animationDuration; // Shift first frame forward
             float scaleFactor = getScaleFactor(lastTime, firstTime, animationTime, animationDuration);
-            glm::vec3 finalPosition = glm::mix(positions[p0Index].position, positions[p1Index].position, scaleFactor);
-            return glm::translate(glm::mat4(1.0f), finalPosition);
+            vec3 finalPosition = glm::mix(positions[p0Index].position, positions[p1Index].position, scaleFactor);
+            return glm::translate(mat4(1.0f), finalPosition);
         }
 
         float scaleFactor = getScaleFactor(positions[p0Index].timeStamp, positions[p1Index].timeStamp, animationTime, animationDuration);
-        glm::vec3 finalPosition = glm::mix(positions[p0Index].position, positions[p1Index].position, scaleFactor);
-        return glm::translate(glm::mat4(1.0f), finalPosition);
+        vec3 finalPosition = glm::mix(positions[p0Index].position, positions[p1Index].position, scaleFactor);
+        return glm::translate(mat4(1.0f), finalPosition);
     }
 
-    glm::mat4 kBone::interpolateRotation(float animationTime)
+    mat4 kBone::interpolateRotation(float animationTime)
     {
         /*if (rotationCount == 1)
         {
@@ -256,7 +256,7 @@ namespace kemena
             return glm::toMat4(glm::normalize(rotations[0].orientation));
 
         float scaleFactor = getScaleFactor(rotations[p0Index].timeStamp, rotations[p1Index].timeStamp, animationTime);
-        glm::quat finalRotation = glm::slerp(rotations[p0Index].orientation, rotations[p1Index].orientation, scaleFactor);
+        quat finalRotation = glm::slerp(rotations[p0Index].orientation, rotations[p1Index].orientation, scaleFactor);
         finalRotation = glm::normalize(finalRotation);
         return glm::toMat4(finalRotation);*/
 
@@ -279,35 +279,35 @@ namespace kemena
             float lastTime = rotations[p0Index].timeStamp;
             float firstTime = rotations[p1Index].timeStamp + animationDuration; // Shift first frame forward
             float scaleFactor = getScaleFactor(lastTime, firstTime, animationTime, animationDuration);
-            glm::quat finalRotation = glm::slerp(rotations[p0Index].orientation, rotations[p1Index].orientation, scaleFactor);
+            quat finalRotation = glm::slerp(rotations[p0Index].orientation, rotations[p1Index].orientation, scaleFactor);
             finalRotation = glm::normalize(finalRotation);
             return glm::toMat4(finalRotation);
         }
 
         float scaleFactor = getScaleFactor(rotations[p0Index].timeStamp, rotations[p1Index].timeStamp, animationTime, animationDuration);
-        glm::quat finalRotation = glm::slerp(rotations[p0Index].orientation, rotations[p1Index].orientation, scaleFactor);
+        quat finalRotation = glm::slerp(rotations[p0Index].orientation, rotations[p1Index].orientation, scaleFactor);
         finalRotation = glm::normalize(finalRotation);
         return glm::toMat4(finalRotation);
     }
 
-    glm::mat4 kBone::interpolateScale(float animationTime)
+    mat4 kBone::interpolateScale(float animationTime)
     {
         /*if (1 == scaleCount)
-            return glm::scale(glm::mat4(1.0f), scales[0].scale);
+            return glm::scale(mat4(1.0f), scales[0].scale);
 
         int p0Index = getScaleIndex(animationTime);
         int p1Index = p0Index + 1;
 
         // Handle looping case: if p1Index goes beyond last frame, snap to first frame
         if (p1Index >= scaleCount)
-            return glm::scale(glm::mat4(1.0f), scales[0].scale);
+            return glm::scale(mat4(1.0f), scales[0].scale);
 
         float scaleFactor = getScaleFactor(scales[p0Index].timeStamp, scales[p1Index].timeStamp, animationTime);
-        glm::vec3 finalScale = glm::mix(scales[p0Index].scale, scales[p1Index].scale, scaleFactor);
-        return glm::scale(glm::mat4(1.0f), finalScale);*/
+        vec3 finalScale = glm::mix(scales[p0Index].scale, scales[p1Index].scale, scaleFactor);
+        return glm::scale(mat4(1.0f), finalScale);*/
 
         if (scaleCount == 1)
-            return glm::scale(glm::mat4(1.0f), scales[0].scale);
+            return glm::scale(mat4(1.0f), scales[0].scale);
 
         int p0Index = getScaleIndex(animationTime);
         int p1Index = p0Index + 1;
@@ -322,12 +322,12 @@ namespace kemena
             float lastTime = scales[p0Index].timeStamp;
             float firstTime = scales[p1Index].timeStamp + animationDuration; // Shift first frame forward
             float scaleFactor = getScaleFactor(lastTime, firstTime, animationTime, animationDuration);
-            glm::vec3 finalScale = glm::mix(scales[p0Index].scale, scales[p1Index].scale, scaleFactor);
-            return glm::scale(glm::mat4(1.0f), finalScale);
+            vec3 finalScale = glm::mix(scales[p0Index].scale, scales[p1Index].scale, scaleFactor);
+            return glm::scale(mat4(1.0f), finalScale);
         }
 
         float scaleFactor = getScaleFactor(scales[p0Index].timeStamp, scales[p1Index].timeStamp, animationTime, animationDuration);
-        glm::vec3 finalScale = glm::mix(scales[p0Index].scale, scales[p1Index].scale, scaleFactor);
-        return glm::scale(glm::mat4(1.0f), finalScale);
+        vec3 finalScale = glm::mix(scales[p0Index].scale, scales[p1Index].scale, scaleFactor);
+        return glm::scale(mat4(1.0f), finalScale);
     }
 }

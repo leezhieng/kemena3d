@@ -33,14 +33,14 @@ namespace kemena
     kWorld();
     virtual ~kWorld();
 
-    std::string getUuid();
-    void setUuid(std::string newUuid);
+    string getUuid();
+    void setUuid(string newUuid);
 
-    kScene *createScene(std::string sceneName, std::string sceneUuid = "");
-    void addScene(kScene *scene, std::string sceneUuid = "");
+    kScene *createScene(string sceneName, string sceneUuid = "");
+    void addScene(kScene *scene, string sceneUuid = "");
 	
-	kCamera *addCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 lookAt = glm::vec3(0.0f, 0.0f, 0.0f), kCameraType type = kCameraType::CAMERA_TYPE_FREE, std::string objectUuid = "");
-    void addCamera(kCamera *camera, std::string objectUuid = "");
+	kCamera *addCamera(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 lookAt = vec3(0.0f, 0.0f, 0.0f), kCameraType type = kCameraType::CAMERA_TYPE_FREE, string objectUuid = "");
+    void addCamera(kCamera *camera, string objectUuid = "");
 
     kCamera *getMainCamera();
     void setMainCamera(kCamera *camera);
@@ -63,7 +63,7 @@ namespace kemena
 	
 	kCamera *mainCamera = nullptr;
 
-    std::string uuid;
+    string uuid;
   };
 }
 

@@ -13,9 +13,9 @@ namespace kemena
             glDeleteProgram(shaderProgram);
     }
 
-    std::string kShader::readFile(const std::string filePath)
+    string kShader::readFile(const string filePath)
     {
-        std::string content;
+        string content;
         std::ifstream fileStream(filePath.c_str(), std::ios::in);
 
         if(!fileStream.is_open())
@@ -24,7 +24,7 @@ namespace kemena
             return "";
         }
 
-        std::string line = "";
+        string line = "";
         while(!fileStream.eof())
         {
             std::getline(fileStream, line);
@@ -35,7 +35,7 @@ namespace kemena
         return content;
     }
 
-    void kShader::loadShadersFile(const std::string vertexShaderPath, const std::string fragmentShaderPath)
+    void kShader::loadShadersFile(const string vertexShaderPath, const string fragmentShaderPath)
     {
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -46,7 +46,7 @@ namespace kemena
         // Read shaders
         if (vertexShaderPath != "")
         {
-            std::string vertexShaderStr = readFile(vertexShaderPath);
+            string vertexShaderStr = readFile(vertexShaderPath);
             const char *vertexShaderSrc = vertexShaderStr.c_str();
 
             // Compile vertex shader
@@ -68,7 +68,7 @@ namespace kemena
 
         if (fragmentShaderPath != "")
         {
-            std::string fragmentShaderStr = readFile(fragmentShaderPath);
+            string fragmentShaderStr = readFile(fragmentShaderPath);
             const char *fragmentShaderSrc = fragmentShaderStr.c_str();
 
             // Compile fragment shader
@@ -213,7 +213,7 @@ namespace kemena
         return shaderProgram;
     }
 
-    void kShader::setValue(std::string name, std::vector<glm::mat4> value)
+    void kShader::setValue(string name, std::vector<mat4> value)
     {
         GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
 
@@ -226,7 +226,7 @@ namespace kemena
         glUniformMatrix4fv(loc, static_cast<GLsizei>(value.size()), GL_FALSE, glm::value_ptr(value[0]));
     }
 
-    void kShader::setValue(std::string name, glm::mat4 value)
+    void kShader::setValue(string name, mat4 value)
     {
         GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
 
@@ -239,7 +239,7 @@ namespace kemena
         glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
     }
 
-    void kShader::setValue(std::string name, glm::vec3 value)
+    void kShader::setValue(string name, vec3 value)
     {
         GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
 
@@ -252,7 +252,7 @@ namespace kemena
         glUniform3fv(loc, 1, glm::value_ptr(value));
     }
 
-    void kShader::setValue(std::string name, glm::vec2 value)
+    void kShader::setValue(string name, vec2 value)
     {
         GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
 
@@ -265,7 +265,7 @@ namespace kemena
         glUniform2fv(loc, 1, glm::value_ptr(value));
     }
 
-    void kShader::setValue(std::string name, float value)
+    void kShader::setValue(string name, float value)
     {
         GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
 
@@ -278,7 +278,7 @@ namespace kemena
         glUniform1f(loc, value);
     }
 
-    void kShader::setValue(std::string name, int value)
+    void kShader::setValue(string name, int value)
     {
         GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
 
@@ -291,7 +291,7 @@ namespace kemena
         glUniform1i(loc, value);
     }
 
-    void kShader::setValue(std::string name, unsigned int value)
+    void kShader::setValue(string name, unsigned int value)
     {
         GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
 
@@ -304,7 +304,7 @@ namespace kemena
         glUniform1i(loc, value);
     }
 
-    void kShader::setValue(std::string name, bool value)
+    void kShader::setValue(string name, bool value)
     {
         GLint loc = glGetUniformLocation(shaderProgram, name.c_str());
 
