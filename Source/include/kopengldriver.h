@@ -1,3 +1,8 @@
+/**
+ * @file kopengldriver.h
+ * @brief OpenGL 3.3 Core Profile implementation of the kDriver interface.
+ */
+
 #ifndef KOPENGLDRIVER_H
 #define KOPENGLDRIVER_H
 
@@ -23,21 +28,54 @@
 
 namespace kemena
 {
+    /**
+     * @brief OpenGL 3.3 Core Profile graphics driver.
+     *
+     * Created by kRenderer when the RENDERER_GL backend is selected. Wraps all
+     * raw OpenGL calls so that the rest of the engine remains API-agnostic.
+     *
+     * Do not instantiate this class directly — use kRenderer::init() instead.
+     */
     class KEMENA3D_API kOpenGLDriver : public kDriver
     {
     public:
         kOpenGLDriver() = default;
         ~kOpenGLDriver() override;
 
+        // --- Lifecycle -------------------------------------------------------
+
+        /**
+         * @brief Creates an OpenGL 3.3 Core Profile context for the given window.
+         *
+         * Sets SDL GL attributes, creates the context, initialises GLEW, and
+         * applies default render state.
+         * @param window SDL-backed window to create the context for.
+         * @return true on success.
+         */
         bool init(kWindow *window) override;
+
+        /** @brief Destroys the SDL GL context. */
         void destroy() override;
+
+        /**
+         * @brief Returns the raw SDL_GLContext handle.
+         * @return Opaque pointer; cast to SDL_GLContext when needed.
+         */
         void *getNativeContext() override;
+
+        /** @brief Returns the OpenGL version string. */
         string getApiVersion() override;
+
+        /** @brief Returns the GLSL version string. */
         string getShaderVersion() override;
+
+        // --- Frame state -----------------------------------------------------
 
         void setClearColor(float r, float g, float b, float a) override;
         void clear(bool color, bool depth, bool stencil) override;
         void setViewport(int x, int y, int width, int height) override;
+
+        // --- Pipeline state --------------------------------------------------
 
         void setDepthTest(bool enable) override;
         void setDepthWrite(bool enable) override;
@@ -49,6 +87,8 @@ namespace kemena
         void setMultisample(bool enable) override;
         void setSRGBEncoding(bool enable) override;
         void setSampleAlphaToCoverage(bool enable) override;
+
+        // --- Shader programs -------------------------------------------------
 
         uint32_t compileShaderProgram(const char *vertSrc, const char *fragSrc) override;
         void deleteShaderProgram(uint32_t id) override;
@@ -63,10 +103,14 @@ namespace kemena
         void setUniformMat4(uint32_t progId, const string &name, const mat4 &v) override;
         void setUniformMat4Array(uint32_t progId, const string &name, const std::vector<mat4> &v) override;
 
+        // --- Vertex arrays ---------------------------------------------------
+
         uint32_t createVertexArray() override;
         void deleteVertexArray(uint32_t id) override;
         void bindVertexArray(uint32_t id) override;
         void unbindVertexArray() override;
+
+        // --- Buffers ---------------------------------------------------------
 
         uint32_t createBuffer() override;
         void deleteBuffer(uint32_t id) override;
@@ -75,8 +119,12 @@ namespace kemena
         void setVertexAttribFloat(int location, int components, int stride, size_t offset) override;
         void setVertexAttribInt(int location, int components, int stride, size_t offset) override;
 
+        // --- Draw calls ------------------------------------------------------
+
         void drawIndexed(uint32_t vaoId, int indexCount) override;
         void drawArrays(uint32_t vaoId, kPrimitiveType type, int vertexCount) override;
+
+        // --- Texture sampling ------------------------------------------------
 
         void bindTexture2D(int unit, uint32_t id) override;
         void bindTextureCube(int unit, uint32_t id) override;
@@ -84,6 +132,8 @@ namespace kemena
         void unbindTextureCube(int unit) override;
         void generateMipmaps2D(uint32_t id) override;
         void readTexture2DRGB(uint32_t id, int mipLevel, float *pixels) override;
+
+        // --- Framebuffers ----------------------------------------------------
 
         uint32_t createFramebuffer() override;
         void deleteFramebuffer(uint32_t id) override;
@@ -96,11 +146,15 @@ namespace kemena
                                   int dstX0, int dstY0, int dstX1, int dstY1) override;
         void setFramebufferDrawBuffer() override;
 
+        // --- Renderbuffers ---------------------------------------------------
+
         uint32_t createRenderbuffer() override;
         void deleteRenderbuffer(uint32_t id) override;
         void setupRenderbuffer(uint32_t rboId, int width, int height) override;
         void setupRenderbufferMSAA(uint32_t rboId, int samples, int width, int height) override;
         void attachRenderbufferDepthStencil(uint32_t fboId, uint32_t rboId) override;
+
+        // --- FBO-managed textures --------------------------------------------
 
         uint32_t createFBOColorTexture(int width, int height) override;
         uint32_t createFBOColorTextureMSAA(int samples, int width, int height) override;
@@ -113,9 +167,12 @@ namespace kemena
         void resizeFBOColorTextureMSAA(uint32_t texId, int samples, int width, int height) override;
 
     private:
-        SDL_GLContext glContext = nullptr;
+        SDL_GLContext glContext = nullptr; ///< The SDL-managed OpenGL context.
 
+        /** @brief Converts a kBlendFactor to the corresponding GL enum. */
         GLenum toGLBlendFactor(kBlendFactor factor);
+
+        /** @brief Converts a kPrimitiveType to the corresponding GL enum. */
         GLenum toGLPrimitiveType(kPrimitiveType type);
     };
 }

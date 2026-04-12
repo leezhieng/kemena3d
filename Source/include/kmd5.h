@@ -1,7 +1,7 @@
-#ifndef MD5_H_INCLUDED
-#define MD5_H_INCLUDED
+#ifndef KMD5_H_INCLUDED
+#define KMD5_H_INCLUDED
 
-// md5.h
+// kmd5.h
 #pragma once
 #include <string>
 #include <cstring>
@@ -9,9 +9,9 @@
 #include <iomanip>
 #include <cstdint>
 
-class MD5 {
+class kMD5 {
 public:
-    MD5() { init(); }
+    kMD5() { init(); }
     void update(const uint8_t* input, size_t length);
     void update(const std::string& input);
     std::string final();
@@ -83,7 +83,7 @@ inline void decode(uint32_t* output, const uint8_t* input, size_t length) {
     }
 }
 
-inline void MD5::init() {
+inline void kMD5::init() {
     count = 0;
     state[0] = 0x67452301;
     state[1] = 0xefcdab89;
@@ -91,7 +91,7 @@ inline void MD5::init() {
     state[3] = 0x10325476;
 }
 
-inline void MD5::update(const uint8_t* input, size_t length) {
+inline void kMD5::update(const uint8_t* input, size_t length) {
     size_t i = 0, index = (size_t)((count >> 3) & 0x3F);
     count += ((uint64_t)length) << 3;
 
@@ -109,11 +109,11 @@ inline void MD5::update(const uint8_t* input, size_t length) {
     std::memcpy(&buffer[index], &input[i], length - i);
 }
 
-inline void MD5::update(const std::string& input) {
+inline void kMD5::update(const std::string& input) {
     update(reinterpret_cast<const uint8_t*>(input.c_str()), input.length());
 }
 
-inline std::string MD5::final() {
+inline std::string kMD5::final() {
     static uint8_t PADDING[64] = { 0x80 };
     uint8_t bits[8];
     encode(bits, reinterpret_cast<uint32_t*>(&count), 8);
@@ -132,13 +132,13 @@ inline std::string MD5::final() {
     return oss.str();
 }
 
-inline std::string MD5::hash(const std::string& input) {
-    MD5 md5;
+inline std::string kMD5::hash(const std::string& input) {
+    kMD5 md5;
     md5.update(input);
     return md5.final();
 }
 
-inline void MD5::transform(const uint8_t block[64]) {
+inline void kMD5::transform(const uint8_t block[64]) {
     uint32_t a = state[0], b = state[1], c = state[2], d = state[3], x[16];
     decode(x, block, 64);
 
@@ -217,4 +217,4 @@ inline void MD5::transform(const uint8_t block[64]) {
 }
 
 
-#endif // MD5_H_INCLUDED
+#endif // KMD5_H_INCLUDED

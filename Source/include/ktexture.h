@@ -1,3 +1,8 @@
+/**
+ * @file ktexture.h
+ * @brief Base class for GPU texture objects.
+ */
+
 #ifndef KTEXTURE_H
 #define KTEXTURE_H
 
@@ -22,28 +27,66 @@
 
 namespace kemena
 {
+    /**
+     * @brief Base GPU texture abstraction shared by kTexture2D and kTextureCube.
+     *
+     * Stores the API texture handle, a name used to bind the texture to shader
+     * uniforms, and the texture type (2D or cube map).
+     */
     class KEMENA3D_API kTexture
     {
     public:
         kTexture();
         virtual ~kTexture();
 
+        /**
+         * @brief Creates a shallow copy with a different sampler name.
+         * @param newName New texture name for the duplicate.
+         * @return Heap-allocated duplicate; caller takes ownership.
+         */
         kTexture *duplicate(string newName);
 
+        /**
+         * @brief Sets the GPU texture handle.
+         * @param newTextureID Handle returned by the texture loading API.
+         */
         void setTextureID(GLuint newTextureID);
+
+        /**
+         * @brief Returns the GPU texture handle.
+         * @return Opaque texture handle (0 if not yet loaded).
+         */
         GLuint getTextureID();
 
+        /**
+         * @brief Sets the GLSL sampler uniform name for this texture.
+         * @param newName Uniform variable name in the shader.
+         */
         void setTextureName(string newName);
+
+        /**
+         * @brief Returns the GLSL sampler uniform name.
+         * @return Uniform name string.
+         */
         string getTextureName();
 
+        /**
+         * @brief Sets the texture type (2D or cube map).
+         * @param newType Texture type.
+         */
         void setType(kTextureType newType);
+
+        /**
+         * @brief Returns the texture type.
+         * @return TEX_TYPE_2D or TEX_TYPE_CUBE.
+         */
         kTextureType getType();
 
     protected:
     private:
-        GLuint textureID;
-        string textureName;
-        kTextureType type = kTextureType::TEX_TYPE_2D;
+        GLuint textureID;           ///< GPU texture handle.
+        string textureName;         ///< GLSL sampler uniform name.
+        kTextureType type = kTextureType::TEX_TYPE_2D; ///< Texture dimensionality.
     };
 }
 

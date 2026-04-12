@@ -1,7 +1,12 @@
+/**
+ * @file kdatatype.h
+ * @brief Core type aliases, enumerations, structs, and utility functions used throughout the engine.
+ */
+
 #ifndef KDATATYPE_H
 #define KDATATYPE_H
 
-#include "md5.h"
+#include "kmd5.h"
 
 #include <string>
 #include <vector>
@@ -25,85 +30,120 @@
 
 namespace kemena
 {
+/// @name Math type aliases
+/// @{
+typedef glm::vec2 vec2;   ///< 2-component float vector.
+typedef glm::vec3 vec3;   ///< 3-component float vector.
+typedef glm::vec4 vec4;   ///< 4-component float vector.
+typedef glm::ivec2 ivec2; ///< 2-component integer vector.
+typedef glm::ivec3 ivec3; ///< 3-component integer vector.
+typedef glm::ivec4 ivec4; ///< 4-component integer vector.
+typedef glm::mat3 mat3;   ///< 3x3 float matrix.
+typedef glm::mat4 mat4;   ///< 4x4 float matrix.
+typedef glm::quat quat;   ///< Unit quaternion.
+
+typedef std::string string; ///< Standard string alias.
+/// @}
+
+/// Maximum number of bones a single vertex can be influenced by.
 #define MAX_BONE_INFLUENCE 4
+/// Maximum number of bones in a skeleton.
 #define MAX_BONES 128
 
-    typedef glm::vec2 vec2;
-    typedef glm::vec3 vec3;
-    typedef glm::vec4 vec4;
-    typedef glm::ivec2 ivec2;
-    typedef glm::ivec3 ivec3;
-    typedef glm::ivec4 ivec4;
-    typedef glm::mat3 mat3;
-    typedef glm::mat4 mat4;
-    typedef glm::quat quat;
+/**
+ * @brief Identifies the graphics backend used by kRenderer.
+ */
+enum kRendererType
+{
+    RENDERER_GL ///< OpenGL renderer.
+};
 
-    typedef std::string string;
+/**
+ * @brief Window creation mode.
+ */
+enum kWindowType
+{
+    WINDOW_DEFAULT,    ///< Normal windowed mode.
+    WINDOW_FULLSCREEN, ///< Exclusive fullscreen.
+    WINDOW_BORDERLESS, ///< Borderless/windowed fullscreen.
+};
 
-    enum kRendererType
-    {
-        RENDERER_GL
-    };
+/**
+ * @brief Scene-graph node type tag.
+ */
+enum kNodeType
+{
+    NODE_TYPE_OBJECT, ///< Generic empty object.
+    NODE_TYPE_MESH,   ///< Renderable mesh.
+    NODE_TYPE_CAMERA, ///< Camera.
+    NODE_TYPE_LIGHT   ///< Light source.
+};
 
-    enum kWindowType
-    {
-        WINDOW_DEFAULT,
-        WINDOW_FULLSCREEN,
-        WINDOW_BORDERLESS,
-    };
+/**
+ * @brief Camera behaviour mode.
+ */
+enum kCameraType
+{
+    CAMERA_TYPE_FREE,  ///< Free-fly; position and orientation are set independently.
+    CAMERA_TYPE_LOCKED ///< Orbit; always looks at a fixed target point.
+};
 
-    enum kNodeType
-    {
-        NODE_TYPE_OBJECT,
-        NODE_TYPE_MESH,
-        NODE_TYPE_CAMERA,
-        NODE_TYPE_LIGHT
-    };
+/**
+ * @brief Transparency/blending mode for a material.
+ */
+enum kTransparentType
+{
+    TRANSP_TYPE_NONE, ///< Opaque — no blending.
+    TRANSP_TYPE_BLEND ///< Alpha blending (src-alpha / one-minus-src-alpha).
+};
 
-    enum kCameraType
-    {
-        CAMERA_TYPE_FREE,
-        CAMERA_TYPE_LOCKED
-    };
+/**
+ * @brief Light source variety.
+ */
+enum kLightType
+{
+    LIGHT_TYPE_SUN,   ///< Directional (infinite-distance) light.
+    LIGHT_TYPE_POINT, ///< Omnidirectional point light.
+    LIGHT_TYPE_SPOT   ///< Cone-shaped spotlight.
+};
 
-    enum kTransparentType
-    {
-        TRANSP_TYPE_NONE,
-        TRANSP_TYPE_BLEND
-    };
+/**
+ * @brief Texture upload format (internal precision / colour-space).
+ */
+enum kTextureFormat
+{
+    TEX_FORMAT_RGB,   ///< 8-bit RGB, linear colour-space.
+    TEX_FORMAT_RGBA,  ///< 8-bit RGBA, linear colour-space.
+    TEX_FORMAT_SRGB,  ///< 8-bit RGB, sRGB colour-space (gamma-corrected).
+    TEX_FORMAT_SRGBA, ///< 8-bit RGBA, sRGB colour-space.
+};
 
-    enum kLightType
-    {
-        LIGHT_TYPE_SUN,
-        LIGHT_TYPE_POINT,
-        LIGHT_TYPE_SPOT
-    };
+/**
+ * @brief Distinguishes 2D from cube-map textures.
+ */
+enum kTextureType
+{
+    TEX_TYPE_2D,  ///< Standard 2-dimensional texture.
+    TEX_TYPE_CUBE ///< Cube-map texture (six faces).
+};
 
-    enum kTextureFormat
-    {
-        TEX_FORMAT_RGB,
-        TEX_FORMAT_RGBA,
-        TEX_FORMAT_SRGB,
-        TEX_FORMAT_SRGBA,
-    };
+/// @name Event type constants (mirror SDL3 values)
+/// @{
+#define K_EVENT_QUIT             256
+#define K_EVENT_KEYDOWN          768
+#define K_EVENT_KEYUP            769
+#define K_EVENT_MOUSEMOTION      1024
+#define K_EVENT_MOUSEBUTTONDOWN  1025
+#define K_EVENT_MOUSEBUTTONUP    1026
+#define K_EVENT_MOUSEWHEEL       1027
+/// @}
 
-    enum kTextureType
-    {
-        TEX_TYPE_2D,
-        TEX_TYPE_CUBE
-    };
-
-#define K_EVENT_QUIT 256
-#define K_EVENT_KEYDOWN 768
-#define K_EVENT_KEYUP 769
-#define K_EVENT_MOUSEMOTION 1024
-#define K_EVENT_MOUSEBUTTONDOWN 1025
-#define K_EVENT_MOUSEBUTTONUP 1026
-#define K_EVENT_MOUSEWHEEL 1027
-
-#define K_MOUSEBUTTON_LEFT 1
+/// @name Mouse button identifiers
+/// @{
+#define K_MOUSEBUTTON_LEFT   1
 #define K_MOUSEBUTTON_MIDDLE 2
-#define K_MOUSEBUTTON_RIGHT 3
+#define K_MOUSEBUTTON_RIGHT  3
+/// @}
 
 // Key Code (OS key location)
 #define K_KEY_UNKNOWN 0
@@ -365,310 +405,369 @@ namespace kemena
 #define K_SCANCODE_RALT 230
 #define K_SCANCODE_RGUI 231
 
-    struct kSystemEvent
-    {
-        SDL_Event event;
-        std::vector<unsigned int> keys;
+/**
+ * @brief Wraps an SDL_Event and provides helper accessors for input polling.
+ *
+ * Pass one of these to your main loop and call hasEvent() each frame to drain
+ * the SDL event queue. Key state (which keys are currently held) is tracked
+ * automatically inside the struct.
+ */
+struct kSystemEvent
+{
+    SDL_Event event;          ///< Underlying SDL event.
+    std::vector<unsigned int> keys; ///< Currently-held key codes.
 
-        SDL_Event *getSdlEvent()
+    /** @brief Returns a pointer to the internal SDL_Event. */
+    SDL_Event *getSdlEvent()
+    {
+        return &event;
+    }
+
+    /**
+     * @brief Polls one event from the SDL queue.
+     * @return true if an event was available, false if the queue was empty.
+     */
+    bool hasEvent()
+    {
+        if (SDL_PollEvent(&event))
         {
-            return &event;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @brief Returns the event type and maintains the held-key list.
+     * @return SDL event type value (matches K_EVENT_* constants).
+     */
+    unsigned int getType()
+    {
+        if (event.type == K_EVENT_KEYDOWN)
+        {
+            unsigned int key = getKeyButton();
+
+            // Put key into array
+            bool found = false;
+            if (keys.size() > 0)
+            {
+                for (size_t i = 0; i < keys.size(); ++i)
+                {
+                    if (keys.at(i) == key)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found)
+            {
+                keys.push_back(key);
+            }
+        }
+        else if (event.type == K_EVENT_KEYUP)
+        {
+            unsigned int key = getKeyButton();
+
+            // Remove key from array
+            if (keys.size() > 0)
+            {
+                for (size_t i = keys.size(); i-- > 0;)
+                {
+                    if (keys[i] == key)
+                    {
+                        keys.erase(keys.begin() + i);
+                        break;
+                    }
+                }
+            }
         }
 
-        bool hasEvent()
+        return event.type;
+    }
+
+    /** @brief Returns the mouse button index from the last button event. */
+    unsigned int getMouseButton()
+    {
+        return event.button.button;
+    }
+
+    /** @brief Returns the X position from the last mouse-button event. */
+    float getMouseX()
+    {
+        return event.button.x;
+    }
+
+    /** @brief Returns the Y position from the last mouse-button event. */
+    float getMouseY()
+    {
+        return event.button.y;
+    }
+
+    /** @brief Returns the absolute X position from the last motion event. */
+    float getMouseMoveX()
+    {
+        return event.motion.x;
+    }
+
+    /** @brief Returns the absolute Y position from the last motion event. */
+    float getMouseMoveY()
+    {
+        return event.motion.y;
+    }
+
+    /** @brief Returns the key code from the last key event. */
+    unsigned int getKeyButton()
+    {
+        return event.key.key;
+    }
+
+    /**
+     * @brief Returns true if the given key is currently held down.
+     * @param key Key code to test (use K_KEY_* constants).
+     */
+    bool getKeyDown(unsigned int key)
+    {
+        if (keys.empty())
+            return false;
+
+        for (size_t i = 0; i < keys.size(); ++i)
         {
-            if (SDL_PollEvent(&event))
+            if (keys[i] == key)
             {
                 return true;
             }
-            return false;
         }
 
-        unsigned int getType()
-        {
-            if (event.type == K_EVENT_KEYDOWN)
-            {
-                unsigned int key = getKeyButton();
-
-                // Put key into array
-                bool found = false;
-                if (keys.size() > 0)
-                {
-                    for (size_t i = 0; i < keys.size(); ++i)
-                    {
-                        if (keys.at(i) == key)
-                        {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (!found)
-                {
-                    keys.push_back(key);
-                }
-            }
-            else if (event.type == K_EVENT_KEYUP)
-            {
-                unsigned int key = getKeyButton();
-
-                // Remove key from array
-                if (keys.size() > 0)
-                {
-                    for (size_t i = keys.size(); i-- > 0;)
-                    {
-                        if (keys[i] == key)
-                        {
-                            keys.erase(keys.begin() + i);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return event.type;
-        }
-
-        unsigned int getMouseButton()
-        {
-            return event.button.button;
-        }
-
-        float getMouseX()
-        {
-            return event.button.x;
-        }
-
-        float getMouseY()
-        {
-            return event.button.y;
-        }
-
-        float getMouseMoveX()
-        {
-            return event.motion.x;
-        }
-
-        float getMouseMoveY()
-        {
-            return event.motion.y;
-        }
-
-        unsigned int getKeyButton()
-        {
-            return event.key.key;
-        }
-
-        bool getKeyDown(unsigned int key)
-        {
-            if (keys.empty())
-                return false;
-
-            for (size_t i = 0; i < keys.size(); ++i)
-            {
-                if (keys[i] == key)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        float getMouseWheelX()
-        {
-            return event.wheel.x;
-        }
-
-        float getMouseWheelY()
-        {
-            return event.wheel.y;
-        }
-    };
-
-    struct kVertexInfo
-    {
-        // position
-        vec3 position;
-        // normal
-        vec3 normal;
-        // texCoords
-        vec2 texCoords;
-
-        // tangent
-        vec3 tangent;
-        // bitangent
-        vec3 bitangent;
-
-        // bone indexes which will influence this vertex
-        int boneIDs[MAX_BONE_INFLUENCE];
-        // weights from each bone
-        float weights[MAX_BONE_INFLUENCE];
-    };
-
-    struct kBoneInfo
-    {
-        /*id is index in finalBoneMatrices*/
-        int id;
-
-        /*offset matrix transforms vertex from model space to bone space*/
-        mat4 offset;
-    };
-
-    struct kKeyPosition
-    {
-        vec3 position;
-        float timeStamp;
-    };
-
-    struct kKeyRotation
-    {
-        quat orientation;
-        float timeStamp;
-    };
-
-    struct kKeyScale
-    {
-        vec3 scale;
-        float timeStamp;
-    };
-
-    struct kAssimpNodeData
-    {
-        mat4 transformation;
-        std::string name;
-        int childrenCount;
-        std::vector<kAssimpNodeData> children;
-    };
-
-    struct kFontGlyph
-    {
-        float ax;     // advance.x
-        float lsb;    // left side bearing
-        float tx, ty; // texture coordinates
-        int w, h, xoff, yoff;
-    };
-	
-	inline std::string generateFileChecksum(const std::string& fileName)
-	{
-		std::ifstream file(fileName, std::ios::binary);
-		if (!file.is_open())
-			return "";
-
-		const size_t bufferSize = 8192;
-		std::vector<uint8_t> buffer(bufferSize);
-
-		MD5 md5;
-
-		while (file)
-		{
-			file.read(reinterpret_cast<char*>(buffer.data()), bufferSize);
-			std::streamsize bytesRead = file.gcount();
-			if (bytesRead > 0)
-			{
-				md5.update(buffer.data(), static_cast<size_t>(bytesRead));
-			}
-		}
-
-		return md5.final();
-	}
-	
-    inline std::string generateRandomString(int stringLength)
-	{
-		const std::string possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-
-		std::string randomString;
-		randomString.reserve(stringLength);
-
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::uniform_int_distribution<> dist(0, (int)possibleCharacters.length() - 1);
-
-		for (int i = 0; i < stringLength; ++i)
-		{
-			char nextChar = possibleCharacters.at(dist(gen));
-			randomString.push_back(nextChar);
-		}
-
-		return randomString;
-	}
-
-    inline std::string generateUuid()
-    {
-		// Generates UUID v4
-		static std::random_device rd;
-		static std::mt19937_64 gen(rd());
-		static std::uniform_int_distribution<uint64_t> dist;
-
-		// Generate 128 bits (UUID is 128-bit)
-		uint64_t high = dist(gen);
-		uint64_t low  = dist(gen);
-
-		// Set version (UUID v4 -> bits 12–15 of time_hi_and_version)
-		high &= 0xFFFFFFFFFFFF0FFFULL;
-		high |= 0x0000000000004000ULL;
-
-		// Set variant (10xx -> bits 62–63)
-		low &= 0x3FFFFFFFFFFFFFFFULL;
-		low |= 0x8000000000000000ULL;
-
-		std::stringstream ss;
-		ss << std::hex << std::setfill('0');
-
-		ss << std::setw(8) << (uint32_t)(high >> 32);
-		ss << "-";
-		ss << std::setw(4) << (uint16_t)(high >> 16);
-		ss << "-";
-		ss << std::setw(4) << (uint16_t)(high);
-		ss << "-";
-		ss << std::setw(4) << (uint16_t)(low >> 48);
-		ss << "-";
-		ss << std::setw(12) << (low & 0x0000FFFFFFFFFFFFULL);
-
-		return ss.str();
+        return false;
     }
 
-    class kAssimpGLMHelpers
+    /** @brief Returns horizontal scroll delta from the last wheel event. */
+    float getMouseWheelX()
     {
-    public:
-        static inline mat4 convertMatrixToGLMFormat(const aiMatrix4x4 &from)
-        {
-            mat4 to;
-            // the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
-            to[0][0] = from.a1;
-            to[1][0] = from.a2;
-            to[2][0] = from.a3;
-            to[3][0] = from.a4;
-            to[0][1] = from.b1;
-            to[1][1] = from.b2;
-            to[2][1] = from.b3;
-            to[3][1] = from.b4;
-            to[0][2] = from.c1;
-            to[1][2] = from.c2;
-            to[2][2] = from.c3;
-            to[3][2] = from.c4;
-            to[0][3] = from.d1;
-            to[1][3] = from.d2;
-            to[2][3] = from.d3;
-            to[3][3] = from.d4;
-            return to;
-        }
+        return event.wheel.x;
+    }
 
-        static inline vec2 getGLMVec2(const aiVector3D &vec)
-        {
-            return vec2(vec.x, vec.y);
-        }
-
-        static inline vec3 getGLMVec3(const aiVector3D &vec)
-        {
-            return vec3(vec.x, vec.y, vec.z);
-        }
-
-        static inline quat getGLMQuat(const aiQuaternion &pOrientation)
-        {
-            return quat(pOrientation.w, pOrientation.x, pOrientation.y, pOrientation.z);
-        }
-    };
+    /** @brief Returns vertical scroll delta from the last wheel event. */
+    float getMouseWheelY()
+    {
+        return event.wheel.y;
+    }
 };
+
+/**
+ * @brief Full per-vertex data layout used internally by the asset manager.
+ */
+struct kVertexInfo
+{
+    vec3 position;  ///< Vertex position in model space.
+    vec3 normal;    ///< Vertex normal.
+    vec2 texCoords; ///< UV texture coordinates.
+    vec3 tangent;   ///< Tangent vector (for normal mapping).
+    vec3 bitangent; ///< Bitangent vector (for normal mapping).
+
+    int boneIDs[MAX_BONE_INFLUENCE];   ///< Indices of influencing bones.
+    float weights[MAX_BONE_INFLUENCE]; ///< Blend weights for each bone.
+};
+
+/**
+ * @brief Stores the per-bone offset matrix and its index in the palette.
+ */
+struct kBoneInfo
+{
+    int id;      ///< Index into the final bone-matrix palette.
+    mat4 offset; ///< Transforms from model space to bone-local space.
+};
+
+/** @brief A single position keyframe for skeletal animation. */
+struct kKeyPosition
+{
+    vec3 position;   ///< World-space position at this keyframe.
+    float timeStamp; ///< Time (in ticks) at which this keyframe occurs.
+};
+
+/** @brief A single rotation keyframe for skeletal animation. */
+struct kKeyRotation
+{
+    quat orientation; ///< Rotation quaternion at this keyframe.
+    float timeStamp;  ///< Time (in ticks) at which this keyframe occurs.
+};
+
+/** @brief A single scale keyframe for skeletal animation. */
+struct kKeyScale
+{
+    vec3 scale;      ///< Non-uniform scale at this keyframe.
+    float timeStamp; ///< Time (in ticks) at which this keyframe occurs.
+};
+
+/**
+ * @brief Mirrors an Assimp node hierarchy used when loading skeletal animations.
+ */
+struct kAssimpNodeData
+{
+    mat4 transformation;                   ///< Local-space transform for this node.
+    std::string name;                      ///< Node name (used to look up bones by name).
+    int childrenCount;                     ///< Number of child nodes.
+    std::vector<kAssimpNodeData> children; ///< Child nodes.
+};
+
+/**
+ * @brief Glyph metrics for a single character in a bitmap font atlas.
+ */
+struct kFontGlyph
+{
+    float ax;           ///< Horizontal advance (pen advance after drawing the glyph).
+    float lsb;          ///< Left side bearing.
+    float tx, ty;       ///< UV coordinates of the glyph within the atlas texture.
+    int w, h;           ///< Width and height of the glyph in pixels.
+    int xoff, yoff;     ///< Pixel offset from the glyph origin.
+};
+
+/**
+ * @brief Computes an MD5 checksum of the given file.
+ * @param fileName Path to the file.
+ * @return Lowercase hex MD5 digest string, or empty string if the file cannot be opened.
+ */
+inline std::string generateFileChecksum(const std::string& fileName)
+{
+    std::ifstream file(fileName, std::ios::binary);
+    if (!file.is_open())
+        return "";
+
+    const size_t bufferSize = 8192;
+    std::vector<uint8_t> buffer(bufferSize);
+
+    kMD5 md5;
+
+    while (file)
+    {
+        file.read(reinterpret_cast<char*>(buffer.data()), bufferSize);
+        std::streamsize bytesRead = file.gcount();
+        if (bytesRead > 0)
+        {
+            md5.update(buffer.data(), static_cast<size_t>(bytesRead));
+        }
+    }
+
+    return md5.final();
+}
+
+/**
+ * @brief Generates a cryptographically random alphanumeric string.
+ * @param stringLength Number of characters to generate.
+ * @return Random string of the requested length.
+ */
+inline std::string generateRandomString(int stringLength)
+{
+    const std::string possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+
+    std::string randomString;
+    randomString.reserve(stringLength);
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(0, (int)possibleCharacters.length() - 1);
+
+    for (int i = 0; i < stringLength; ++i)
+    {
+        char nextChar = possibleCharacters.at(dist(gen));
+        randomString.push_back(nextChar);
+    }
+
+    return randomString;
+}
+
+/**
+ * @brief Generates a random UUID v4 string.
+ * @return UUID formatted as @c xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx.
+ */
+inline std::string generateUuid()
+{
+    // Generates UUID v4
+    static std::random_device rd;
+    static std::mt19937_64 gen(rd());
+    static std::uniform_int_distribution<uint64_t> dist;
+
+    // Generate 128 bits (UUID is 128-bit)
+    uint64_t high = dist(gen);
+    uint64_t low  = dist(gen);
+
+    // Set version (UUID v4 -> bits 12–15 of time_hi_and_version)
+    high &= 0xFFFFFFFFFFFF0FFFULL;
+    high |= 0x0000000000004000ULL;
+
+    // Set variant (10xx -> bits 62–63)
+    low &= 0x3FFFFFFFFFFFFFFFULL;
+    low |= 0x8000000000000000ULL;
+
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+
+    ss << std::setw(8) << (uint32_t)(high >> 32);
+    ss << "-";
+    ss << std::setw(4) << (uint16_t)(high >> 16);
+    ss << "-";
+    ss << std::setw(4) << (uint16_t)(high);
+    ss << "-";
+    ss << std::setw(4) << (uint16_t)(low >> 48);
+    ss << "-";
+    ss << std::setw(12) << (low & 0x0000FFFFFFFFFFFFULL);
+
+    return ss.str();
+}
+
+/**
+ * @brief Static helpers for converting Assimp types to GLM equivalents.
+ */
+class kAssimpGLMHelpers
+{
+public:
+    /**
+     * @brief Converts an Assimp 4x4 matrix to a GLM mat4.
+     * @param from Source Assimp matrix.
+     * @return Equivalent GLM mat4 (column-major).
+     */
+    static inline mat4 convertMatrixToGLMFormat(const aiMatrix4x4 &from)
+    {
+        mat4 to;
+        // the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
+        to[0][0] = from.a1; to[1][0] = from.a2; to[2][0] = from.a3; to[3][0] = from.a4;
+        to[0][1] = from.b1; to[1][1] = from.b2; to[2][1] = from.b3; to[3][1] = from.b4;
+        to[0][2] = from.c1; to[1][2] = from.c2; to[2][2] = from.c3; to[3][2] = from.c4;
+        to[0][3] = from.d1; to[1][3] = from.d2; to[2][3] = from.d3; to[3][3] = from.d4;
+        return to;
+    }
+
+    /**
+     * @brief Converts an Assimp 3D vector to a GLM vec2 (drops the Z component).
+     * @param vec Source vector.
+     * @return XY components as vec2.
+     */
+    static inline vec2 getGLMVec2(const aiVector3D &vec)
+    {
+        return vec2(vec.x, vec.y);
+    }
+
+    /**
+     * @brief Converts an Assimp 3D vector to a GLM vec3.
+     * @param vec Source vector.
+     * @return Equivalent vec3.
+     */
+    static inline vec3 getGLMVec3(const aiVector3D &vec)
+    {
+        return vec3(vec.x, vec.y, vec.z);
+    }
+
+    /**
+     * @brief Converts an Assimp quaternion to a GLM quat.
+     * @param pOrientation Source quaternion.
+     * @return Equivalent GLM quaternion.
+     */
+    static inline quat getGLMQuat(const aiQuaternion &pOrientation)
+    {
+        return quat(pOrientation.w, pOrientation.x, pOrientation.y, pOrientation.z);
+    }
+};
+
+}; // namespace kemena
 
 #endif // KDATATYPE_H

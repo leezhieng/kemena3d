@@ -1,3 +1,8 @@
+/**
+ * @file klight.h
+ * @brief Light source scene-graph node (point, directional, spotlight).
+ */
+
 #ifndef KLIGHT_H
 #define KLIGHT_H
 
@@ -7,61 +12,179 @@
 
 namespace kemena
 {
+    /**
+     * @brief Scene-graph node that emits light.
+     *
+     * Supports three light types controlled by setLightType():
+     * - @c LIGHT_TYPE_POINT      — omnidirectional, attenuated by distance.
+     * - @c LIGHT_TYPE_SUN        — parallel rays (directional), no attenuation.
+     * - @c LIGHT_TYPE_SPOTLIGHT  — cone-shaped, inner/outer cut-off angles.
+     *
+     * Phong colour components (ambient, diffuse, specular) apply to all types.
+     * Attenuation coefficients apply to point and spot lights only.
+     */
     class KEMENA3D_API kLight : public kObject
     {
     public:
+        /**
+         * @brief Constructs a light node and optionally attaches it to a parent.
+         * @param parentNode Parent scene-graph node, or nullptr.
+         */
         kLight(kObject *parentNode = nullptr);
 
+        /**
+         * @brief Returns the ambient colour component.
+         * @return RGB ambient colour (0..1 per channel).
+         */
         vec3 getAmbientColor();
+
+        /**
+         * @brief Sets the ambient colour component.
+         * @param newColor RGB ambient colour.
+         */
         void setAmbientColor(vec3 newColor);
+
+        /**
+         * @brief Returns the diffuse colour component.
+         * @return RGB diffuse colour (0..1 per channel).
+         */
         vec3 getDiffuseColor();
+
+        /**
+         * @brief Sets the diffuse colour component.
+         * @param newColor RGB diffuse colour.
+         */
         void setDiffuseColor(vec3 newColor);
+
+        /**
+         * @brief Returns the specular colour component.
+         * @return RGB specular colour (0..1 per channel).
+         */
         vec3 getSpecularColor();
+
+        /**
+         * @brief Sets the specular colour component.
+         * @param newColor RGB specular colour.
+         */
         void setSpecularColor(vec3 newColor);
 
+        /**
+         * @brief Returns the light power (intensity multiplier).
+         * @return Power value (default 10.0).
+         */
         float getPower();
+
+        /**
+         * @brief Sets the light power (intensity multiplier).
+         * @param newValue New power value.
+         */
         void setPower(float newValue);
 
+        /**
+         * @brief Returns the constant attenuation term.
+         * @return Constant term used in the attenuation formula.
+         */
         float getConstant();
+
+        /**
+         * @brief Returns the linear attenuation term.
+         * @return Linear term used in the attenuation formula.
+         */
         float getLinear();
+
+        /**
+         * @brief Returns the quadratic attenuation term.
+         * @return Quadratic term used in the attenuation formula.
+         */
         float getQuadratic();
 
+        /**
+         * @brief Sets the constant attenuation term.
+         * @param newValue New constant attenuation value.
+         */
         void setConstant(float newValue);
+
+        /**
+         * @brief Sets the linear attenuation term.
+         * @param newValue New linear attenuation value.
+         */
         void setLinear(float newValue);
+
+        /**
+         * @brief Sets the quadratic attenuation term.
+         * @param newValue New quadratic attenuation value.
+         */
         void setQuadratic(float newValue);
 
+        /**
+         * @brief Returns the light direction (sun and spotlight only).
+         * @return Normalised direction vector in world space.
+         */
         vec3 getDirection();
+
+        /**
+         * @brief Sets the light direction (sun and spotlight only).
+         * @param newValue Normalised direction vector in world space.
+         */
         void setDirection(vec3 newValue);
 
+        /**
+         * @brief Returns the inner cut-off cosine (spotlight only).
+         * @return cos(inner half-angle).
+         */
         float getCutOff();
+
+        /**
+         * @brief Sets the inner cut-off angle (spotlight only).
+         * @param newValue cos(inner half-angle).
+         */
         void setCutOff(float newValue);
+
+        /**
+         * @brief Returns the outer cut-off cosine (spotlight only).
+         * @return cos(outer half-angle).
+         */
         float getOuterCutOff();
+
+        /**
+         * @brief Sets the outer cut-off angle (spotlight only).
+         * @param newValue cos(outer half-angle).
+         */
         void setOuterCutOff(float newValue);
 
+        /**
+         * @brief Returns the light type.
+         * @return One of the kLightType enum values.
+         */
         kLightType getLightType();
+
+        /**
+         * @brief Sets the light type.
+         * @param newType New light type.
+         */
         void setLightType(kLightType newType);
 
     protected:
     private:
-        vec3 ambientColor = vec3(1.0f, 1.0f, 1.0f);
-        vec3 diffuseColor = vec3(1.0f, 1.0f, 1.0f);
-        vec3 specularColor = vec3(1.0f, 1.0f, 1.0f);
+        vec3 ambientColor  = vec3(1.0f, 1.0f, 1.0f); ///< Ambient colour.
+        vec3 diffuseColor  = vec3(1.0f, 1.0f, 1.0f); ///< Diffuse colour.
+        vec3 specularColor = vec3(1.0f, 1.0f, 1.0f); ///< Specular colour.
 
-        float power = 10.0f;
+        float power = 10.0f; ///< Intensity multiplier.
 
-        // Point light
-        float constant = 1.0f;
-        float linear = 0.7f;
-        float quadratic = 1.8f;
+        // Point light attenuation
+        float constant  = 1.0f; ///< Constant attenuation coefficient.
+        float linear    = 0.7f; ///< Linear attenuation coefficient.
+        float quadratic = 1.8f; ///< Quadratic attenuation coefficient.
 
-        // Sun light
-        vec3 direction = vec3(1.0f, 1.0f, 1.0f);
+        // Sun / directional
+        vec3 direction = vec3(1.0f, 1.0f, 1.0f); ///< Light direction (normalised).
 
-        // Spotlight
-        float cutOff = glm::cos(glm::radians(15.0f));
-        float outerCutOff = glm::cos(glm::radians(20.0f));
+        // Spotlight cone
+        float cutOff      = glm::cos(glm::radians(15.0f)); ///< Inner cone cosine.
+        float outerCutOff = glm::cos(glm::radians(20.0f)); ///< Outer cone cosine.
 
-        kLightType lightType = kLightType::LIGHT_TYPE_POINT;
+        kLightType lightType = kLightType::LIGHT_TYPE_POINT; ///< Active light type.
     };
 }
 

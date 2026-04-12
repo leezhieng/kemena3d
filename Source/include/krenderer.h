@@ -1,3 +1,11 @@
+/**
+ * @file krenderer.h
+ * @brief High-level renderer that orchestrates the render pipeline.
+ *
+ * kRenderer owns the kDriver instance, manages framebuffers, shadow maps,
+ * screen-space post-processing, and drives the scene-graph rendering loop.
+ */
+
 #ifndef KRENDERER_H
 #define KRENDERER_H
 
@@ -29,50 +37,215 @@
 
 namespace kemena
 {
+    /**
+     * @brief Orchestrates the full render pipeline for a scene.
+     *
+     * Usage outline:
+     * @code
+     *   kWindow window;
+     *   window.init(1280, 720, "My App");
+     *
+     *   kRenderer renderer;
+     *   renderer.init(&window, kRendererType::RENDERER_GL);
+     *   renderer.setEnableScreenBuffer(true);   // optional post-process FBO
+     *   renderer.setEnableShadow(true);          // optional shadow map
+     *
+     *   // main loop
+     *   while (window.getRunning()) {
+     *       window.getTimer()->tick();
+     *       renderer.render(&world, &scene, 0, 0, 1280, 720,
+     *                       window.getTimer()->getDeltaTime());
+     *   }
+     *   renderer.destroy();
+     * @endcode
+     */
     class KEMENA3D_API kRenderer
     {
     public:
         kRenderer();
 
+        /**
+         * @brief Initialises the renderer and creates the graphics driver.
+         * @param window Target window (may be nullptr for off-screen rendering).
+         * @param type   Graphics backend to use.
+         * @return true on success.
+         */
         bool init(kWindow *window = nullptr, kRendererType type = kRendererType::RENDERER_GL);
+
+        /** @brief Destroys all GPU resources and the driver. */
         void destroy();
+
+        /**
+         * @brief Stores an optional application name/version for driver diagnostics.
+         * @param name    Application name.
+         * @param version Application version number.
+         */
         void setEngineInfo(const string name, uint32_t version);
 
+        /**
+         * @brief Returns the window the renderer was initialised with.
+         * @return Pointer to the kWindow, or nullptr if none was provided.
+         */
         kWindow *getWindow();
+
+        /**
+         * @brief Returns the active graphics driver.
+         * @return Pointer to the kDriver owned by this renderer.
+         */
         kDriver *getDriver();
 
+        /**
+         * @brief Clears the active framebuffer to the clear colour.
+         *
+         * Binds the screen FBO (if enabled) before clearing so that subsequent
+         * render() calls draw into the same buffer.
+         */
         void clear();
-        void render(kWorld *world, kScene *scene, int x, int y, int width, int height, float deltaTime = 0.0f, bool autoClearSwapWindow = true);
 
+        /**
+         * @brief Renders the scene from the world's main camera.
+         *
+         * The render order is:
+         * 1. Shadow map pass (if a sun light and shadow shader are present).
+         * 2. Opaque scene geometry.
+         * 3. Screen-space post-processing blit (if screen buffer is enabled).
+         *
+         * @param world               World containing the main camera.
+         * @param scene               Scene to render (lights, meshes, etc.).
+         * @param x,y                 Viewport origin in pixels.
+         * @param width,height        Viewport dimensions in pixels.
+         * @param deltaTime           Frame delta time in seconds (used for animation).
+         * @param autoClearSwapWindow If true, automatically clears and swaps the window.
+         */
+        void render(kWorld *world, kScene *scene, int x, int y, int width, int height,
+                    float deltaTime = 0.0f, bool autoClearSwapWindow = true);
+
+        /**
+         * @brief Returns the background clear colour.
+         * @return RGBA colour in linear space.
+         */
         vec4 getClearColor();
+
+        /**
+         * @brief Sets the background clear colour.
+         *
+         * The input is expected to be in sRGB space and is converted to linear
+         * before being stored.
+         * @param newColor sRGB RGBA colour.
+         */
         void setClearColor(vec4 newColor);
 
+        /**
+         * @brief Enables or disables the off-screen screen buffer (post-process FBO).
+         *
+         * When enabled the scene is first rendered into an MSAA FBO, resolved to
+         * a single-sample texture, and then drawn to the screen via a full-screen
+         * quad shader.
+         * @param newEnable        true to enable.
+         * @param useDefaultShader If true, a built-in tone-mapping/gamma shader is
+         *                         compiled and set automatically.
+         */
         void setEnableScreenBuffer(bool newEnable, bool useDefaultShader = true);
+
+        /** @brief Returns whether the screen buffer post-process FBO is active. */
         bool getEnableScreenBuffer();
+
+        /**
+         * @brief Sets a custom screen-space shader for post-processing.
+         * @param newShader Shader to use; the renderer takes ownership.
+         */
         void setScreenShader(kShader *newShader);
+
+        /**
+         * @brief Returns the current screen-space shader.
+         * @return Pointer to the screen shader, or nullptr if none is set.
+         */
         kShader *getScreenShader();
 
+        /**
+         * @brief Enables or disables shadow mapping.
+         * @param newEnable        true to enable.
+         * @param useDefaultShader If true, a built-in depth-only shadow shader is
+         *                         compiled and set automatically.
+         */
         void setEnableShadow(bool newEnable, bool useDefaultShader = true);
+
+        /** @brief Returns whether shadow mapping is active. */
         bool getEnableShadow();
+
+        /**
+         * @brief Sets the shadow-map depth shader.
+         * @param newShader Shader used for the shadow pass.
+         */
         void setShadowShader(kShader *newShader);
+
+        /**
+         * @brief Returns the current shadow-map shader.
+         * @return Pointer to the shadow shader, or nullptr if none is set.
+         */
         kShader *getShadowShader();
 
+        /**
+         * @brief Enables or disables automatic exposure adjustment.
+         *
+         * When enabled, the average luminance of the resolved FBO colour texture
+         * is sampled each frame (via mipmaps) and used to drive an exposure value
+         * that is passed to the screen shader.
+         * @param newEnable true to enable.
+         */
         void setEnableAutoExposure(bool newEnable);
+
+        /** @brief Returns whether automatic exposure adjustment is active. */
         bool getEnableAutoExposure();
 
+        /**
+         * @brief Resizes the screen-buffer FBOs to match a new viewport size.
+         *
+         * Called automatically by render() when the viewport dimensions change.
+         * @param newWidth  New FBO width in pixels.
+         * @param newHeight New FBO height in pixels.
+         */
         void resizeFbo(int newWidth, int newHeight);
+
+        /**
+         * @brief Returns the resolved (single-sample) FBO colour texture handle.
+         * @return Texture handle suitable for use as an ImGui image or sampler.
+         */
         uint32_t getFboTexture();
+
+        /** @brief Returns the current FBO width in pixels. */
         int getFboWidth();
+
+        /** @brief Returns the current FBO height in pixels. */
         int getFboHeight();
 
+        /**
+         * @brief Converts an sRGB component value to linear space.
+         * @param c sRGB channel value in [0, 1].
+         * @return Linearised value.
+         */
         float srgbToLinear(float c);
+
+        /**
+         * @brief Converts a packed integer ID to an RGB colour for object picking.
+         * @param i Object ID.
+         * @return RGB colour with each channel in [0, 255].
+         */
         vec3 idToRgb(unsigned int i);
+
+        /**
+         * @brief Converts an RGB colour read back from the GPU to an object ID.
+         * @param r Red channel value [0, 255].
+         * @param g Green channel value [0, 255].
+         * @param b Blue channel value [0, 255].
+         * @return Packed object ID.
+         */
         unsigned int rgbToId(unsigned int r, unsigned int g, unsigned int b);
 
     protected:
     private:
-        string engineName;
-        uint32_t engineVersion = 0;
+        string engineName;           ///< Optional application name for diagnostics.
+        uint32_t engineVersion = 0;  ///< Optional application version for diagnostics.
         kWindow *appWindow = nullptr;
 
         kRendererType renderType;
@@ -80,11 +253,34 @@ namespace kemena
 
         vec4 clearColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-        // Used to detect same-frame animation updates
+        /// Used to detect same-frame animation updates.
         int frameId = 0;
 
-        void renderSceneGraph(kWorld *world, kScene *scene, kObject *rootNode, bool transparent = false, float deltaTime = 0.0f);
-        void renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *rootNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent = false, float deltaTime = 0.0f);
+        /**
+         * @brief Recursively renders the scene graph with full material/lighting.
+         * @param world        World containing the camera.
+         * @param scene        Active scene.
+         * @param rootNode     Current node to process.
+         * @param transparent  If true, only transparent objects are rendered.
+         * @param deltaTime    Frame delta time in seconds.
+         */
+        void renderSceneGraph(kWorld *world, kScene *scene, kObject *rootNode,
+                              bool transparent = false, float deltaTime = 0.0f);
+
+        /**
+         * @brief Recursively renders the scene graph into the shadow-map FBO.
+         * @param world            World containing the camera.
+         * @param scene            Active scene.
+         * @param rootNode         Current node to process.
+         * @param lightSpaceMatrix Combined light projection*view matrix.
+         * @param lightView        Light view matrix.
+         * @param lightProjection  Light projection matrix.
+         * @param transparent      Reserved for future transparent shadow support.
+         * @param deltaTime        Frame delta time in seconds.
+         */
+        void renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *rootNode,
+                                    mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection,
+                                    bool transparent = false, float deltaTime = 0.0f);
 
         // Screen FBO
         bool enableScreenBuffer = false;
