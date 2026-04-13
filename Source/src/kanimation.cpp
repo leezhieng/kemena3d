@@ -2,7 +2,7 @@
 
 namespace kemena
 {
-    kAnimation::kAnimation(const string &animationPath, kMesh *newMesh)
+    kAnimation::kAnimation(const kString &animationPath, kMesh *newMesh)
     {
         Assimp::Importer importer;
         const aiScene *scene = importer.ReadFile(animationPath, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
@@ -25,7 +25,7 @@ namespace kemena
         // std::cout << "name: " << scene->mAnimations[0]->mName.data << ", duration: " << duration << ", ticksPerSecond: " << ticksPerSecond << std::endl;
     }
 
-    kBone *kAnimation::findBone(const string &name)
+    kBone *kAnimation::findBone(const kString &name)
     {
         auto iter = std::find_if(bones.begin(), bones.end(),
                                  [&](const kBone &bone)
@@ -93,7 +93,7 @@ namespace kemena
         {
             size_t size = animation->mNumChannels;
 
-            std::map<string, kBoneInfo> &meshBoneInfoMap = setMesh->getBoneInfoMap();
+            std::map<kString, kBoneInfo> &meshBoneInfoMap = setMesh->getBoneInfoMap();
             int boneCount = setMesh->getBoneCount();
 
             // Reading channels(bones engaged in an animation and their keyframes)
@@ -106,7 +106,7 @@ namespace kemena
                     continue;
                 }
 
-                string boneName = channel->mNodeName.data;
+                kString boneName = channel->mNodeName.data;
 
                 if (meshBoneInfoMap.find(boneName) == meshBoneInfoMap.end())
                 {
@@ -132,7 +132,7 @@ namespace kemena
 
         dest.name = src->mName.data;
 
-        mat4 nodeTransform = kAssimpGLMHelpers::convertMatrixToGLMFormat(src->mTransformation);
+        kMat4 nodeTransform = kAssimpGLMHelpers::convertMatrixToGLMFormat(src->mTransformation);
         dest.transformation = nodeTransform;
 
         dest.childrenCount = src->mNumChildren;

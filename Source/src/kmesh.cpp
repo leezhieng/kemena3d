@@ -38,39 +38,39 @@ namespace kemena
         return loaded;
     }
 
-    void kMesh::setFileName(string newFileName)
+    void kMesh::setFileName(kString newFileName)
     {
         fileName = newFileName;
     }
 
-    string kMesh::getFileName()
+    kString kMesh::getFileName()
     {
         return fileName;
     }
 
-    void kMesh::setRefName(string newRefName)
+    void kMesh::setRefName(kString newRefName)
     {
         refName = newRefName;
     }
 
-    string kMesh::getRefName()
+    kString kMesh::getRefName()
     {
         return refName;
     }
 
-    void kMesh::setPosition(vec3 newPosition)
+    void kMesh::setPosition(kVec3 newPosition)
     {
         kObject::setPosition(newPosition);
         calculateNormalMatrix();
     }
 
-    void kMesh::setRotation(quat newRotation)
+    void kMesh::setRotation(kQuat newRotation)
     {
         kObject::setRotation(newRotation);
         calculateNormalMatrix();
     }
 
-    void kMesh::setScale(vec3 newScale)
+    void kMesh::setScale(kVec3 newScale)
     {
         kObject::setScale(newScale);
         calculateNormalMatrix();
@@ -98,12 +98,12 @@ namespace kemena
         indices.reserve(vertexCount * 3); // Assuming 3 indices per face (triangles)
     }
 
-    void kMesh::setBoneInfoMap(std::map<string, kBoneInfo> newBoneInfoMap)
+    void kMesh::setBoneInfoMap(std::map<kString, kBoneInfo> newBoneInfoMap)
     {
         boneInfoMap = newBoneInfoMap;
     }
 
-    std::map<string, kBoneInfo> &kMesh::getBoneInfoMap()
+    std::map<kString, kBoneInfo> &kMesh::getBoneInfoMap()
     {
         return boneInfoMap;
     }
@@ -128,72 +128,72 @@ namespace kemena
         return indices;
     }
 
-    void kMesh::addVertex(vec3 vertex)
+    void kMesh::addVertex(kVec3 vertex)
     {
         vertices.push_back(vertex);
     }
 
-    std::vector<vec3> kMesh::getVertices()
+    std::vector<kVec3> kMesh::getVertices()
     {
         return vertices;
     }
 
-    void kMesh::addUV(vec2 uv)
+    void kMesh::addUV(kVec2 uv)
     {
         uvs.push_back(uv);
     }
 
-    std::vector<vec2> kMesh::getUVs()
+    std::vector<kVec2> kMesh::getUVs()
     {
         return uvs;
     }
 
-    void kMesh::addVertexColor(vec3 color)
+    void kMesh::addVertexColor(kVec3 color)
     {
         vertexColors.push_back(color);
     }
 
-    std::vector<vec3> kMesh::getVertexColors()
+    std::vector<kVec3> kMesh::getVertexColors()
     {
         return vertexColors;
     }
 
-    void kMesh::addNormal(vec3 normal)
+    void kMesh::addNormal(kVec3 normal)
     {
         normals.push_back(normal);
     }
 
-    std::vector<vec3> kMesh::getNormals()
+    std::vector<kVec3> kMesh::getNormals()
     {
         return normals;
     }
 
-    void kMesh::addTangent(vec3 tangent)
+    void kMesh::addTangent(kVec3 tangent)
     {
         tangents.push_back(tangent);
     }
 
-    std::vector<vec3> kMesh::getTangents()
+    std::vector<kVec3> kMesh::getTangents()
     {
         return tangents;
     }
 
-    void kMesh::addBitangent(vec3 bitangent)
+    void kMesh::addBitangent(kVec3 bitangent)
     {
         bitangents.push_back(bitangent);
     }
 
-    std::vector<vec3> kMesh::getBitangents()
+    std::vector<kVec3> kMesh::getBitangents()
     {
         return bitangents;
     }
 
-    void kMesh::addBoneID(const ivec4 &boneID)
+    void kMesh::addBoneID(const kIvec4 &boneID)
     {
         boneIDs.push_back(boneID);
     }
 
-    void kMesh::setBoneID(size_t vertexIndex, const ivec4 &boneID)
+    void kMesh::setBoneID(size_t vertexIndex, const kIvec4 &boneID)
     {
         if (vertexIndex < boneIDs.size())
         {
@@ -205,7 +205,7 @@ namespace kemena
         }
     }
 
-    ivec4 kMesh::getBoneID(size_t vertexIndex)
+    kIvec4 kMesh::getBoneID(size_t vertexIndex)
     {
         if (vertexIndex < boneIDs.size())
         {
@@ -217,22 +217,22 @@ namespace kemena
         }
     }
 
-    std::vector<ivec4> kMesh::getBoneIDs()
+    std::vector<kIvec4> kMesh::getBoneIDs()
     {
         return boneIDs;
     }
 
-    void kMesh::setBoneIDs(std::vector<ivec4> newBoneIDs)
+    void kMesh::setBoneIDs(std::vector<kIvec4> newBoneIDs)
     {
         boneIDs = newBoneIDs;
     }
 
-    void kMesh::addWeight(const vec4 &weight)
+    void kMesh::addWeight(const kVec4 &weight)
     {
         weights.push_back(weight);
     }
 
-    void kMesh::setWeight(size_t vertexIndex, const vec4 &weight)
+    void kMesh::setWeight(size_t vertexIndex, const kVec4 &weight)
     {
         if (vertexIndex < weights.size())
         {
@@ -244,7 +244,7 @@ namespace kemena
         }
     }
 
-    vec4 kMesh::getWeight(size_t vertexIndex)
+    kVec4 kMesh::getWeight(size_t vertexIndex)
     {
         if (vertexIndex < weights.size())
         {
@@ -256,12 +256,12 @@ namespace kemena
         }
     }
 
-    std::vector<vec4> kMesh::getWeights()
+    std::vector<kVec4> kMesh::getWeights()
     {
         return weights;
     }
 
-    void kMesh::setWeights(std::vector<vec4> newWeights)
+    void kMesh::setWeights(std::vector<kVec4> newWeights)
     {
         weights = newWeights;
     }
@@ -286,12 +286,12 @@ namespace kemena
         return vertexColorBuffer;
     }
 
-    void kMesh::setNormalMatrix(mat4 newNormalMatrix)
+    void kMesh::setNormalMatrix(kMat4 newNormalMatrix)
     {
         normalMatrix = newNormalMatrix;
     }
 
-    mat4 kMesh::getNormalMatrix()
+    kMat4 kMesh::getNormalMatrix()
     {
         return normalMatrix;
     }
@@ -319,64 +319,64 @@ namespace kemena
         if (!vertices.empty())
         {
             vertexBuffer = driver->createBuffer();
-            driver->uploadVertexBuffer(vertexBuffer, vertices.data(), vertices.size() * sizeof(vec3));
-            driver->setVertexAttribFloat(0, 3, sizeof(vec3), 0);
+            driver->uploadVertexBuffer(vertexBuffer, vertices.data(), vertices.size() * sizeof(kVec3));
+            driver->setVertexAttribFloat(0, 3, sizeof(kVec3), 0);
         }
 
         // Vertex color (location 1)
         if (!vertexColors.empty())
         {
             vertexColorBuffer = driver->createBuffer();
-            driver->uploadVertexBuffer(vertexColorBuffer, vertexColors.data(), vertexColors.size() * sizeof(vec3));
-            driver->setVertexAttribFloat(1, 3, sizeof(vec3), 0);
+            driver->uploadVertexBuffer(vertexColorBuffer, vertexColors.data(), vertexColors.size() * sizeof(kVec3));
+            driver->setVertexAttribFloat(1, 3, sizeof(kVec3), 0);
         }
 
         // UV (location 2)
         if (!uvs.empty())
         {
             uvBuffer = driver->createBuffer();
-            driver->uploadVertexBuffer(uvBuffer, uvs.data(), uvs.size() * sizeof(vec2));
-            driver->setVertexAttribFloat(2, 2, sizeof(vec2), 0);
+            driver->uploadVertexBuffer(uvBuffer, uvs.data(), uvs.size() * sizeof(kVec2));
+            driver->setVertexAttribFloat(2, 2, sizeof(kVec2), 0);
         }
 
         // Normals (location 3)
         if (!normals.empty())
         {
             normalBuffer = driver->createBuffer();
-            driver->uploadVertexBuffer(normalBuffer, normals.data(), normals.size() * sizeof(vec3));
-            driver->setVertexAttribFloat(3, 3, sizeof(vec3), 0);
+            driver->uploadVertexBuffer(normalBuffer, normals.data(), normals.size() * sizeof(kVec3));
+            driver->setVertexAttribFloat(3, 3, sizeof(kVec3), 0);
         }
 
         // Tangents (location 4)
         if (!tangents.empty())
         {
             tangentBuffer = driver->createBuffer();
-            driver->uploadVertexBuffer(tangentBuffer, tangents.data(), tangents.size() * sizeof(vec3));
-            driver->setVertexAttribFloat(4, 3, sizeof(vec3), 0);
+            driver->uploadVertexBuffer(tangentBuffer, tangents.data(), tangents.size() * sizeof(kVec3));
+            driver->setVertexAttribFloat(4, 3, sizeof(kVec3), 0);
         }
 
         // Bitangents (location 5)
         if (!bitangents.empty())
         {
             bitangentBuffer = driver->createBuffer();
-            driver->uploadVertexBuffer(bitangentBuffer, bitangents.data(), bitangents.size() * sizeof(vec3));
-            driver->setVertexAttribFloat(5, 3, sizeof(vec3), 0);
+            driver->uploadVertexBuffer(bitangentBuffer, bitangents.data(), bitangents.size() * sizeof(kVec3));
+            driver->setVertexAttribFloat(5, 3, sizeof(kVec3), 0);
         }
 
         // Bone IDs (location 6) — integer attrib
         if (!boneIDs.empty())
         {
             boneIDBuffer = driver->createBuffer();
-            driver->uploadVertexBuffer(boneIDBuffer, boneIDs.data(), boneIDs.size() * sizeof(ivec4));
-            driver->setVertexAttribInt(6, 4, sizeof(ivec4), 0);
+            driver->uploadVertexBuffer(boneIDBuffer, boneIDs.data(), boneIDs.size() * sizeof(kIvec4));
+            driver->setVertexAttribInt(6, 4, sizeof(kIvec4), 0);
         }
 
         // Weights (location 7)
         if (!weights.empty())
         {
             weightBuffer = driver->createBuffer();
-            driver->uploadVertexBuffer(weightBuffer, weights.data(), weights.size() * sizeof(vec4));
-            driver->setVertexAttribFloat(7, 4, sizeof(vec4), 0);
+            driver->uploadVertexBuffer(weightBuffer, weights.data(), weights.size() * sizeof(kVec4));
+            driver->setVertexAttribFloat(7, 4, sizeof(kVec4), 0);
         }
 
         driver->unbindVertexArray();

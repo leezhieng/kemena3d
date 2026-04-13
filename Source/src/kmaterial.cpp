@@ -45,27 +45,27 @@ namespace kemena
         return transparent;
     }
 
-    void kMaterial::setUvTiling(vec2 newTiling)
+    void kMaterial::setUvTiling(kVec2 newTiling)
     {
         uvTiling = newTiling;
     }
 
-    vec2 kMaterial::getUvTiling()
+    kVec2 kMaterial::getUvTiling()
     {
         return uvTiling;
     }
 
-    void kMaterial::setAmbientColor(vec3 color)
+    void kMaterial::setAmbientColor(kVec3 color)
     {
         ambientColor = color;
     }
 
-    void kMaterial::setDiffuseColor(vec3 color)
+    void kMaterial::setDiffuseColor(kVec3 color)
     {
         diffuseColor = color;
     }
 
-    void kMaterial::setSpecularColor(vec3 color)
+    void kMaterial::setSpecularColor(kVec3 color)
     {
         specularColor = color;
     }
@@ -85,17 +85,17 @@ namespace kemena
         roughness = value;
     }
 
-    vec3 kMaterial::getAmbientColor()
+    kVec3 kMaterial::getAmbientColor()
     {
         return ambientColor;
     }
 
-    vec3 kMaterial::getDiffuseColor()
+    kVec3 kMaterial::getDiffuseColor()
     {
         return diffuseColor;
     }
 
-    vec3 kMaterial::getSpecularColor()
+    kVec3 kMaterial::getSpecularColor()
     {
         return specularColor;
     }

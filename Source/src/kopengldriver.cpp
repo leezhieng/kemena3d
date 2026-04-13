@@ -61,12 +61,12 @@ namespace kemena
         return glContext;
     }
 
-    string kOpenGLDriver::getApiVersion()
+    kString kOpenGLDriver::getApiVersion()
     {
         return reinterpret_cast<const char *>(glGetString(GL_VERSION));
     }
 
-    string kOpenGLDriver::getShaderVersion()
+    kString kOpenGLDriver::getShaderVersion()
     {
         return reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION));
     }
@@ -226,42 +226,42 @@ namespace kemena
         glUseProgram(0);
     }
 
-    void kOpenGLDriver::setUniformBool(uint32_t progId, const string &name, bool v)
+    void kOpenGLDriver::setUniformBool(uint32_t progId, const kString &name, bool v)
     {
         glUniform1i(glGetUniformLocation(progId, name.c_str()), static_cast<int>(v));
     }
 
-    void kOpenGLDriver::setUniformInt(uint32_t progId, const string &name, int v)
+    void kOpenGLDriver::setUniformInt(uint32_t progId, const kString &name, int v)
     {
         glUniform1i(glGetUniformLocation(progId, name.c_str()), v);
     }
 
-    void kOpenGLDriver::setUniformUint(uint32_t progId, const string &name, uint32_t v)
+    void kOpenGLDriver::setUniformUint(uint32_t progId, const kString &name, uint32_t v)
     {
         glUniform1ui(glGetUniformLocation(progId, name.c_str()), v);
     }
 
-    void kOpenGLDriver::setUniformFloat(uint32_t progId, const string &name, float v)
+    void kOpenGLDriver::setUniformFloat(uint32_t progId, const kString &name, float v)
     {
         glUniform1f(glGetUniformLocation(progId, name.c_str()), v);
     }
 
-    void kOpenGLDriver::setUniformVec2(uint32_t progId, const string &name, const vec2 &v)
+    void kOpenGLDriver::setUniformVec2(uint32_t progId, const kString &name, const kVec2 &v)
     {
         glUniform2fv(glGetUniformLocation(progId, name.c_str()), 1, glm::value_ptr(v));
     }
 
-    void kOpenGLDriver::setUniformVec3(uint32_t progId, const string &name, const vec3 &v)
+    void kOpenGLDriver::setUniformVec3(uint32_t progId, const kString &name, const kVec3 &v)
     {
         glUniform3fv(glGetUniformLocation(progId, name.c_str()), 1, glm::value_ptr(v));
     }
 
-    void kOpenGLDriver::setUniformMat4(uint32_t progId, const string &name, const mat4 &v)
+    void kOpenGLDriver::setUniformMat4(uint32_t progId, const kString &name, const kMat4 &v)
     {
         glUniformMatrix4fv(glGetUniformLocation(progId, name.c_str()), 1, GL_FALSE, glm::value_ptr(v));
     }
 
-    void kOpenGLDriver::setUniformMat4Array(uint32_t progId, const string &name, const std::vector<mat4> &v)
+    void kOpenGLDriver::setUniformMat4Array(uint32_t progId, const kString &name, const std::vector<kMat4> &v)
     {
         glUniformMatrix4fv(glGetUniformLocation(progId, name.c_str()),
                            static_cast<GLsizei>(v.size()), GL_FALSE, glm::value_ptr(v[0]));

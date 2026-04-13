@@ -12,17 +12,17 @@ namespace kemena
     {
     }
 
-    string kWorld::getUuid()
+    kString kWorld::getUuid()
     {
         return uuid;
     }
 
-    void kWorld::setUuid(string newUuid)
+    void kWorld::setUuid(kString newUuid)
     {
         uuid = newUuid;
     }
 
-    kScene *kWorld::createScene(string sceneName, string sceneUuid)
+    kScene *kWorld::createScene(kString sceneName, kString sceneUuid)
     {
         kScene *newScene = new kScene();
         newScene->setAssetManager(assetManager);
@@ -34,7 +34,7 @@ namespace kemena
         return newScene;
     }
 
-    void kWorld::addScene(kScene *scene, string sceneUuid)
+    void kWorld::addScene(kScene *scene, kString sceneUuid)
     {
         if (sceneUuid.empty())
             scene->setUuid(generateUuid());
@@ -45,7 +45,7 @@ namespace kemena
         scenes.push_back(scene);
     }
 	
-	kCamera *kWorld::addCamera(vec3 position, vec3 lookAt, kCameraType type, string objectUuid)
+	kCamera *kWorld::addCamera(kVec3 position, kVec3 lookAt, kCameraType type, kString objectUuid)
     {
         kCamera *camera = new kCamera();
         camera->setCameraType(type);
@@ -67,7 +67,7 @@ namespace kemena
         return camera;
     }
 
-    void kWorld::addCamera(kCamera *camera, string objectUuid)
+    void kWorld::addCamera(kCamera *camera, kString objectUuid)
     {
         //camera->setParent(rootNode);
 

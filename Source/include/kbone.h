@@ -33,7 +33,7 @@ namespace kemena
          * @param boneID   Index into the mesh's bone palette.
          * @param channel  Assimp node animation containing keyframe data.
          */
-        kBone(const string &boneName, int boneID, aiNodeAnim *channel);
+        kBone(const kString &boneName, int boneID, aiNodeAnim *channel);
 
         /**
          * @brief Interpolates all channels and updates the local transform.
@@ -45,13 +45,13 @@ namespace kemena
          * @brief Returns the interpolated local transform for the current time.
          * @return 4x4 local-space bone transform matrix.
          */
-        const mat4 getLocalTransform() const;
+        const kMat4 getLocalTransform() const;
 
         /**
          * @brief Returns the bone name.
          * @return Bone name as it appears in the asset.
          */
-        const string getName() const;
+        const kString getName() const;
 
         /**
          * @brief Returns the bone palette index.
@@ -90,8 +90,8 @@ namespace kemena
         int rotationCount; ///< Number of rotation keyframes.
         int scaleCount;    ///< Number of scale keyframes.
 
-        mat4   localTransform = mat4(1.0f); ///< Interpolated local transform.
-        string name;                        ///< Bone name.
+        kMat4   localTransform = kMat4(1.0f); ///< Interpolated local transform.
+        kString name;                        ///< Bone name.
         int    id;                          ///< Bone palette index.
 
         /**
@@ -109,21 +109,21 @@ namespace kemena
          * @param animationTime Current playback time in ticks.
          * @return 4x4 translation matrix.
          */
-        mat4 interpolatePosition(float animationTime);
+        kMat4 interpolatePosition(float animationTime);
 
         /**
          * @brief Interpolates between rotation keyframes and returns a rotation matrix.
          * @param animationTime Current playback time in ticks.
          * @return 4x4 rotation matrix.
          */
-        mat4 interpolateRotation(float animationTime);
+        kMat4 interpolateRotation(float animationTime);
 
         /**
          * @brief Interpolates between scale keyframes and returns a scale matrix.
          * @param animationTime Current playback time in ticks.
          * @return 4x4 scale matrix.
          */
-        mat4 interpolateScale(float animationTime);
+        kMat4 interpolateScale(float animationTime);
     };
 }
 

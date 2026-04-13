@@ -56,32 +56,32 @@ namespace kemena
          * @brief Sets the source asset file path.
          * @param newFileName Path to the mesh asset on disk.
          */
-        void setFileName(string newFileName);
+        void setFileName(kString newFileName);
 
         /**
          * @brief Returns the source asset file path.
-         * @return File path string.
+         * @return File path kString.
          */
-        string getFileName();
+        kString getFileName();
 
         /**
          * @brief Sets the reference name used to identify shared mesh data.
-         * @param newRefName Reference identifier string.
+         * @param newRefName Reference identifier kString.
          */
-        void setRefName(string newRefName);
+        void setRefName(kString newRefName);
 
         /**
          * @brief Returns the reference name.
-         * @return Reference identifier string.
+         * @return Reference identifier kString.
          */
-        string getRefName();
+        kString getRefName();
 
         /** @brief Propagates a local position change to this mesh and its children. */
-        void setPosition(vec3 newPosition);
+        void setPosition(kVec3 newPosition);
         /** @brief Propagates a local rotation change to this mesh and its children. */
-        void setRotation(quat newRotation);
+        void setRotation(kQuat newRotation);
         /** @brief Propagates a local scale change to this mesh and its children. */
-        void setScale(vec3 newScale);
+        void setScale(kVec3 newScale);
 
         /**
          * @brief Pre-allocates bone ID and weight arrays for a given vertex count.
@@ -99,13 +99,13 @@ namespace kemena
          * @brief Replaces the bone-name-to-info map.
          * @param newBoneInfoMap Map from bone name to kBoneInfo.
          */
-        void setBoneInfoMap(std::map<string, kBoneInfo> newBoneInfoMap);
+        void setBoneInfoMap(std::map<kString, kBoneInfo> newBoneInfoMap);
 
         /**
          * @brief Returns a reference to the bone-name-to-info map.
          * @return Mutable reference to the internal map.
          */
-        std::map<string, kBoneInfo> &getBoneInfoMap();
+        std::map<kString, kBoneInfo> &getBoneInfoMap();
 
         /**
          * @brief Returns a reference to the bone counter used during loading.
@@ -135,137 +135,137 @@ namespace kemena
          * @brief Appends a vertex position.
          * @param vertex XYZ position in object space.
          */
-        void addVertex(vec3 vertex);
+        void addVertex(kVec3 vertex);
 
         /**
          * @brief Returns a copy of the vertex position buffer.
          * @return Vector of positions.
          */
-        std::vector<vec3> getVertices();
+        std::vector<kVec3> getVertices();
 
         /**
          * @brief Appends a UV coordinate.
          * @param uv Texture coordinate (U, V).
          */
-        void addUV(vec2 uv);
+        void addUV(kVec2 uv);
 
         /**
          * @brief Returns a copy of the UV coordinate buffer.
          * @return Vector of UV coordinates.
          */
-        std::vector<vec2> getUVs();
+        std::vector<kVec2> getUVs();
 
         /**
          * @brief Appends a per-vertex colour.
          * @param color RGB colour value (0..1 per channel).
          */
-        void addVertexColor(vec3 color);
+        void addVertexColor(kVec3 color);
 
         /**
          * @brief Returns a copy of the per-vertex colour buffer.
          * @return Vector of RGB colours.
          */
-        std::vector<vec3> getVertexColors();
+        std::vector<kVec3> getVertexColors();
 
         /**
          * @brief Appends a vertex normal.
          * @param normal Normalised surface normal in object space.
          */
-        void addNormal(vec3 normal);
+        void addNormal(kVec3 normal);
 
         /**
          * @brief Returns a copy of the normal buffer.
          * @return Vector of normals.
          */
-        std::vector<vec3> getNormals();
+        std::vector<kVec3> getNormals();
 
         /**
          * @brief Appends a vertex tangent.
          * @param tangent Normalised tangent vector in object space.
          */
-        void addTangent(vec3 tangent);
+        void addTangent(kVec3 tangent);
 
         /**
          * @brief Returns a copy of the tangent buffer.
          * @return Vector of tangents.
          */
-        std::vector<vec3> getTangents();
+        std::vector<kVec3> getTangents();
 
         /**
          * @brief Appends a vertex bitangent.
          * @param bitangent Normalised bitangent vector in object space.
          */
-        void addBitangent(vec3 bitangent);
+        void addBitangent(kVec3 bitangent);
 
         /**
          * @brief Returns a copy of the bitangent buffer.
          * @return Vector of bitangents.
          */
-        std::vector<vec3> getBitangents();
+        std::vector<kVec3> getBitangents();
 
         /**
          * @brief Appends a bone-ID tuple for the next vertex.
          * @param boneID Up to four bone indices influencing the vertex.
          */
-        void addBoneID(const ivec4 &boneID);
+        void addBoneID(const kIvec4 &boneID);
 
         /**
          * @brief Overwrites the bone-ID tuple for a specific vertex.
          * @param vertexIndex Zero-based vertex index.
          * @param boneID      New bone-ID tuple.
          */
-        void setBoneID(size_t vertexIndex, const ivec4 &boneID);
+        void setBoneID(size_t vertexIndex, const kIvec4 &boneID);
 
         /**
          * @brief Returns the bone-ID tuple for a vertex.
          * @param vertexIndex Zero-based vertex index.
          * @return Four bone indices.
          */
-        ivec4 getBoneID(size_t vertexIndex);
+        kIvec4 getBoneID(size_t vertexIndex);
 
         /**
          * @brief Returns a copy of the bone-ID buffer.
-         * @return Vector of ivec4 bone indices, one per vertex.
+         * @return Vector of kIvec4 bone indices, one per vertex.
          */
-        std::vector<ivec4> getBoneIDs();
+        std::vector<kIvec4> getBoneIDs();
 
         /**
          * @brief Replaces the entire bone-ID buffer.
          * @param newBoneIDs New buffer.
          */
-        void setBoneIDs(std::vector<ivec4> newBoneIDs);
+        void setBoneIDs(std::vector<kIvec4> newBoneIDs);
 
         /**
          * @brief Appends a bone-weight tuple for the next vertex.
          * @param weight Four blend weights (must sum to 1.0).
          */
-        void addWeight(const vec4 &weight);
+        void addWeight(const kVec4 &weight);
 
         /**
          * @brief Overwrites the bone-weight tuple for a specific vertex.
          * @param vertexIndex Zero-based vertex index.
          * @param weight      New blend-weight tuple.
          */
-        void setWeight(size_t vertexIndex, const vec4 &weight);
+        void setWeight(size_t vertexIndex, const kVec4 &weight);
 
         /**
          * @brief Returns the bone-weight tuple for a vertex.
          * @param vertexIndex Zero-based vertex index.
          * @return Four blend weights.
          */
-        vec4 getWeight(size_t vertexIndex);
+        kVec4 getWeight(size_t vertexIndex);
 
         /**
          * @brief Returns a copy of the bone-weight buffer.
-         * @return Vector of vec4 weights, one per vertex.
+         * @return Vector of kVec4 weights, one per vertex.
          */
-        std::vector<vec4> getWeights();
+        std::vector<kVec4> getWeights();
 
         /**
          * @brief Replaces the entire bone-weight buffer.
          * @param newWeights New buffer.
          */
-        void setWeights(std::vector<vec4> newWeights);
+        void setWeights(std::vector<kVec4> newWeights);
 
         /**
          * @brief Returns the number of vertices in this mesh.
@@ -295,13 +295,13 @@ namespace kemena
          * @brief Stores a precomputed normal matrix.
          * @param newNormalMatrix Inverse-transpose of the model matrix (upper 3x3).
          */
-        void setNormalMatrix(mat4 newNormalMatrix);
+        void setNormalMatrix(kMat4 newNormalMatrix);
 
         /**
          * @brief Returns the stored normal matrix.
          * @return 4x4 matrix whose upper-left 3x3 is the normal matrix.
          */
-        mat4 getNormalMatrix();
+        kMat4 getNormalMatrix();
 
         /**
          * @brief Uploads all vertex attribute data to the GPU.
@@ -406,18 +406,18 @@ namespace kemena
     private:
         bool loaded = false;
 
-        string fileName;
-        string refName;
+        kString fileName;
+        kString refName;
 
-        std::vector<vec3>     vertices;
+        std::vector<kVec3>     vertices;
         std::vector<uint32_t> indices;
-        std::vector<vec2>     uvs;
-        std::vector<vec3>     vertexColors;
-        std::vector<vec3>     normals;
-        std::vector<vec3>     tangents;
-        std::vector<vec3>     bitangents;
-        std::vector<ivec4>    boneIDs;
-        std::vector<vec4>     weights;
+        std::vector<kVec2>     uvs;
+        std::vector<kVec3>     vertexColors;
+        std::vector<kVec3>     normals;
+        std::vector<kVec3>     tangents;
+        std::vector<kVec3>     bitangents;
+        std::vector<kIvec4>    boneIDs;
+        std::vector<kVec4>     weights;
 
         uint32_t vao         = 0; ///< Vertex Array Object handle.
         uint32_t indicesEbo  = 0; ///< Element Buffer Object handle.
@@ -431,13 +431,13 @@ namespace kemena
         uint32_t boneIDBuffer      = 0; ///< Bone-index VBO.
         uint32_t weightBuffer      = 0; ///< Bone-weight VBO.
 
-        mat3 normalMatrix; ///< Inverse-transpose of the model matrix (upper 3x3).
+        kMat3 normalMatrix; ///< Inverse-transpose of the model matrix (upper 3x3).
 
         bool isStatic     = false; ///< Static geometry flag.
         bool isVisible    = true;  ///< Render visibility flag.
         bool isCastShadow = true;  ///< Shadow-cast flag.
 
-        std::map<string, kBoneInfo> boneInfoMap; ///< Bone name → info lookup.
+        std::map<kString, kBoneInfo> boneInfoMap; ///< Bone name → info lookup.
         int boneCount = 0;                       ///< Total number of bones.
 
         kAnimator *animator = nullptr; ///< Optional skeletal animator.

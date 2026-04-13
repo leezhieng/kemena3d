@@ -12,7 +12,7 @@ namespace kemena
         //dtor
     }
 
-    kTexture* kTexture::duplicate(string newName)
+    kTexture* kTexture::duplicate(kString newName)
     {
         // New memory, same value
         kTexture* newTexture = new kTexture(*this);
@@ -31,12 +31,12 @@ namespace kemena
         return textureID;
     }
 
-    void kTexture::setTextureName(string newName)
+    void kTexture::setTextureName(kString newName)
     {
         textureName = newName;
     }
 
-    string kTexture::getTextureName()
+    kString kTexture::getTextureName()
     {
         return textureName;
     }

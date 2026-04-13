@@ -21,12 +21,12 @@ namespace kemena
         kSkeletalAnimation();
         virtual ~kSkeletalAnimation();
 
-        void loadAnimation(const string &animationPath, kMesh *model);
-        kBone *findBone(string &name);
+        void loadAnimation(const kString &animationPath, kMesh *model);
+        kBone *findBone(kString &name);
         float getTicksPerSecond();
         float getDuration();
         const kAssimpNodeData &getRootNode();
-        const std::map<string, kBoneInfo> &getBoneIDMap();
+        const std::map<kString, kBoneInfo> &getBoneIDMap();
 
     protected:
     private:
@@ -34,7 +34,7 @@ namespace kemena
         int ticksPerSecond;
         std::vector<kBone> bones;
         kAssimpNodeData rootNode;
-        std::map<string, kBoneInfo> boneInfoMap;
+        std::map<kString, kBoneInfo> boneInfoMap;
 
         void readMissingBones(const aiAnimation *animation, kMesh &model);
         void readHeirarchyData(kAssimpNodeData &dest, const aiNode *src);

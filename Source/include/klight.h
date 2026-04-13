@@ -36,37 +36,37 @@ namespace kemena
          * @brief Returns the ambient colour component.
          * @return RGB ambient colour (0..1 per channel).
          */
-        vec3 getAmbientColor();
+        kVec3 getAmbientColor();
 
         /**
          * @brief Sets the ambient colour component.
          * @param newColor RGB ambient colour.
          */
-        void setAmbientColor(vec3 newColor);
+        void setAmbientColor(kVec3 newColor);
 
         /**
          * @brief Returns the diffuse colour component.
          * @return RGB diffuse colour (0..1 per channel).
          */
-        vec3 getDiffuseColor();
+        kVec3 getDiffuseColor();
 
         /**
          * @brief Sets the diffuse colour component.
          * @param newColor RGB diffuse colour.
          */
-        void setDiffuseColor(vec3 newColor);
+        void setDiffuseColor(kVec3 newColor);
 
         /**
          * @brief Returns the specular colour component.
          * @return RGB specular colour (0..1 per channel).
          */
-        vec3 getSpecularColor();
+        kVec3 getSpecularColor();
 
         /**
          * @brief Sets the specular colour component.
          * @param newColor RGB specular colour.
          */
-        void setSpecularColor(vec3 newColor);
+        void setSpecularColor(kVec3 newColor);
 
         /**
          * @brief Returns the light power (intensity multiplier).
@@ -120,13 +120,13 @@ namespace kemena
          * @brief Returns the light direction (sun and spotlight only).
          * @return Normalised direction vector in world space.
          */
-        vec3 getDirection();
+        kVec3 getDirection();
 
         /**
          * @brief Sets the light direction (sun and spotlight only).
          * @param newValue Normalised direction vector in world space.
          */
-        void setDirection(vec3 newValue);
+        void setDirection(kVec3 newValue);
 
         /**
          * @brief Returns the inner cut-off cosine (spotlight only).
@@ -166,9 +166,9 @@ namespace kemena
 
     protected:
     private:
-        vec3 ambientColor  = vec3(1.0f, 1.0f, 1.0f); ///< Ambient colour.
-        vec3 diffuseColor  = vec3(1.0f, 1.0f, 1.0f); ///< Diffuse colour.
-        vec3 specularColor = vec3(1.0f, 1.0f, 1.0f); ///< Specular colour.
+        kVec3 ambientColor  = kVec3(1.0f, 1.0f, 1.0f); ///< Ambient colour.
+        kVec3 diffuseColor  = kVec3(1.0f, 1.0f, 1.0f); ///< Diffuse colour.
+        kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f); ///< Specular colour.
 
         float power = 10.0f; ///< Intensity multiplier.
 
@@ -178,7 +178,7 @@ namespace kemena
         float quadratic = 1.8f; ///< Quadratic attenuation coefficient.
 
         // Sun / directional
-        vec3 direction = vec3(1.0f, 1.0f, 1.0f); ///< Light direction (normalised).
+        kVec3 direction = kVec3(1.0f, 1.0f, 1.0f); ///< Light direction (normalised).
 
         // Spotlight cone
         float cutOff      = glm::cos(glm::radians(15.0f)); ///< Inner cone cosine.

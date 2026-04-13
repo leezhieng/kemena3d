@@ -41,22 +41,22 @@ namespace kemena
         isActive = newActive;
     }
 
-    string kScene::getUuid()
+    kString kScene::getUuid()
     {
         return uuid;
     }
 
-    void kScene::setUuid(string newUuid)
+    void kScene::setUuid(kString newUuid)
     {
         uuid = newUuid;
     }
 
-    string kScene::getName()
+    kString kScene::getName()
     {
         return name;
     }
 
-    void kScene::setName(string newName)
+    void kScene::setName(kString newName)
     {
         name = newName;
     }
@@ -81,7 +81,7 @@ namespace kemena
         return rootNode;
     }
 
-    void kScene::addObject(kObject *object, string objectUuid)
+    void kScene::addObject(kObject *object, kString objectUuid)
     {
         object->setParent(rootNode);
 
@@ -91,7 +91,7 @@ namespace kemena
             object->setUuid(objectUuid);
     }
 
-    kMesh *kScene::addMesh(string fileName, string objectUuid)
+    kMesh *kScene::addMesh(kString fileName, kString objectUuid)
     {
         kMesh *mesh = assetManager->loadMesh(fileName);
         mesh->setParent(rootNode);
@@ -104,7 +104,7 @@ namespace kemena
         return mesh;
     }
 
-    void kScene::addMesh(kMesh *mesh, string objectUuid)
+    void kScene::addMesh(kMesh *mesh, kString objectUuid)
     {
         mesh->setParent(rootNode);
 
@@ -114,17 +114,17 @@ namespace kemena
             mesh->setUuid(objectUuid);
     }
 
-    vec3 kScene::getAmbientLightColor()
+    kVec3 kScene::getAmbientLightColor()
     {
         return ambientLightColor;
     }
 
-    void kScene::setAmbientLightColor(vec3 newColor)
+    void kScene::setAmbientLightColor(kVec3 newColor)
     {
         ambientLightColor = newColor;
     }
 
-    kLight *kScene::addSunLight(vec3 position, vec3 direction, vec3 ambientColor, vec3 diffuseColor, vec3 specularColor, string objectUuid)
+    kLight *kScene::addSunLight(kVec3 position, kVec3 direction, kVec3 ambientColor, kVec3 diffuseColor, kVec3 specularColor, kString objectUuid)
     {
         kLight *light = new kLight();
         light->setLightType(kLightType::LIGHT_TYPE_SUN);
@@ -145,7 +145,7 @@ namespace kemena
         return light;
     }
 
-    kLight *kScene::addPointLight(vec3 position, vec3 ambientColor, vec3 diffuseColor, vec3 specularColor, string objectUuid)
+    kLight *kScene::addPointLight(kVec3 position, kVec3 ambientColor, kVec3 diffuseColor, kVec3 specularColor, kString objectUuid)
     {
         kLight *light = new kLight();
         light->setLightType(kLightType::LIGHT_TYPE_POINT);
@@ -165,7 +165,7 @@ namespace kemena
         return light;
     }
 
-    kLight *kScene::addSpotLight(vec3 position, vec3 direction, vec3 ambientColor, vec3 diffuseColor, vec3 specularColor, string objectUuid)
+    kLight *kScene::addSpotLight(kVec3 position, kVec3 direction, kVec3 ambientColor, kVec3 diffuseColor, kVec3 specularColor, kString objectUuid)
     {
         kLight *light = new kLight();
         light->setLightType(kLightType::LIGHT_TYPE_SPOT);

@@ -56,7 +56,7 @@ namespace kemena
 		ImGui_ImplSDL3_ProcessEvent(event.getSdlEvent());
 	}
 
-	void kGuiManager::loadDefaultFontFromResource(string resourceName)
+	void kGuiManager::loadDefaultFontFromResource(kString resourceName)
 	{
 		HRSRC hRes = FindResource(NULL, resourceName.c_str(), RT_RCDATA);
 		if (!hRes) return;
@@ -113,7 +113,7 @@ namespace kemena
 
 	// ---- Window ----
 
-	void kGuiManager::windowStart(string title, bool *open, ImGuiWindowFlags flags)
+	void kGuiManager::windowStart(kString title, bool *open, ImGuiWindowFlags flags)
 	{
 		ImGui::Begin(title.c_str(), open, flags);
 	}
@@ -123,29 +123,29 @@ namespace kemena
 		ImGui::End();
 	}
 
-	vec2 kGuiManager::getWindowSize()
+	kVec2 kGuiManager::getWindowSize()
 	{
 		ImVec2 s = ImGui::GetWindowSize();
-		return vec2(s.x, s.y);
+		return kVec2(s.x, s.y);
 	}
 
-	vec2 kGuiManager::getWindowPos()
+	kVec2 kGuiManager::getWindowPos()
 	{
 		ImVec2 p = ImGui::GetWindowPos();
-		return vec2(p.x, p.y);
+		return kVec2(p.x, p.y);
 	}
 
-	void kGuiManager::setNextWindowSize(vec2 size, ImGuiCond cond)
+	void kGuiManager::setNextWindowSize(kVec2 size, ImGuiCond cond)
 	{
 		ImGui::SetNextWindowSize(ImVec2(size.x, size.y), cond);
 	}
 
-	void kGuiManager::setNextWindowPos(vec2 pos, ImGuiCond cond, vec2 pivot)
+	void kGuiManager::setNextWindowPos(kVec2 pos, ImGuiCond cond, kVec2 pivot)
 	{
 		ImGui::SetNextWindowPos(ImVec2(pos.x, pos.y), cond, ImVec2(pivot.x, pivot.y));
 	}
 
-	void kGuiManager::setNextWindowContentSize(vec2 size)
+	void kGuiManager::setNextWindowContentSize(kVec2 size)
 	{
 		ImGui::SetNextWindowContentSize(ImVec2(size.x, size.y));
 	}
@@ -177,7 +177,7 @@ namespace kemena
 
 	// ---- Dockspace ----
 
-	void kGuiManager::dockSpaceStart(string name)
+	void kGuiManager::dockSpaceStart(kString name)
 	{
 		bool show_main_dockspace = true;
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -220,7 +220,7 @@ namespace kemena
 		ImGui::EndMainMenuBar();
 	}
 
-	bool kGuiManager::menu(string text)
+	bool kGuiManager::menu(kString text)
 	{
 		return ImGui::BeginMenu(text.c_str());
 	}
@@ -230,12 +230,12 @@ namespace kemena
 		ImGui::EndMenu();
 	}
 
-	bool kGuiManager::menuItem(string text, string shortcut, bool selected, bool enabled)
+	bool kGuiManager::menuItem(kString text, kString shortcut, bool selected, bool enabled)
 	{
 		return ImGui::MenuItem(text.c_str(), shortcut.c_str(), selected, enabled);
 	}
 
-	bool kGuiManager::menuItem(string text, string shortcut, bool *selected, bool enabled)
+	bool kGuiManager::menuItem(kString text, kString shortcut, bool *selected, bool enabled)
 	{
 		return ImGui::MenuItem(text.c_str(), shortcut.c_str(), selected, enabled);
 	}
@@ -267,7 +267,7 @@ namespace kemena
 		ImGui::Separator();
 	}
 
-	void kGuiManager::separatorText(string text)
+	void kGuiManager::separatorText(kString text)
 	{
 		ImGui::SeparatorText(text.c_str());
 	}
@@ -287,12 +287,12 @@ namespace kemena
 		ImGui::Unindent(indentW);
 	}
 
-	void kGuiManager::dummy(vec2 size)
+	void kGuiManager::dummy(kVec2 size)
 	{
 		ImGui::Dummy(ImVec2(size.x, size.y));
 	}
 
-	void kGuiManager::setCursorPos(vec2 pos)
+	void kGuiManager::setCursorPos(kVec2 pos)
 	{
 		ImGui::SetCursorPos(ImVec2(pos.x, pos.y));
 	}
@@ -307,10 +307,10 @@ namespace kemena
 		ImGui::SetCursorPosY(y);
 	}
 
-	vec2 kGuiManager::getCursorPos()
+	kVec2 kGuiManager::getCursorPos()
 	{
 		ImVec2 p = ImGui::GetCursorPos();
-		return vec2(p.x, p.y);
+		return kVec2(p.x, p.y);
 	}
 
 	float kGuiManager::getCursorPosX()
@@ -323,16 +323,16 @@ namespace kemena
 		return ImGui::GetCursorPosY();
 	}
 
-	vec2 kGuiManager::getCursorScreenPos()
+	kVec2 kGuiManager::getCursorScreenPos()
 	{
 		ImVec2 p = ImGui::GetCursorScreenPos();
-		return vec2(p.x, p.y);
+		return kVec2(p.x, p.y);
 	}
 
-	vec2 kGuiManager::getContentRegionAvail()
+	kVec2 kGuiManager::getContentRegionAvail()
 	{
 		ImVec2 s = ImGui::GetContentRegionAvail();
-		return vec2(s.x, s.y);
+		return kVec2(s.x, s.y);
 	}
 
 	void kGuiManager::setNextItemWidth(float itemWidth)
@@ -367,7 +367,7 @@ namespace kemena
 
 	// ---- ID Stack ----
 
-	void kGuiManager::pushId(string id)
+	void kGuiManager::pushId(kString id)
 	{
 		ImGui::PushID(id.c_str());
 	}
@@ -389,7 +389,7 @@ namespace kemena
 
 	// ---- Style ----
 
-	void kGuiManager::pushStyleColor(ImGuiCol idx, vec4 color)
+	void kGuiManager::pushStyleColor(ImGuiCol idx, kVec4 color)
 	{
 		ImGui::PushStyleColor(idx, ImVec4(color.r, color.g, color.b, color.a));
 	}
@@ -409,7 +409,7 @@ namespace kemena
 		ImGui::PushStyleVar(idx, val);
 	}
 
-	void kGuiManager::pushStyleVar(ImGuiStyleVar idx, vec2 val)
+	void kGuiManager::pushStyleVar(ImGuiStyleVar idx, kVec2 val)
 	{
 		ImGui::PushStyleVar(idx, ImVec2(val.x, val.y));
 	}
@@ -431,32 +431,32 @@ namespace kemena
 
 	// ---- Text ----
 
-	void kGuiManager::text(string text)
+	void kGuiManager::text(kString text)
 	{
 		ImGui::Text(text.c_str());
 	}
 
-	void kGuiManager::textColored(vec4 color, string text)
+	void kGuiManager::textColored(kVec4 color, kString text)
 	{
 		ImGui::TextColored(ImVec4(color.r, color.g, color.b, color.a), text.c_str());
 	}
 
-	void kGuiManager::textDisabled(string text)
+	void kGuiManager::textDisabled(kString text)
 	{
 		ImGui::TextDisabled(text.c_str());
 	}
 
-	void kGuiManager::textWrapped(string text)
+	void kGuiManager::textWrapped(kString text)
 	{
 		ImGui::TextWrapped(text.c_str());
 	}
 
-	void kGuiManager::labelText(string label, string text)
+	void kGuiManager::labelText(kString label, kString text)
 	{
 		ImGui::LabelText(label.c_str(), text.c_str());
 	}
 
-	void kGuiManager::bulletText(string text)
+	void kGuiManager::bulletText(kString text)
 	{
 		ImGui::BulletText(text.c_str());
 	}
@@ -468,59 +468,59 @@ namespace kemena
 
 	// ---- Buttons ----
 
-	bool kGuiManager::button(string text, ivec2 size)
+	bool kGuiManager::button(kString text, kIvec2 size)
 	{
-		if (size == ivec2(0, 0))
+		if (size == kIvec2(0, 0))
 			return ImGui::Button(text.c_str());
 		else
 			return ImGui::Button(text.c_str(), ImVec2((float)size.x, (float)size.y));
 	}
 
-	bool kGuiManager::smallButton(string text)
+	bool kGuiManager::smallButton(kString text)
 	{
 		return ImGui::SmallButton(text.c_str());
 	}
 
-	bool kGuiManager::invisibleButton(string id, vec2 size, ImGuiButtonFlags flags)
+	bool kGuiManager::invisibleButton(kString id, kVec2 size, ImGuiButtonFlags flags)
 	{
 		return ImGui::InvisibleButton(id.c_str(), ImVec2(size.x, size.y), flags);
 	}
 
-	bool kGuiManager::arrowButton(string id, ImGuiDir dir)
+	bool kGuiManager::arrowButton(kString id, ImGuiDir dir)
 	{
 		return ImGui::ArrowButton(id.c_str(), dir);
 	}
 
-	bool kGuiManager::radioButton(string label, bool active)
+	bool kGuiManager::radioButton(kString label, bool active)
 	{
 		return ImGui::RadioButton(label.c_str(), active);
 	}
 
-	bool kGuiManager::radioButton(string label, int *v, int vButton)
+	bool kGuiManager::radioButton(kString label, int *v, int vButton)
 	{
 		return ImGui::RadioButton(label.c_str(), v, vButton);
 	}
 
 	// ---- Checkbox ----
 
-	bool kGuiManager::checkbox(string text, bool *output)
+	bool kGuiManager::checkbox(kString text, bool *output)
 	{
 		return ImGui::Checkbox(text.c_str(), output);
 	}
 
-	bool kGuiManager::checkboxFlags(string label, int *flags, int flagsValue)
+	bool kGuiManager::checkboxFlags(kString label, int *flags, int flagsValue)
 	{
 		return ImGui::CheckboxFlags(label.c_str(), flags, flagsValue);
 	}
 
-	bool kGuiManager::checkboxFlags(string label, unsigned int *flags, unsigned int flagsValue)
+	bool kGuiManager::checkboxFlags(kString label, unsigned int *flags, unsigned int flagsValue)
 	{
 		return ImGui::CheckboxFlags(label.c_str(), flags, flagsValue);
 	}
 
 	// ---- Input Text ----
 
-	bool kGuiManager::inputText(string label, string &value, size_t maxLength, ImGuiInputTextFlags flags)
+	bool kGuiManager::inputText(kString label, kString &value, size_t maxLength, ImGuiInputTextFlags flags)
 	{
 		std::vector<char> buf(maxLength + 1, 0);
 		strncpy(buf.data(), value.c_str(), maxLength);
@@ -532,7 +532,7 @@ namespace kemena
 		return false;
 	}
 
-	bool kGuiManager::inputTextMultiline(string label, string &value, size_t maxLength, vec2 size, ImGuiInputTextFlags flags)
+	bool kGuiManager::inputTextMultiline(kString label, kString &value, size_t maxLength, kVec2 size, ImGuiInputTextFlags flags)
 	{
 		std::vector<char> buf(maxLength + 1, 0);
 		strncpy(buf.data(), value.c_str(), maxLength);
@@ -544,7 +544,7 @@ namespace kemena
 		return false;
 	}
 
-	bool kGuiManager::inputTextWithHint(string label, string hint, string &value, size_t maxLength, ImGuiInputTextFlags flags)
+	bool kGuiManager::inputTextWithHint(kString label, kString hint, kString &value, size_t maxLength, ImGuiInputTextFlags flags)
 	{
 		std::vector<char> buf(maxLength + 1, 0);
 		strncpy(buf.data(), value.c_str(), maxLength);
@@ -558,173 +558,173 @@ namespace kemena
 
 	// ---- Input Scalar ----
 
-	bool kGuiManager::inputFloat(string label, float *v, float step, float stepFast, string format, ImGuiInputTextFlags flags)
+	bool kGuiManager::inputFloat(kString label, float *v, float step, float stepFast, kString format, ImGuiInputTextFlags flags)
 	{
 		return ImGui::InputFloat(label.c_str(), v, step, stepFast, format.c_str(), flags);
 	}
 
-	bool kGuiManager::inputFloat2(string label, float v[2], string format, ImGuiInputTextFlags flags)
+	bool kGuiManager::inputFloat2(kString label, float v[2], kString format, ImGuiInputTextFlags flags)
 	{
 		return ImGui::InputFloat2(label.c_str(), v, format.c_str(), flags);
 	}
 
-	bool kGuiManager::inputFloat3(string label, float v[3], string format, ImGuiInputTextFlags flags)
+	bool kGuiManager::inputFloat3(kString label, float v[3], kString format, ImGuiInputTextFlags flags)
 	{
 		return ImGui::InputFloat3(label.c_str(), v, format.c_str(), flags);
 	}
 
-	bool kGuiManager::inputFloat4(string label, float v[4], string format, ImGuiInputTextFlags flags)
+	bool kGuiManager::inputFloat4(kString label, float v[4], kString format, ImGuiInputTextFlags flags)
 	{
 		return ImGui::InputFloat4(label.c_str(), v, format.c_str(), flags);
 	}
 
-	bool kGuiManager::inputInt(string label, int *v, int step, int stepFast, ImGuiInputTextFlags flags)
+	bool kGuiManager::inputInt(kString label, int *v, int step, int stepFast, ImGuiInputTextFlags flags)
 	{
 		return ImGui::InputInt(label.c_str(), v, step, stepFast, flags);
 	}
 
-	bool kGuiManager::inputInt2(string label, int v[2], ImGuiInputTextFlags flags)
+	bool kGuiManager::inputInt2(kString label, int v[2], ImGuiInputTextFlags flags)
 	{
 		return ImGui::InputInt2(label.c_str(), v, flags);
 	}
 
-	bool kGuiManager::inputInt3(string label, int v[3], ImGuiInputTextFlags flags)
+	bool kGuiManager::inputInt3(kString label, int v[3], ImGuiInputTextFlags flags)
 	{
 		return ImGui::InputInt3(label.c_str(), v, flags);
 	}
 
-	bool kGuiManager::inputInt4(string label, int v[4], ImGuiInputTextFlags flags)
+	bool kGuiManager::inputInt4(kString label, int v[4], ImGuiInputTextFlags flags)
 	{
 		return ImGui::InputInt4(label.c_str(), v, flags);
 	}
 
-	bool kGuiManager::inputDouble(string label, double *v, double step, double stepFast, string format, ImGuiInputTextFlags flags)
+	bool kGuiManager::inputDouble(kString label, double *v, double step, double stepFast, kString format, ImGuiInputTextFlags flags)
 	{
 		return ImGui::InputDouble(label.c_str(), v, step, stepFast, format.c_str(), flags);
 	}
 
 	// ---- Drag ----
 
-	bool kGuiManager::dragFloat(string label, float *v, float speed, float min, float max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::dragFloat(kString label, float *v, float speed, float min, float max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragFloat(label.c_str(), v, speed, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::dragFloat2(string label, float v[2], float speed, float min, float max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::dragFloat2(kString label, float v[2], float speed, float min, float max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragFloat2(label.c_str(), v, speed, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::dragFloat3(string label, float v[3], float speed, float min, float max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::dragFloat3(kString label, float v[3], float speed, float min, float max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragFloat3(label.c_str(), v, speed, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::dragFloat4(string label, float v[4], float speed, float min, float max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::dragFloat4(kString label, float v[4], float speed, float min, float max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragFloat4(label.c_str(), v, speed, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::dragInt(string label, int *v, float speed, int min, int max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::dragInt(kString label, int *v, float speed, int min, int max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragInt(label.c_str(), v, speed, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::dragInt2(string label, int v[2], float speed, int min, int max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::dragInt2(kString label, int v[2], float speed, int min, int max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragInt2(label.c_str(), v, speed, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::dragInt3(string label, int v[3], float speed, int min, int max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::dragInt3(kString label, int v[3], float speed, int min, int max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragInt3(label.c_str(), v, speed, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::dragInt4(string label, int v[4], float speed, int min, int max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::dragInt4(kString label, int v[4], float speed, int min, int max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragInt4(label.c_str(), v, speed, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::dragFloatRange2(string label, float *vCurrentMin, float *vCurrentMax, float speed, float min, float max, string format, string formatMax, ImGuiSliderFlags flags)
+	bool kGuiManager::dragFloatRange2(kString label, float *vCurrentMin, float *vCurrentMax, float speed, float min, float max, kString format, kString formatMax, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragFloatRange2(label.c_str(), vCurrentMin, vCurrentMax, speed, min, max, format.c_str(), formatMax.empty() ? nullptr : formatMax.c_str(), flags);
 	}
 
-	bool kGuiManager::dragIntRange2(string label, int *vCurrentMin, int *vCurrentMax, float speed, int min, int max, string format, string formatMax, ImGuiSliderFlags flags)
+	bool kGuiManager::dragIntRange2(kString label, int *vCurrentMin, int *vCurrentMax, float speed, int min, int max, kString format, kString formatMax, ImGuiSliderFlags flags)
 	{
 		return ImGui::DragIntRange2(label.c_str(), vCurrentMin, vCurrentMax, speed, min, max, format.c_str(), formatMax.empty() ? nullptr : formatMax.c_str(), flags);
 	}
 
 	// ---- Slider ----
 
-	bool kGuiManager::sliderFloat(string label, float *v, float min, float max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::sliderFloat(kString label, float *v, float min, float max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::SliderFloat(label.c_str(), v, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::sliderFloat2(string label, float v[2], float min, float max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::sliderFloat2(kString label, float v[2], float min, float max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::SliderFloat2(label.c_str(), v, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::sliderFloat3(string label, float v[3], float min, float max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::sliderFloat3(kString label, float v[3], float min, float max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::SliderFloat3(label.c_str(), v, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::sliderFloat4(string label, float v[4], float min, float max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::sliderFloat4(kString label, float v[4], float min, float max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::SliderFloat4(label.c_str(), v, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::sliderAngle(string label, float *vRad, float vDegreesMin, float vDegreesMax, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::sliderAngle(kString label, float *vRad, float vDegreesMin, float vDegreesMax, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::SliderAngle(label.c_str(), vRad, vDegreesMin, vDegreesMax, format.c_str(), flags);
 	}
 
-	bool kGuiManager::sliderInt(string label, int *v, int min, int max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::sliderInt(kString label, int *v, int min, int max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::SliderInt(label.c_str(), v, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::sliderInt2(string label, int v[2], int min, int max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::sliderInt2(kString label, int v[2], int min, int max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::SliderInt2(label.c_str(), v, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::sliderInt3(string label, int v[3], int min, int max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::sliderInt3(kString label, int v[3], int min, int max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::SliderInt3(label.c_str(), v, min, max, format.c_str(), flags);
 	}
 
-	bool kGuiManager::sliderInt4(string label, int v[4], int min, int max, string format, ImGuiSliderFlags flags)
+	bool kGuiManager::sliderInt4(kString label, int v[4], int min, int max, kString format, ImGuiSliderFlags flags)
 	{
 		return ImGui::SliderInt4(label.c_str(), v, min, max, format.c_str(), flags);
 	}
 
 	// ---- Color ----
 
-	bool kGuiManager::colorEdit3(string label, float col[3], ImGuiColorEditFlags flags)
+	bool kGuiManager::colorEdit3(kString label, float col[3], ImGuiColorEditFlags flags)
 	{
 		return ImGui::ColorEdit3(label.c_str(), col, flags);
 	}
 
-	bool kGuiManager::colorEdit4(string label, float col[4], ImGuiColorEditFlags flags)
+	bool kGuiManager::colorEdit4(kString label, float col[4], ImGuiColorEditFlags flags)
 	{
 		return ImGui::ColorEdit4(label.c_str(), col, flags);
 	}
 
-	bool kGuiManager::colorPicker3(string label, float col[3], ImGuiColorEditFlags flags)
+	bool kGuiManager::colorPicker3(kString label, float col[3], ImGuiColorEditFlags flags)
 	{
 		return ImGui::ColorPicker3(label.c_str(), col, flags);
 	}
 
-	bool kGuiManager::colorPicker4(string label, float col[4], ImGuiColorEditFlags flags)
+	bool kGuiManager::colorPicker4(kString label, float col[4], ImGuiColorEditFlags flags)
 	{
 		return ImGui::ColorPicker4(label.c_str(), col, flags);
 	}
 
-	bool kGuiManager::colorButton(string descId, vec4 col, ImGuiColorEditFlags flags, vec2 size)
+	bool kGuiManager::colorButton(kString descId, kVec4 col, ImGuiColorEditFlags flags, kVec2 size)
 	{
 		return ImGui::ColorButton(descId.c_str(), ImVec4(col.r, col.g, col.b, col.a), flags, ImVec2(size.x, size.y));
 	}
@@ -736,7 +736,7 @@ namespace kemena
 
 	// ---- Combo / List / Selectable ----
 
-	bool kGuiManager::combo(string label, int *currentItem, std::vector<string> items, int popupMaxHeightInItems)
+	bool kGuiManager::combo(kString label, int *currentItem, std::vector<kString> items, int popupMaxHeightInItems)
 	{
 		std::vector<const char *> cItems;
 		cItems.reserve(items.size());
@@ -745,7 +745,7 @@ namespace kemena
 		return ImGui::Combo(label.c_str(), currentItem, cItems.data(), (int)cItems.size(), popupMaxHeightInItems);
 	}
 
-	bool kGuiManager::listBox(string label, int *currentItem, std::vector<string> items, int heightInItems)
+	bool kGuiManager::listBox(kString label, int *currentItem, std::vector<kString> items, int heightInItems)
 	{
 		std::vector<const char *> cItems;
 		cItems.reserve(items.size());
@@ -754,24 +754,24 @@ namespace kemena
 		return ImGui::ListBox(label.c_str(), currentItem, cItems.data(), (int)cItems.size(), heightInItems);
 	}
 
-	bool kGuiManager::selectable(string label, bool selected, ImGuiSelectableFlags flags, vec2 size)
+	bool kGuiManager::selectable(kString label, bool selected, ImGuiSelectableFlags flags, kVec2 size)
 	{
 		return ImGui::Selectable(label.c_str(), selected, flags, ImVec2(size.x, size.y));
 	}
 
-	bool kGuiManager::selectable(string label, bool *pSelected, ImGuiSelectableFlags flags, vec2 size)
+	bool kGuiManager::selectable(kString label, bool *pSelected, ImGuiSelectableFlags flags, kVec2 size)
 	{
 		return ImGui::Selectable(label.c_str(), pSelected, flags, ImVec2(size.x, size.y));
 	}
 
 	// ---- Tree / Collapsing ----
 
-	bool kGuiManager::treeStart(string label)
+	bool kGuiManager::treeStart(kString label)
 	{
 		return ImGui::TreeNode(label.c_str());
 	}
 
-	bool kGuiManager::treeStartEx(string id, string label, ImGuiTreeNodeFlags flags)
+	bool kGuiManager::treeStartEx(kString id, kString label, ImGuiTreeNodeFlags flags)
 	{
 		if (label.empty())
 			return ImGui::TreeNodeEx(id.c_str(), flags);
@@ -788,12 +788,12 @@ namespace kemena
 		ImGui::TreePop();
 	}
 
-	bool kGuiManager::collapsingHeader(string label, ImGuiTreeNodeFlags flags)
+	bool kGuiManager::collapsingHeader(kString label, ImGuiTreeNodeFlags flags)
 	{
 		return ImGui::CollapsingHeader(label.c_str(), flags);
 	}
 
-	bool kGuiManager::collapsingHeader(string label, bool *visible, ImGuiTreeNodeFlags flags)
+	bool kGuiManager::collapsingHeader(kString label, bool *visible, ImGuiTreeNodeFlags flags)
 	{
 		return ImGui::CollapsingHeader(label.c_str(), visible, flags);
 	}
@@ -805,26 +805,26 @@ namespace kemena
 
 	// ---- Image ----
 
-	void kGuiManager::image(GLuint textureId, vec2 size, vec2 uv0, vec2 uv1)
+	void kGuiManager::image(GLuint textureId, kVec2 size, kVec2 uv0, kVec2 uv1)
 	{
 		ImGui::Image((ImTextureID)(intptr_t)textureId, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
 	}
 
-	bool kGuiManager::imageButton(string id, GLuint textureId, vec2 size, vec2 uv0, vec2 uv1)
+	bool kGuiManager::imageButton(kString id, GLuint textureId, kVec2 size, kVec2 uv0, kVec2 uv1)
 	{
 		return ImGui::ImageButton(id.c_str(), (ImTextureID)(intptr_t)textureId, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
 	}
 
 	// ---- Progress ----
 
-	void kGuiManager::progressBar(float fraction, vec2 size, string overlay)
+	void kGuiManager::progressBar(float fraction, kVec2 size, kString overlay)
 	{
 		ImGui::ProgressBar(fraction, ImVec2(size.x, size.y), overlay.empty() ? nullptr : overlay.c_str());
 	}
 
 	// ---- Tooltip ----
 
-	void kGuiManager::setItemTooltip(string text)
+	void kGuiManager::setItemTooltip(kString text)
 	{
 		ImGui::SetItemTooltip(text.c_str());
 	}
@@ -841,12 +841,12 @@ namespace kemena
 
 	// ---- Popup ----
 
-	void kGuiManager::openPopup(string id, ImGuiPopupFlags flags)
+	void kGuiManager::openPopup(kString id, ImGuiPopupFlags flags)
 	{
 		ImGui::OpenPopup(id.c_str(), flags);
 	}
 
-	bool kGuiManager::popupStart(string id, ImGuiWindowFlags flags)
+	bool kGuiManager::popupStart(kString id, ImGuiWindowFlags flags)
 	{
 		return ImGui::BeginPopup(id.c_str(), flags);
 	}
@@ -856,22 +856,22 @@ namespace kemena
 		ImGui::EndPopup();
 	}
 
-	bool kGuiManager::popupModal(string name, bool *open, ImGuiWindowFlags flags)
+	bool kGuiManager::popupModal(kString name, bool *open, ImGuiWindowFlags flags)
 	{
 		return ImGui::BeginPopupModal(name.c_str(), open, flags);
 	}
 
-	bool kGuiManager::popupContextItemStart(string id, ImGuiPopupFlags flags)
+	bool kGuiManager::popupContextItemStart(kString id, ImGuiPopupFlags flags)
 	{
 		return ImGui::BeginPopupContextItem(id.empty() ? nullptr : id.c_str(), flags);
 	}
 
-	bool kGuiManager::popupContextWindowStart(string id, ImGuiPopupFlags flags)
+	bool kGuiManager::popupContextWindowStart(kString id, ImGuiPopupFlags flags)
 	{
 		return ImGui::BeginPopupContextWindow(id.empty() ? nullptr : id.c_str(), flags);
 	}
 
-	bool kGuiManager::isPopupOpen(string id, ImGuiPopupFlags flags)
+	bool kGuiManager::isPopupOpen(kString id, ImGuiPopupFlags flags)
 	{
 		return ImGui::IsPopupOpen(id.c_str(), flags);
 	}
@@ -883,7 +883,7 @@ namespace kemena
 
 	// ---- Tab Bar ----
 
-	bool kGuiManager::tabBarStart(string id, ImGuiTabBarFlags flags)
+	bool kGuiManager::tabBarStart(kString id, ImGuiTabBarFlags flags)
 	{
 		return ImGui::BeginTabBar(id.c_str(), flags);
 	}
@@ -893,7 +893,7 @@ namespace kemena
 		ImGui::EndTabBar();
 	}
 
-	bool kGuiManager::tabItemStart(string label, bool *open, ImGuiTabItemFlags flags)
+	bool kGuiManager::tabItemStart(kString label, bool *open, ImGuiTabItemFlags flags)
 	{
 		return ImGui::BeginTabItem(label.c_str(), open, flags);
 	}
@@ -903,14 +903,14 @@ namespace kemena
 		ImGui::EndTabItem();
 	}
 
-	void kGuiManager::setTabItemClosed(string tabOrDockedWindowLabel)
+	void kGuiManager::setTabItemClosed(kString tabOrDockedWindowLabel)
 	{
 		ImGui::SetTabItemClosed(tabOrDockedWindowLabel.c_str());
 	}
 
 	// ---- Tables ----
 
-	bool kGuiManager::tableStart(string id, int columns, ImGuiTableFlags flags, vec2 outerSize, float innerWidth)
+	bool kGuiManager::tableStart(kString id, int columns, ImGuiTableFlags flags, kVec2 outerSize, float innerWidth)
 	{
 		return ImGui::BeginTable(id.c_str(), columns, flags, ImVec2(outerSize.x, outerSize.y), innerWidth);
 	}
@@ -935,7 +935,7 @@ namespace kemena
 		ImGui::TableNextRow(rowFlags, minRowHeight);
 	}
 
-	void kGuiManager::tableSetupColumn(string label, ImGuiTableColumnFlags flags, float initWidthOrWeight)
+	void kGuiManager::tableSetupColumn(kString label, ImGuiTableColumnFlags flags, float initWidthOrWeight)
 	{
 		ImGui::TableSetupColumn(label.c_str(), flags, initWidthOrWeight);
 	}
@@ -950,7 +950,7 @@ namespace kemena
 		ImGui::TableHeadersRow();
 	}
 
-	void kGuiManager::tableHeader(string label)
+	void kGuiManager::tableHeader(kString label)
 	{
 		ImGui::TableHeader(label.c_str());
 	}
@@ -1064,22 +1064,22 @@ namespace kemena
 		return ImGui::IsAnyItemFocused();
 	}
 
-	vec2 kGuiManager::getItemRectMin()
+	kVec2 kGuiManager::getItemRectMin()
 	{
 		ImVec2 v = ImGui::GetItemRectMin();
-		return vec2(v.x, v.y);
+		return kVec2(v.x, v.y);
 	}
 
-	vec2 kGuiManager::getItemRectMax()
+	kVec2 kGuiManager::getItemRectMax()
 	{
 		ImVec2 v = ImGui::GetItemRectMax();
-		return vec2(v.x, v.y);
+		return kVec2(v.x, v.y);
 	}
 
-	vec2 kGuiManager::getItemRectSize()
+	kVec2 kGuiManager::getItemRectSize()
 	{
 		ImVec2 v = ImGui::GetItemRectSize();
-		return vec2(v.x, v.y);
+		return kVec2(v.x, v.y);
 	}
 
 	// ---- Mouse ----
@@ -1104,21 +1104,21 @@ namespace kemena
 		return ImGui::IsMouseDoubleClicked(button);
 	}
 
-	bool kGuiManager::isMouseHoveringRect(vec2 rMin, vec2 rMax, bool clip)
+	bool kGuiManager::isMouseHoveringRect(kVec2 rMin, kVec2 rMax, bool clip)
 	{
 		return ImGui::IsMouseHoveringRect(ImVec2(rMin.x, rMin.y), ImVec2(rMax.x, rMax.y), clip);
 	}
 
-	vec2 kGuiManager::getMousePos()
+	kVec2 kGuiManager::getMousePos()
 	{
 		ImVec2 p = ImGui::GetMousePos();
-		return vec2(p.x, p.y);
+		return kVec2(p.x, p.y);
 	}
 
-	vec2 kGuiManager::getMouseDelta()
+	kVec2 kGuiManager::getMouseDelta()
 	{
 		ImVec2 d = ImGui::GetIO().MouseDelta;
-		return vec2(d.x, d.y);
+		return kVec2(d.x, d.y);
 	}
 
 	float kGuiManager::getMouseWheel()

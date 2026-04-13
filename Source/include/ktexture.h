@@ -44,7 +44,7 @@ namespace kemena
          * @param newName New texture name for the duplicate.
          * @return Heap-allocated duplicate; caller takes ownership.
          */
-        kTexture *duplicate(string newName);
+        kTexture *duplicate(kString newName);
 
         /**
          * @brief Sets the GPU texture handle.
@@ -62,13 +62,13 @@ namespace kemena
          * @brief Sets the GLSL sampler uniform name for this texture.
          * @param newName Uniform variable name in the shader.
          */
-        void setTextureName(string newName);
+        void setTextureName(kString newName);
 
         /**
          * @brief Returns the GLSL sampler uniform name.
-         * @return Uniform name string.
+         * @return Uniform name kString.
          */
-        string getTextureName();
+        kString getTextureName();
 
         /**
          * @brief Sets the texture type (2D or cube map).
@@ -85,7 +85,7 @@ namespace kemena
     protected:
     private:
         GLuint textureID;           ///< GPU texture handle.
-        string textureName;         ///< GLSL sampler uniform name.
+        kString textureName;         ///< GLSL sampler uniform name.
         kTextureType type = kTextureType::TEX_TYPE_2D; ///< Texture dimensionality.
     };
 }

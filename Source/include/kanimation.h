@@ -36,14 +36,14 @@ namespace kemena
          * @param animationPath Path to the animation asset file.
          * @param setMesh       Mesh whose bone map is used to resolve bone indices.
          */
-        kAnimation(const string &animationPath, kMesh *setMesh);
+        kAnimation(const kString &animationPath, kMesh *setMesh);
 
         /**
          * @brief Finds the kBone with the given name in this clip.
          * @param name Bone name as it appears in the asset.
          * @return Pointer to the matching kBone, or nullptr if not found.
          */
-        kBone *findBone(const string &name);
+        kBone *findBone(const kString &name);
 
         /**
          * @brief Returns the tick rate of this animation.
@@ -100,7 +100,7 @@ namespace kemena
         void readMissingBones(const aiAnimation *animation, kMesh *setMesh);
         void readHierarchyData(kAssimpNodeData &dest, const aiNode *src);
 
-        std::map<string, kBoneInfo> boneInfoMap; ///< Bone name → info lookup.
+        std::map<kString, kBoneInfo> boneInfoMap; ///< Bone name → info lookup.
 
         float speed = 1.0f; ///< Playback speed multiplier.
     };

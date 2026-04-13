@@ -50,49 +50,49 @@ namespace kemena
         kAssetManager();
 
         /**
-         * @brief Extracts the file extension from a path string.
+         * @brief Extracts the file extension from a path kString.
          * @param fileName File path or name.
          * @return Lower-case extension without the leading dot.
          */
-        string getFileExtension(const string &fileName);
+        kString getFileExtension(const kString &fileName);
 
         /**
          * @brief Checks whether a file exists on disk.
          * @param fileName Absolute or relative file path.
          * @return true if the file is accessible.
          */
-        bool fileExists(const string &fileName);
+        bool fileExists(const kString &fileName);
 
         /**
          * @brief Returns the directory portion of a file path.
          * @param filePath Full file path.
          * @return Directory path with trailing separator.
          */
-        string getBaseDir(const string &filePath);
+        kString getBaseDir(const kString &filePath);
 
         /**
          * @brief Returns the filename without directory or extension.
          * @param filePath Full file path.
          * @return Bare filename stem.
          */
-        string getBaseFilename(const string &filePath);
+        kString getBaseFilename(const kString &filePath);
 
         /**
          * @brief Returns the directory containing the running executable.
          * @return Executable directory with trailing separator.
          */
-        string getExecDir();
+        kString getExecDir();
 
         /**
          * @brief Removes the last directory component from a path.
          * @param filePath Input path.
          * @return Path with the last component removed.
          */
-        string popDir(const string &filePath);
+        kString popDir(const kString &filePath);
 
         /**
          * @brief Loads an image from a Windows embedded resource into CPU memory.
-         * @param resourceName Resource identifier string.
+         * @param resourceName Resource identifier kString.
          * @param width        Receives the image width in pixels.
          * @param height       Receives the image height in pixels.
          * @param channels     Receives the number of colour channels.
@@ -109,7 +109,7 @@ namespace kemena
          * @param keepData      Retain CPU-side pixel data after upload.
          * @return Heap-allocated kTexture2D; caller takes ownership.
          */
-        kTexture2D *loadTexture2D(const string fileName, const string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
+        kTexture2D *loadTexture2D(const kString fileName, const kString textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
 
         /**
          * @brief Loads a 2D texture from an in-memory Assimp texture blob.
@@ -120,26 +120,26 @@ namespace kemena
          * @param keepData     Retain CPU-side pixel data.
          * @return Heap-allocated kTexture2D; caller takes ownership.
          */
-        kTexture2D *loadTexture2DFromMemory(const aiTexture *rawData, const string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
+        kTexture2D *loadTexture2DFromMemory(const aiTexture *rawData, const kString textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
 
         /**
          * @brief Loads a 2D texture from a Windows embedded resource.
-         * @param resourceName Resource identifier string.
+         * @param resourceName Resource identifier kString.
          * @param textureName  GLSL sampler uniform name.
          * @param format       Desired GPU format.
          * @param flipVertical Flip vertically before upload.
          * @param keepData     Retain CPU-side pixel data.
          * @return Heap-allocated kTexture2D; caller takes ownership.
          */
-        kTexture2D *loadTexture2DFromResource(const string resourceName, const string textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
+        kTexture2D *loadTexture2DFromResource(const kString resourceName, const kString textureName, const kTextureFormat format = kTextureFormat::TEX_FORMAT_SRGBA, const bool flipVertical = false, const bool keepData = false);
 
         /**
          * @brief Saves a kTexture2D to disk using the specified image format.
          * @param texture  Source texture with CPU-side pixel data retained.
          * @param fileName Output file path.
-         * @param format   Output format string (e.g. "png", "jpg").
+         * @param format   Output format kString (e.g. "png", "jpg").
          */
-        void saveTexture2D(kTexture2D *texture, const string fileName, string format);
+        void saveTexture2D(kTexture2D *texture, const kString fileName, kString format);
 
         /**
          * @brief Loads a cube-map texture from six individual face files.
@@ -152,7 +152,7 @@ namespace kemena
          * @param textureName    GLSL samplerCube uniform name.
          * @return Heap-allocated kTextureCube; caller takes ownership.
          */
-        kTextureCube *loadTextureCube(const string fileNameRight, const string fileNameLeft, const string fileNameTop, const string fileNameBottom, const string fileNameFront, const string fileNameBack, const string textureName);
+        kTextureCube *loadTextureCube(const kString fileNameRight, const kString fileNameLeft, const kString fileNameTop, const kString fileNameBottom, const kString fileNameFront, const kString fileNameBack, const kString textureName);
 
         /**
          * @brief Loads a cube-map texture from six Windows embedded resources.
@@ -165,37 +165,37 @@ namespace kemena
          * @param textureName GLSL samplerCube uniform name.
          * @return Heap-allocated kTextureCube; caller takes ownership.
          */
-        kTextureCube *loadTextureCubeFromResource(const string resRight, const string resLeft, const string resTop, const string resBottom, const string resFront, const string resBack, const string textureName);
+        kTextureCube *loadTextureCubeFromResource(const kString resRight, const kString resLeft, const kString resTop, const kString resBottom, const kString resFront, const kString resBack, const kString textureName);
 
         /**
          * @brief Loads a mesh hierarchy from a file, using Assimp for 3D formats.
          * @param fileName Path to the mesh file.
          * @return Root kMesh of the loaded hierarchy; caller takes ownership.
          */
-        kMesh *loadMesh(const string fileName);
+        kMesh *loadMesh(const kString fileName);
 
         /**
          * @brief Loads a mesh from a Windows embedded resource.
-         * @param resourceName Resource identifier string.
+         * @param resourceName Resource identifier kString.
          * @param extention    File extension hint for Assimp (e.g. ".fbx").
          * @return Root kMesh; caller takes ownership.
          */
-        kMesh *loadMeshFromResource(const string resourceName, const string extention);
+        kMesh *loadMeshFromResource(const kString resourceName, const kString extention);
 
         /**
          * @brief Loads a mesh file using the Assimp importer.
          * @param fileName Path to the asset file.
          * @return Root kMesh; caller takes ownership.
          */
-        kMesh *loadMeshFileAssimp(const string fileName);
+        kMesh *loadMeshFileAssimp(const kString fileName);
 
         /**
          * @brief Loads a mesh from an embedded resource using the Assimp importer.
-         * @param resourceName Resource identifier string.
+         * @param resourceName Resource identifier kString.
          * @param extention    File extension hint.
          * @return Root kMesh; caller takes ownership.
          */
-        kMesh *loadMeshResourceAssimp(const string resourceName, const string extention);
+        kMesh *loadMeshResourceAssimp(const kString resourceName, const kString extention);
 
         /**
          * @brief Recursively converts an Assimp node into a kMesh hierarchy.
@@ -224,10 +224,10 @@ namespace kemena
         void calculateNormal(float N[3], float v0[3], float v1[3], float v2[3]);
 
         /**
-         * @brief Normalises a vec3 in-place.
+         * @brief Normalises a kVec3 in-place.
          * @param v Vector to normalise.
          */
-        void normalizeVector(vec3 &v);
+        void normalizeVector(kVec3 &v);
 
         /**
          * @brief Reads bone-weight data from an Assimp mesh and populates a kMesh.
@@ -252,7 +252,7 @@ namespace kemena
          * @param fragmentShaderPath Path to the fragment shader source.
          * @return Heap-allocated kShader; caller takes ownership.
          */
-        kShader *loadShaderFromFile(string vertexShaderPath, string fragmentShaderPath);
+        kShader *loadShaderFromFile(kString vertexShaderPath, kString fragmentShaderPath);
 
         /**
          * @brief Compiles a shader program from inline GLSL source strings.
@@ -260,7 +260,7 @@ namespace kemena
          * @param fragmentShaderCode Fragment shader GLSL source.
          * @return Heap-allocated kShader; caller takes ownership.
          */
-        kShader *loadShaderFromCode(string vertexShaderCode, string fragmentShaderCode);
+        kShader *loadShaderFromCode(kString vertexShaderCode, kString fragmentShaderCode);
 
         /**
          * @brief Compiles a shader program from Windows embedded resources.
@@ -268,7 +268,7 @@ namespace kemena
          * @param fragmentShaderName Resource name for the fragment shader.
          * @return Heap-allocated kShader; caller takes ownership.
          */
-        kShader *loadShaderFromResource(string vertexShaderName, string fragmentShaderName);
+        kShader *loadShaderFromResource(kString vertexShaderName, kString fragmentShaderName);
 
         /**
          * @brief Creates a new material with a pre-assigned shader.
@@ -283,7 +283,7 @@ namespace kemena
          * @param mesh     Mesh whose bone map is used to bind the animation.
          * @return Heap-allocated kAnimation; caller takes ownership.
          */
-        kAnimation *loadAnimation(const string fileName, kMesh *mesh);
+        kAnimation *loadAnimation(const kString fileName, kMesh *mesh);
 
     protected:
     private:

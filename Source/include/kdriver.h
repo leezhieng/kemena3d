@@ -106,16 +106,16 @@ namespace kemena
         virtual void *getNativeContext() = 0;
 
         /**
-         * @brief Returns a human-readable API version string.
+         * @brief Returns a human-readable API version kString.
          * @return e.g. "4.6.0 NVIDIA 546.01".
          */
-        virtual string getApiVersion() = 0;
+        virtual kString getApiVersion() = 0;
 
         /**
-         * @brief Returns the shading language version string.
+         * @brief Returns the shading language version kString.
          * @return e.g. "4.60 NVIDIA".
          */
-        virtual string getShaderVersion() = 0;
+        virtual kString getShaderVersion() = 0;
 
         // --- Frame state -----------------------------------------------------
 
@@ -212,8 +212,8 @@ namespace kemena
 
         /**
          * @brief Compiles and links a vertex + fragment shader pair.
-         * @param vertSrc GLSL vertex shader source string, or nullptr to skip.
-         * @param fragSrc GLSL fragment shader source string, or nullptr to skip.
+         * @param vertSrc GLSL vertex shader source kString, or nullptr to skip.
+         * @param fragSrc GLSL fragment shader source kString, or nullptr to skip.
          * @return Opaque program handle (0 on failure).
          */
         virtual uint32_t compileShaderProgram(const char *vertSrc, const char *fragSrc) = 0;
@@ -234,26 +234,26 @@ namespace kemena
         virtual void unbindShaderProgram() = 0;
 
         /** @brief Sets a boolean uniform on the given program. */
-        virtual void setUniformBool(uint32_t progId, const string &name, bool v) = 0;
+        virtual void setUniformBool(uint32_t progId, const kString &name, bool v) = 0;
         /** @brief Sets an integer uniform on the given program. */
-        virtual void setUniformInt(uint32_t progId, const string &name, int v) = 0;
+        virtual void setUniformInt(uint32_t progId, const kString &name, int v) = 0;
         /** @brief Sets an unsigned-integer uniform on the given program. */
-        virtual void setUniformUint(uint32_t progId, const string &name, uint32_t v) = 0;
+        virtual void setUniformUint(uint32_t progId, const kString &name, uint32_t v) = 0;
         /** @brief Sets a float uniform on the given program. */
-        virtual void setUniformFloat(uint32_t progId, const string &name, float v) = 0;
-        /** @brief Sets a vec2 uniform on the given program. */
-        virtual void setUniformVec2(uint32_t progId, const string &name, const vec2 &v) = 0;
-        /** @brief Sets a vec3 uniform on the given program. */
-        virtual void setUniformVec3(uint32_t progId, const string &name, const vec3 &v) = 0;
-        /** @brief Sets a mat4 uniform on the given program. */
-        virtual void setUniformMat4(uint32_t progId, const string &name, const mat4 &v) = 0;
+        virtual void setUniformFloat(uint32_t progId, const kString &name, float v) = 0;
+        /** @brief Sets a kVec2 uniform on the given program. */
+        virtual void setUniformVec2(uint32_t progId, const kString &name, const kVec2 &v) = 0;
+        /** @brief Sets a kVec3 uniform on the given program. */
+        virtual void setUniformVec3(uint32_t progId, const kString &name, const kVec3 &v) = 0;
+        /** @brief Sets a kMat4 uniform on the given program. */
+        virtual void setUniformMat4(uint32_t progId, const kString &name, const kMat4 &v) = 0;
         /**
-         * @brief Sets a mat4 array uniform on the given program.
+         * @brief Sets a kMat4 array uniform on the given program.
          * @param progId Program handle.
          * @param name   Uniform array name.
-         * @param v      Array of mat4 values.
+         * @param v      Array of kMat4 values.
          */
-        virtual void setUniformMat4Array(uint32_t progId, const string &name, const std::vector<mat4> &v) = 0;
+        virtual void setUniformMat4Array(uint32_t progId, const kString &name, const std::vector<kMat4> &v) = 0;
 
         // --- Vertex arrays ---------------------------------------------------
 

@@ -13,10 +13,10 @@
 
 namespace kemena
 {
-    const string engineName = "Kemena3D";
+    const kString engineName = "Kemena3D";
     const uint32_t engineVersion = 1;
 
-    KEMENA3D_API kWindow *createWindow(int width, int height, string title, bool maximized = false, kWindowType type = kWindowType::WINDOW_DEFAULT, void *nativeHandle = nullptr);
+    KEMENA3D_API kWindow *createWindow(int width, int height, kString title, bool maximized = false, kWindowType type = kWindowType::WINDOW_DEFAULT, void *nativeHandle = nullptr);
     KEMENA3D_API kRenderer *createRenderer(kWindow *window);
     KEMENA3D_API kAssetManager *createAssetManager();
     KEMENA3D_API kWorld *createWorld(kAssetManager *assetManager);

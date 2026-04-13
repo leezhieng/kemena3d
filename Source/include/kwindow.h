@@ -44,7 +44,7 @@ namespace kemena
          * @param nativeHandle Optional platform-specific parent window handle.
          * @return true on success.
          */
-        bool init(int width, int height, string title, bool maximized = false,
+        bool init(int width, int height, kString title, bool maximized = false,
                   kWindowType type = kWindowType::WINDOW_DEFAULT, void *nativeHandle = nullptr);
 
         /** @brief Destroys the SDL window and releases its resources. */
@@ -59,14 +59,14 @@ namespace kemena
         /** @brief Returns the current client-area height in pixels. */
         int getWindowHeight();
 
-        /** @brief Returns the window title string. */
-        string getWindowTitle();
+        /** @brief Returns the window title kString. */
+        kString getWindowTitle();
 
         /**
          * @brief Changes the window title bar text.
-         * @param newTitle New title string.
+         * @param newTitle New title kString.
          */
-        void setWindowTitle(string newTitle);
+        void setWindowTitle(kString newTitle);
 
         /**
          * @brief Returns the underlying SDL_Window pointer.
@@ -96,7 +96,7 @@ namespace kemena
     private:
         SDL_Window *sdlWindow = NULL; ///< Underlying SDL window handle.
 
-        string windowTitle;  ///< Current window title.
+        kString windowTitle;  ///< Current window title.
         int windowWidth;     ///< Current client-area width in pixels.
         int windowHeight;    ///< Current client-area height in pixels.
 

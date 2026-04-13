@@ -79,7 +79,7 @@ namespace kemena
         int channels; ///< Number of colour channels.
 
         GLuint textureID;   ///< (Inherited from kTexture; duplicated for legacy reasons.)
-        string textureName; ///< (Inherited from kTexture; duplicated for legacy reasons.)
+        kString textureName; ///< (Inherited from kTexture; duplicated for legacy reasons.)
 
         unsigned char *data; ///< Optional CPU-side pixel buffer.
     };

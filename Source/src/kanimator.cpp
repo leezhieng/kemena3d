@@ -15,7 +15,7 @@ namespace kemena
         finalBoneMatrices.reserve(MAX_BONES);
 
         for (int i = 0; i < MAX_BONES; i++)
-            finalBoneMatrices.push_back(mat4(1.0f));
+            finalBoneMatrices.push_back(kMat4(1.0f));
     }
 
     void kAnimator::addAnimation(kAnimation *newAnimation)
@@ -36,7 +36,7 @@ namespace kemena
             currentTime = fmod(currentTime, currentAnimation->getDuration());
 
             const kAssimpNodeData &rootNode = currentAnimation->getRootNode();
-            calculateBoneTransform(&rootNode, mat4(1.0f));
+            calculateBoneTransform(&rootNode, kMat4(1.0f));
         }
         // Make sure it's only updated once per frame
         currentFrameId = frameId;
@@ -56,12 +56,12 @@ namespace kemena
         return currentAnimation;
     }
 
-    void kAnimator::calculateBoneTransform(const kAssimpNodeData *node, mat4 parentTransform)
+    void kAnimator::calculateBoneTransform(const kAssimpNodeData *node, kMat4 parentTransform)
     {
         if (node != nullptr)
         {
-            string nodeName = node->name;
-            mat4 nodeTransform = node->transformation;
+            kString nodeName = node->name;
+            kMat4 nodeTransform = node->transformation;
 
             // std::cout << "Found node: " << nodeName << ", transform: " << glm::to_string(nodeTransform) << std::endl;
 
@@ -86,22 +86,22 @@ namespace kemena
 
             // Fixed using inverse()
 
-            /*mat4 invNodeTransform = glm::inverse(node->transformation);
+            /*kMat4 invNodeTransform = glm::inverse(node->transformation);
             if (glm::any(glm::isnan(invNodeTransform[0])) || glm::any(glm::isnan(invNodeTransform[1])) ||
                 glm::any(glm::isnan(invNodeTransform[2])) || glm::any(glm::isnan(invNodeTransform[3])))
             {
                 std::cout << "Invalid inverse detected for node: " << nodeName << std::endl;
-                invNodeTransform = mat4(1.0f); // Use identity matrix to prevent NaN propagation
+                invNodeTransform = kMat4(1.0f); // Use identity matrix to prevent NaN propagation
             }
 
-            mat4 globalTransformation = parentTransform * nodeTransform;  // Fallback
+            kMat4 globalTransformation = parentTransform * nodeTransform;  // Fallback
             if (glm::determinant(node->transformation) > 0.00001f)  // Prevent singular matrix inversion
             {
                 globalTransformation = parentTransform * invNodeTransform * nodeTransform;
             }*/
 
-            // mat4 globalTransformation = parentTransform * glm::inverse(node->transformation) * nodeTransform;
-            mat4 globalTransformation = parentTransform * nodeTransform;
+            // kMat4 globalTransformation = parentTransform * glm::inverse(node->transformation) * nodeTransform;
+            kMat4 globalTransformation = parentTransform * nodeTransform;
 
             if (currentAnimation->getMeshes().size() > 0)
             {
@@ -111,14 +111,14 @@ namespace kemena
                     {
                         kMesh *childMesh = (kMesh *)currentAnimation->getMeshes().at(i);
 
-                        std::map<string, kBoneInfo> &boneInfoMap = childMesh->getBoneInfoMap();
+                        std::map<kString, kBoneInfo> &boneInfoMap = childMesh->getBoneInfoMap();
 
                         // std::cout << boneInfoMap.size() << std::endl;
 
                         if (boneInfoMap.find(nodeName) != boneInfoMap.end())
                         {
                             int index = boneInfoMap[nodeName].id;
-                            mat4 offset = boneInfoMap[nodeName].offset;
+                            kMat4 offset = boneInfoMap[nodeName].offset;
 
                             finalBoneMatrices[index] = globalTransformation * offset;
 
@@ -141,13 +141,13 @@ namespace kemena
         }
     }
 
-    const std::vector<mat4> kAnimator::getFinalBoneMatrices() const
+    const std::vector<kMat4> kAnimator::getFinalBoneMatrices() const
     {
         // std::cout << glm::to_string(finalBoneMatrices[0]) << std::endl;
 
         /*for (size_t i = 0; i < finalBoneMatrices.size(); i++)
         {
-            if (finalBoneMatrices[i] == mat4(0.0f))
+            if (finalBoneMatrices[i] == kMat4(0.0f))
             {
                 //std::cout << "WARNING: Final Bone Matrix " << i << " is ZERO!" << std::endl;
             }

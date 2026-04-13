@@ -23,14 +23,14 @@ namespace kemena
         return cameraType;
     }
 
-    void kCamera::setLookAt(vec3 newLookAt)
+    void kCamera::setLookAt(kVec3 newLookAt)
     {
         // Look at is always the front of the camera, otherwise gizmo and icons will display at the wrong position
         if (cameraType == kCameraType::CAMERA_TYPE_FREE)
 		{
-			vec3 forward = glm::normalize(newLookAt - getPosition());
-			vec3 defaultForward(0.0f, 0.0f, -1.0f);
-			quat rotQuat = glm::rotation(defaultForward, forward);
+			kVec3 forward = glm::normalize(newLookAt - getPosition());
+			kVec3 defaultForward(0.0f, 0.0f, -1.0f);
+			kQuat rotQuat = glm::rotation(defaultForward, forward);
 			
 			setRotation(rotQuat);
 		}
@@ -38,7 +38,7 @@ namespace kemena
 			lookAt = newLookAt;
     }
 
-    vec3 kCamera::getLookAt()
+    kVec3 kCamera::getLookAt()
     {
 		// Free camera will always return the forward direction as lookAt
 		
@@ -90,18 +90,18 @@ namespace kemena
         return aspectRatio;
     }
 
-    mat4 kCamera::calculateMVP(kMesh *mesh)
+    kMat4 kCamera::calculateMVP(kMesh *mesh)
     {
-        mat4 model = mesh->getModelMatrixWorld();
-        mat4 view = glm::lookAt(getPosition(), lookAt, calculateUp());
-        mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip);
+        kMat4 model = mesh->getModelMatrixWorld();
+        kMat4 view = glm::lookAt(getPosition(), lookAt, calculateUp());
+        kMat4 projection = glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip);
 
         return projection * view * model;
     }
 
-    mat4 kCamera::getViewMatrix()
+    kMat4 kCamera::getViewMatrix()
     {
-        mat4 view;
+        kMat4 view;
 
         if (cameraType == kCameraType::CAMERA_TYPE_FREE)
             view = glm::lookAt(getPosition(), getPosition() + calculateForward(), calculateUp());
@@ -111,13 +111,13 @@ namespace kemena
         return view;
     }
 
-    mat4 kCamera::getProjectionMatrix()
+    kMat4 kCamera::getProjectionMatrix()
     {
-        mat4 projection = glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip);
+        kMat4 projection = glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip);
         return projection;
     }
 
-    void kCamera::rotateByMouse(quat rotation, float deltaX, float deltaY, float sensitivity, float pitchLimit)
+    void kCamera::rotateByMouse(kQuat rotation, float deltaX, float deltaY, float sensitivity, float pitchLimit)
     {
         float yawAngle = -deltaX * sensitivity;
         float pitchAngle = -deltaY * sensitivity;
@@ -127,24 +127,24 @@ namespace kemena
         pitchAngle = glm::clamp(pitchAngle, -pitchLimitRadians, pitchLimitRadians);
 
         // Step 1: Yaw - rotate around global Y axis
-        quat qYaw = glm::angleAxis(yawAngle, vec3(0, 1, 0));
-        quat yawedRotation = qYaw * rotation;
+        kQuat qYaw = glm::angleAxis(yawAngle, kVec3(0, 1, 0));
+        kQuat yawedRotation = qYaw * rotation;
 
         // Step 2: Pitch - rotate around local right axis (after yaw)
-        vec3 right = yawedRotation * vec3(1, 0, 0);
-        quat qPitch = glm::angleAxis(pitchAngle, right);
+        kVec3 right = yawedRotation * kVec3(1, 0, 0);
+        kQuat qPitch = glm::angleAxis(pitchAngle, right);
 
-        quat finalRotation = qPitch * yawedRotation;
+        kQuat finalRotation = qPitch * yawedRotation;
 
         setRotation(finalRotation);
     }
 
-    void kCamera::setPosition(vec3 newPosition)
+    void kCamera::setPosition(kVec3 newPosition)
     {
         kObject::setPosition(newPosition);
     }
 
-    void kCamera::setRotation(quat newRotation)
+    void kCamera::setRotation(kQuat newRotation)
     {
         kObject::setRotation(newRotation);
     }
@@ -174,7 +174,7 @@ namespace kemena
             }
         }
 
-        string typeDisplay = "unknown";
+        kString typeDisplay = "unknown";
         if (getCameraType() == kCameraType::CAMERA_TYPE_FREE)
             typeDisplay = "free";
         else if (getCameraType() == kCameraType::CAMERA_TYPE_LOCKED)

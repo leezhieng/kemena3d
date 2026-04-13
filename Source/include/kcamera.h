@@ -55,13 +55,13 @@ namespace kemena
          * @brief Sets the look-at target used when the camera is locked.
          * @param newLookAt World-space point the camera faces.
          */
-        void setLookAt(vec3 newLookAt);
+        void setLookAt(kVec3 newLookAt);
 
         /**
          * @brief Returns the look-at target.
          * @return World-space target point.
          */
-        vec3 getLookAt();
+        kVec3 getLookAt();
 
         /**
          * @brief Sets the vertical field of view.
@@ -116,19 +116,19 @@ namespace kemena
          * @param mesh Target mesh whose model matrix is used.
          * @return MVP matrix.
          */
-        mat4 calculateMVP(kMesh *mesh);
+        kMat4 calculateMVP(kMesh *mesh);
 
         /**
          * @brief Returns the view matrix for this camera.
          * @return World-to-view transform.
          */
-        mat4 getViewMatrix();
+        kMat4 getViewMatrix();
 
         /**
          * @brief Returns the projection matrix for this camera.
          * @return Perspective projection matrix.
          */
-        mat4 getProjectionMatrix();
+        kMat4 getProjectionMatrix();
 
         /**
          * @brief Applies mouse-delta rotation to a free-look camera.
@@ -138,12 +138,12 @@ namespace kemena
          * @param sensitivity Radians-per-pixel multiplier (default 0.005).
          * @param pitchLimit  Maximum pitch angle in degrees (default 89).
          */
-        void rotateByMouse(quat rotation, float deltaX, float deltaY, float sensitivity = 0.005f, float pitchLimit = 89.0f);
+        void rotateByMouse(kQuat rotation, float deltaX, float deltaY, float sensitivity = 0.005f, float pitchLimit = 89.0f);
 
         /** @brief Sets the local position and updates all dependent matrices. */
-        void setPosition(vec3 newPosition);
+        void setPosition(kVec3 newPosition);
         /** @brief Sets the local rotation and updates all dependent matrices. */
-        void setRotation(quat newRotation);
+        void setRotation(kQuat newRotation);
 
         /**
          * @brief Serialises the camera to JSON.
@@ -160,7 +160,7 @@ namespace kemena
     protected:
     private:
         kCameraType cameraType;
-        vec3  lookAt      = vec3(0.0f, 0.0f, 0.0f); ///< Look-at target (locked mode).
+        kVec3  lookAt      = kVec3(0.0f, 0.0f, 0.0f); ///< Look-at target (locked mode).
         float fov         = 45.0f;                   ///< Vertical FOV in degrees.
         float nearClip    = 0.1f;                    ///< Near clipping distance.
         float farClip     = 100.0f;                  ///< Far clipping distance.

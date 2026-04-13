@@ -75,6 +75,7 @@ target_include_directories(kemena3d
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/sdl/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_$<CONFIG>/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include
@@ -103,7 +104,7 @@ target_compile_definitions(kemena3d PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLEW)
 # Platform specific
 if (WIN32)
 	target_link_libraries(kemena3d PUBLIC opengl32)
-    target_compile_definitions(kemena3d PRIVATE _WINDOWS)
+    target_compile_definitions(kemena3d PRIVATE _WINDOWS NOMINMAX)
 	if (NOT BUILD_SHARED_LIBS)
 		target_compile_definitions(kemena3d PUBLIC KEMENA3D_STATIC)
 	endif()
@@ -142,7 +143,11 @@ target_link_libraries(kemena3d
 )
 
 # Suppress some noisy warnings
-target_compile_options(kemena3d PRIVATE -Wno-deprecated-declarations)
+if (MSVC)
+    target_compile_options(kemena3d PRIVATE /wd4996 /FS)
+else()
+    target_compile_options(kemena3d PRIVATE -Wno-deprecated-declarations)
+endif()
 
 # Visual Studio startup project
 if (MSVC)

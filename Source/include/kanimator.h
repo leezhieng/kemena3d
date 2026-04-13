@@ -68,13 +68,13 @@ namespace kemena
          * @param node            Current hierarchy node being processed.
          * @param parentTransform Accumulated world transform of the parent bone.
          */
-        void calculateBoneTransform(const kAssimpNodeData *node, mat4 parentTransform);
+        void calculateBoneTransform(const kAssimpNodeData *node, kMat4 parentTransform);
 
         /**
          * @brief Returns the final bone transform matrices ready for shader upload.
          * @return Const reference to the vector of per-bone world transforms.
          */
-        const std::vector<mat4> getFinalBoneMatrices() const;
+        const std::vector<kMat4> getFinalBoneMatrices() const;
 
         /**
          * @brief Seeks to a specific time in the current animation.
@@ -96,7 +96,7 @@ namespace kemena
 
     protected:
     private:
-        std::vector<mat4> finalBoneMatrices;         ///< Per-bone final transform matrices.
+        std::vector<kMat4> finalBoneMatrices;         ///< Per-bone final transform matrices.
         kAnimation       *currentAnimation = nullptr; ///< Currently playing animation.
         float             currentTime;               ///< Current playback time in ticks.
         float             deltaTime;                 ///< Last delta time passed to updateAnimation.

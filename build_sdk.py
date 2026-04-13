@@ -1,7 +1,36 @@
 import os
 import platform
+import shutil
 import subprocess
+import sys
 from pathlib import Path
+
+MINGW_SEARCH_PATHS = [
+    r"C:\mingw64\bin",
+    r"C:\mingw32\bin",
+    r"C:\mingw\bin",
+    r"C:\msys64\mingw64\bin",
+    r"C:\msys64\mingw32\bin",
+    r"C:\msys64\usr\bin",
+    r"C:\msys2\mingw64\bin",
+    r"C:\msys2\mingw32\bin",
+]
+
+def find_mingw_make():
+    """Return the path to mingw32-make or make, searching PATH then known install dirs."""
+    for name in ("mingw32-make", "make"):
+        found = shutil.which(name)
+        if found:
+            return found
+    for directory in MINGW_SEARCH_PATHS:
+        for name in ("mingw32-make.exe", "make.exe"):
+            candidate = os.path.join(directory, name)
+            if os.path.isfile(candidate):
+                return candidate
+    raise RuntimeError(
+        "Could not find mingw32-make or make. "
+        "Ensure MinGW bin directory is on PATH or install MinGW to a standard location."
+    )
 
 def run_cmd(cmd, cwd=None):
     print(f"[RUN] {cmd}")
@@ -30,19 +59,22 @@ def choose(prompt, options: dict):
         raise ValueError(f"Invalid choice: {choice}")
     return choice
 
-def build_with_cmake(generator, build_mode, args):
+def build_with_cmake(generator, build_mode, args, make_program=None):
     build_dir = f"build_{build_mode}"
     install_prefix = os.path.join(os.getcwd(), f"Output/{build_mode}")
+
+    make_arg = f'-DCMAKE_MAKE_PROGRAM="{make_program}" ' if make_program else ""
 
     # Configure
     run_cmd(
         f'cmake -S . -B {build_dir} -G "{generator}" '
-        f'-DCMAKE_INSTALL_PREFIX={install_prefix} '
+        f'{make_arg}'
+        f'-DCMAKE_INSTALL_PREFIX="{install_prefix}" '
         f'-DCMAKE_BUILD_TYPE={build_mode} {args}'
     )
 
     # Build
-    run_cmd(f'cmake --build {build_dir} --config {build_mode}')
+    run_cmd(f'cmake --build {build_dir} --config {build_mode} --parallel')
 
     # Install
     run_cmd(f'cmake --install {build_dir} --config {build_mode}')
@@ -78,7 +110,7 @@ def main():
         )
     else:
         print(f"Unsupported platform: {system}")
-        exit(1)
+        sys.exit(1)
 
     # Linking selection
     linking = choose(
@@ -88,11 +120,14 @@ def main():
     )
 
     # CMake generator setup
+    make_program = None
     if system == "Windows":
         if compiler == "1":
             generator = "Visual Studio 17 2022"
         elif compiler == "2":
             generator = "MinGW Makefiles"
+            make_program = find_mingw_make()
+            print(f"[INFO] Using make program: {make_program}")
     elif system in ("Linux", "FreeBSD"):
         generator = "Unix Makefiles"
     elif system == "Darwin":
@@ -106,22 +141,24 @@ def main():
             if linking == "1":
                 args = "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=OFF"
             else:
-                args = "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON -DKEMENA_SHARED"
+                args = "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=OFF -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON -DKEMENA_SHARED=ON"
         else:  # MinGW
             if linking == "1":
                 args = "-DBUILD_SHARED_LIBS=OFF -DUSE_MINGW=ON"
             else:
-                args = "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON -DKEMENA_SHARED"
+                args = "-DBUILD_SHARED_LIBS=ON -DUSE_MINGW=ON -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON -DKEMENA_SHARED=ON"
 
     elif system in ("Linux", "FreeBSD", "Darwin"):
         if linking == "1":
             args = "-DBUILD_SHARED_LIBS=OFF"
         else:
-            args = "-DBUILD_SHARED_LIBS=ON -DKEMENA_SHARED"
+            args = "-DBUILD_SHARED_LIBS=ON -DKEMENA_SHARED=ON"
+    else:
+        raise RuntimeError(f"No build args defined for {system}")
 
     # Debug + Release builds
-    build_with_cmake(generator, "Debug", args)
-    build_with_cmake(generator, "Release", args)
+    build_with_cmake(generator, "Debug", args, make_program)
+    build_with_cmake(generator, "Release", args, make_program)
 
     print("\n------------------------------------------------------------------------")
     print("Kemena3D SDK has been compiled successfully.")
@@ -132,6 +169,6 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         print("\n------------------------------------------------------------------------")
-        print(f"Failed to download or compile Kemena3D SDK: {e}")
+        print(f"Failed to compile Kemena3D SDK: {e}")
         print("------------------------------------------------------------------------")
-        exit(1)
+        sys.exit(1)

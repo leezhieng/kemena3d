@@ -41,18 +41,18 @@ namespace kemena
         virtual ~kShader();
 
         /**
-         * @brief Reads a text file into a string.
+         * @brief Reads a text file into a kString.
          * @param filePath Path to the file.
-         * @return File contents, or empty string if the file could not be opened.
+         * @return File contents, or empty kString if the file could not be opened.
          */
-        string readFile(const string filePath);
+        kString readFile(const kString filePath);
 
         /**
          * @brief Compiles and links a shader program from source files on disk.
          * @param vertexShaderPath   Path to the GLSL vertex shader source file.
          * @param fragmentShaderPath Path to the GLSL fragment shader source file.
          */
-        void loadShadersFile(const string vertexShaderPath, const string fragmentShaderPath);
+        void loadShadersFile(const kString vertexShaderPath, const kString fragmentShaderPath);
 
         /**
          * @brief Compiles and links a shader program from inline source strings.
@@ -81,22 +81,22 @@ namespace kemena
          */
         uint32_t getShaderProgram();
 
-        /** @brief Sets a mat4 array uniform. */
-        void setValue(string name, std::vector<mat4> value);
-        /** @brief Sets a mat4 uniform. */
-        void setValue(string name, mat4 value);
-        /** @brief Sets a vec3 uniform. */
-        void setValue(string name, vec3 value);
-        /** @brief Sets a vec2 uniform. */
-        void setValue(string name, vec2 value);
+        /** @brief Sets a kMat4 array uniform. */
+        void setValue(kString name, std::vector<kMat4> value);
+        /** @brief Sets a kMat4 uniform. */
+        void setValue(kString name, kMat4 value);
+        /** @brief Sets a kVec3 uniform. */
+        void setValue(kString name, kVec3 value);
+        /** @brief Sets a kVec2 uniform. */
+        void setValue(kString name, kVec2 value);
         /** @brief Sets a float uniform. */
-        void setValue(string name, float value);
+        void setValue(kString name, float value);
         /** @brief Sets an integer uniform. */
-        void setValue(string name, int value);
+        void setValue(kString name, int value);
         /** @brief Sets an unsigned-integer uniform. */
-        void setValue(string name, unsigned int value);
+        void setValue(kString name, unsigned int value);
         /** @brief Sets a boolean uniform (uploaded as int). */
-        void setValue(string name, bool value);
+        void setValue(kString name, bool value);
 
     protected:
     private:

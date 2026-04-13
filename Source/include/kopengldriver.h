@@ -63,11 +63,11 @@ namespace kemena
          */
         void *getNativeContext() override;
 
-        /** @brief Returns the OpenGL version string. */
-        string getApiVersion() override;
+        /** @brief Returns the OpenGL version kString. */
+        kString getApiVersion() override;
 
-        /** @brief Returns the GLSL version string. */
-        string getShaderVersion() override;
+        /** @brief Returns the GLSL version kString. */
+        kString getShaderVersion() override;
 
         // --- Frame state -----------------------------------------------------
 
@@ -94,14 +94,14 @@ namespace kemena
         void deleteShaderProgram(uint32_t id) override;
         void bindShaderProgram(uint32_t id) override;
         void unbindShaderProgram() override;
-        void setUniformBool(uint32_t progId, const string &name, bool v) override;
-        void setUniformInt(uint32_t progId, const string &name, int v) override;
-        void setUniformUint(uint32_t progId, const string &name, uint32_t v) override;
-        void setUniformFloat(uint32_t progId, const string &name, float v) override;
-        void setUniformVec2(uint32_t progId, const string &name, const vec2 &v) override;
-        void setUniformVec3(uint32_t progId, const string &name, const vec3 &v) override;
-        void setUniformMat4(uint32_t progId, const string &name, const mat4 &v) override;
-        void setUniformMat4Array(uint32_t progId, const string &name, const std::vector<mat4> &v) override;
+        void setUniformBool(uint32_t progId, const kString &name, bool v) override;
+        void setUniformInt(uint32_t progId, const kString &name, int v) override;
+        void setUniformUint(uint32_t progId, const kString &name, uint32_t v) override;
+        void setUniformFloat(uint32_t progId, const kString &name, float v) override;
+        void setUniformVec2(uint32_t progId, const kString &name, const kVec2 &v) override;
+        void setUniformVec3(uint32_t progId, const kString &name, const kVec3 &v) override;
+        void setUniformMat4(uint32_t progId, const kString &name, const kMat4 &v) override;
+        void setUniformMat4Array(uint32_t progId, const kString &name, const std::vector<kMat4> &v) override;
 
         // --- Vertex arrays ---------------------------------------------------
 

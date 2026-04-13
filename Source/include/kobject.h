@@ -102,113 +102,113 @@ namespace kemena
         void setId(unsigned int newId);
 
         /**
-         * @brief Returns the UUID string of this object.
-         * @return UUID v4 string.
+         * @brief Returns the UUID kString of this object.
+         * @return UUID v4 kString.
          */
-        string getUuid();
+        kString getUuid();
 
         /**
-         * @brief Sets the UUID string.
-         * @param newUuid UUID v4 string.
+         * @brief Sets the UUID kString.
+         * @param newUuid UUID v4 kString.
          */
-        void setUuid(string newUuid);
+        void setUuid(kString newUuid);
 
         /**
          * @brief Returns the display name of this object.
          * @return Human-readable name.
          */
-        string getName();
+        kString getName();
 
         /**
          * @brief Sets the display name.
-         * @param newName New name string.
+         * @param newName New name kString.
          */
-        void setName(string newName);
+        void setName(kString newName);
 
         /**
          * @brief Returns the local position.
          * @return Position in parent space (or world space if root).
          */
-        vec3 getPosition();
+        kVec3 getPosition();
 
         /**
          * @brief Sets the local position.
          * @param newPosition Position in parent space.
          */
-        virtual void setPosition(vec3 newPosition);
+        virtual void setPosition(kVec3 newPosition);
 
         /**
          * @brief Returns the local rotation as a quaternion.
          * @return Unit quaternion representing the local orientation.
          */
-        quat getRotation();
+        kQuat getRotation();
 
         /**
          * @brief Returns the local rotation as Euler angles in degrees.
          * @return XYZ Euler angles in degrees.
          */
-        vec3 getRotationEuler();
+        kVec3 getRotationEuler();
 
         /**
          * @brief Sets the local rotation from a quaternion.
          * @param newRotation Unit quaternion.
          */
-        virtual void setRotation(quat newRotation);
+        virtual void setRotation(kQuat newRotation);
 
         /**
          * @brief Returns the local scale.
          * @return Per-axis scale factors.
          */
-        vec3 getScale();
+        kVec3 getScale();
 
         /**
          * @brief Sets the local scale.
          * @param newScale Per-axis scale factors.
          */
-        virtual void setScale(vec3 newScale);
+        virtual void setScale(kVec3 newScale);
 
         /**
          * @brief Computes the local right (+X) direction in world space.
          * @return Normalised right vector.
          */
-        vec3 calculateRight();
+        kVec3 calculateRight();
 
         /**
          * @brief Computes the local forward (-Z) direction in world space.
          * @return Normalised forward vector.
          */
-        vec3 calculateForward();
+        kVec3 calculateForward();
 
         /**
          * @brief Computes the local up (+Y) direction in world space.
          * @return Normalised up vector.
          */
-        vec3 calculateUp();
+        kVec3 calculateUp();
 
         /**
          * @brief Rotates the object around an axis by a given angular speed.
          * @param rotationAxis  World-space rotation axis (normalised).
          * @param angularSpeed  Rotation magnitude in radians.
          */
-        void rotate(vec3 rotationAxis, float angularSpeed);
+        void rotate(kVec3 rotationAxis, float angularSpeed);
 
         /**
          * @brief Returns the world-space position derived from the world transform.
          * @return Translation column of the world transform matrix.
          */
-        vec3 getGlobalPosition();
+        kVec3 getGlobalPosition();
 
         /**
          * @brief Returns the world-space rotation derived from the world transform.
          * @return Normalised world-space quaternion.
          */
-        quat getGlobalRotation();
+        kQuat getGlobalRotation();
 
         /**
          * @brief Returns the world-space scale derived from the world transform.
          * @return Per-axis world scale.
          */
-        vec3 getGlobalScale();
+        kVec3 getGlobalScale();
 
         /**
          * @brief Assigns a material to this object and optionally its children.
@@ -235,13 +235,13 @@ namespace kemena
          * @brief Returns the world-space model matrix.
          * @return 4x4 model matrix in world space.
          */
-        mat4 getModelMatrixWorld();
+        kMat4 getModelMatrixWorld();
 
         /**
          * @brief Returns the local model matrix (relative to the parent).
          * @return 4x4 model matrix in parent/local space.
          */
-        mat4 getModelMatrixLocal();
+        kMat4 getModelMatrixLocal();
 
         /**
          * @brief Draws the object.
@@ -272,15 +272,15 @@ namespace kemena
 
         kNodeType type = NODE_TYPE_OBJECT;
         unsigned int id;
-        string uuid;
-        string name;
+        kString uuid;
+        kString name;
 
-        vec3 position = vec3(0.0f, 0.0f, 0.0f);
-        quat rotation = quat(vec3(0.0f, 0.0f, 0.0f));
-        vec3 scale    = vec3(1.0f, 1.0f, 1.0f);
+        kVec3 position = kVec3(0.0f, 0.0f, 0.0f);
+        kQuat rotation = kQuat(kVec3(0.0f, 0.0f, 0.0f));
+        kVec3 scale    = kVec3(1.0f, 1.0f, 1.0f);
 
-        mat4 localTransform = mat4(1.0f); ///< Model matrix (local space).
-        mat4 worldTransform = mat4(1.0f); ///< Model matrix (world space).
+        kMat4 localTransform = kMat4(1.0f); ///< Model matrix (local space).
+        kMat4 worldTransform = kMat4(1.0f); ///< Model matrix (world space).
 
         kMaterial *material = nullptr;
 

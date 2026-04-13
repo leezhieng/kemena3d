@@ -9,6 +9,9 @@
 #include <iomanip>
 #include <cstdint>
 
+namespace kemena
+{
+
 class kMD5 {
 public:
     kMD5() { init(); }
@@ -216,5 +219,6 @@ inline void kMD5::transform(const uint8_t block[64]) {
     state[3] += d;
 }
 
+} // namespace kemena
 
 #endif // KMD5_H_INCLUDED

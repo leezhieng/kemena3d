@@ -62,7 +62,7 @@ namespace kemena
          * @brief Loads and sets the default ImGui font from a Windows resource.
          * @param resourceName Resource identifier for the .ttf font data.
          */
-        void loadDefaultFontFromResource(string resourceName);
+        void loadDefaultFontFromResource(kString resourceName);
 
         /** @brief Begins a new ImGui frame (call once per render frame). */
         void canvasStart();
@@ -78,23 +78,23 @@ namespace kemena
          * @param open   Optional pointer to a bool controlling visibility; nullptr to ignore.
          * @param flags  ImGuiWindowFlags combination.
          */
-        void windowStart(string title, bool *open = nullptr, ImGuiWindowFlags flags = 0);
+        void windowStart(kString title, bool *open = nullptr, ImGuiWindowFlags flags = 0);
 
         /** @brief Ends the current ImGui window. */
         void windowEnd();
 
         /** @brief Returns the inner size of the current window in pixels. */
-        vec2 getWindowSize();
+        kVec2 getWindowSize();
 
         /** @brief Returns the screen-space position of the current window. */
-        vec2 getWindowPos();
+        kVec2 getWindowPos();
 
         /**
          * @brief Sets the size of the next window before it is created.
          * @param size Desired window size in pixels.
          * @param cond Condition flag (ImGuiCond).
          */
-        void setNextWindowSize(vec2 size, ImGuiCond cond = 0);
+        void setNextWindowSize(kVec2 size, ImGuiCond cond = 0);
 
         /**
          * @brief Sets the position of the next window before it is created.
@@ -102,13 +102,13 @@ namespace kemena
          * @param cond  Condition flag.
          * @param pivot Normalised pivot point within the window.
          */
-        void setNextWindowPos(vec2 pos, ImGuiCond cond = 0, vec2 pivot = vec2(0, 0));
+        void setNextWindowPos(kVec2 pos, ImGuiCond cond = 0, kVec2 pivot = kVec2(0, 0));
 
         /**
          * @brief Sets the content size of the next window.
          * @param size Content region size in pixels.
          */
-        void setNextWindowContentSize(vec2 size);
+        void setNextWindowContentSize(kVec2 size);
 
         /**
          * @brief Sets the collapsed state of the next window.
@@ -146,7 +146,7 @@ namespace kemena
          * @brief Begins a full-window docking area.
          * @param name Unique dockspace identifier.
          */
-        void dockSpaceStart(string name);
+        void dockSpaceStart(kString name);
 
         /** @brief Ends the current dockspace (no-op; kept for symmetry). */
         void dockSpaceEnd();
@@ -163,7 +163,7 @@ namespace kemena
          * @param text Menu label.
          * @return true if the menu is open.
          */
-        bool menu(string text);
+        bool menu(kString text);
         /** @brief Ends the current menu. */
         void menuEnd();
 
@@ -175,7 +175,7 @@ namespace kemena
          * @param enabled  Whether the item is interactive.
          * @return true if the item was clicked.
          */
-        bool menuItem(string text, string shortcut = "", bool selected = false, bool enabled = true);
+        bool menuItem(kString text, kString shortcut = "", bool selected = false, bool enabled = true);
 
         /**
          * @brief Adds a toggleable menu item backed by a bool.
@@ -185,7 +185,7 @@ namespace kemena
          * @param enabled  Whether the item is interactive.
          * @return true if the item was clicked.
          */
-        bool menuItem(string text, string shortcut, bool *selected, bool enabled = true);
+        bool menuItem(kString text, kString shortcut, bool *selected, bool enabled = true);
 
         // ---- Layout ----
 
@@ -210,7 +210,7 @@ namespace kemena
          * @brief Draws a horizontal separator with a centred text label.
          * @param text Label to display.
          */
-        void separatorText(string text);
+        void separatorText(kString text);
 
         /** @brief Inserts a blank line in the layout. */
         void newLine();
@@ -231,13 +231,13 @@ namespace kemena
          * @brief Inserts an invisible widget of a given size for layout spacing.
          * @param size Size in pixels.
          */
-        void dummy(vec2 size);
+        void dummy(kVec2 size);
 
         /**
          * @brief Moves the cursor to an absolute position within the window.
          * @param pos Position relative to the window content region.
          */
-        void setCursorPos(vec2 pos);
+        void setCursorPos(kVec2 pos);
 
         /** @brief Sets the cursor X position. @param x X offset in pixels. */
         void setCursorPosX(float x);
@@ -245,15 +245,15 @@ namespace kemena
         void setCursorPosY(float y);
 
         /** @brief Returns the cursor position relative to the window. */
-        vec2 getCursorPos();
+        kVec2 getCursorPos();
         /** @brief Returns the cursor X position. */
         float getCursorPosX();
         /** @brief Returns the cursor Y position. */
         float getCursorPosY();
         /** @brief Returns the cursor position in screen coordinates. */
-        vec2 getCursorScreenPos();
+        kVec2 getCursorScreenPos();
         /** @brief Returns the available content region size in the current window. */
-        vec2 getContentRegionAvail();
+        kVec2 getContentRegionAvail();
 
         /**
          * @brief Sets the width of the next widget.
@@ -281,8 +281,8 @@ namespace kemena
 
         // ---- ID Stack ----
 
-        /** @brief Pushes a string ID onto the ID stack. @param id ID string. */
-        void pushId(string id);
+        /** @brief Pushes a kString ID onto the ID stack. @param id ID kString. */
+        void pushId(kString id);
         /** @brief Pushes an integer ID onto the ID stack. @param id Integer ID. */
         void pushId(int id);
         /** @brief Pushes a pointer ID onto the ID stack. @param ptr Pointer used as ID. */
@@ -297,7 +297,7 @@ namespace kemena
          * @param idx   ImGuiCol element to override.
          * @param color RGBA colour.
          */
-        void pushStyleColor(ImGuiCol idx, vec4 color);
+        void pushStyleColor(ImGuiCol idx, kVec4 color);
 
         /**
          * @brief Pushes a packed colour override.
@@ -320,11 +320,11 @@ namespace kemena
         void pushStyleVar(ImGuiStyleVar idx, float val);
 
         /**
-         * @brief Pushes a vec2 style variable override.
+         * @brief Pushes a kVec2 style variable override.
          * @param idx ImGuiStyleVar to override.
          * @param val New value.
          */
-        void pushStyleVar(ImGuiStyleVar idx, vec2 val);
+        void pushStyleVar(ImGuiStyleVar idx, kVec2 val);
 
         /**
          * @brief Pops style variable overrides from the stack.
@@ -342,30 +342,30 @@ namespace kemena
 
         // ---- Text ----
 
-        /** @brief Renders a plain text string. @param text Text to display. */
-        void text(string text);
+        /** @brief Renders a plain text kString. @param text Text to display. */
+        void text(kString text);
 
         /**
          * @brief Renders coloured text.
          * @param color RGBA text colour.
          * @param text  Text to display.
          */
-        void textColored(vec4 color, string text);
+        void textColored(kVec4 color, kString text);
 
         /** @brief Renders greyed-out (disabled) text. @param text Text to display. */
-        void textDisabled(string text);
+        void textDisabled(kString text);
         /** @brief Renders text that wraps at the wrap position. @param text Text. */
-        void textWrapped(string text);
+        void textWrapped(kString text);
 
         /**
          * @brief Renders a label/value pair aligned to the value column.
          * @param label Column label.
          * @param text  Value text.
          */
-        void labelText(string label, string text);
+        void labelText(kString label, kString text);
 
         /** @brief Renders text preceded by a bullet point. @param text Text. */
-        void bulletText(string text);
+        void bulletText(kString text);
         /** @brief Renders a bullet point without text. */
         void bullet();
 
@@ -377,14 +377,14 @@ namespace kemena
          * @param size Button size in pixels (0 = auto).
          * @return true if the button was clicked.
          */
-        bool button(string text, ivec2 size = ivec2(0, 0));
+        bool button(kString text, kIvec2 size = kIvec2(0, 0));
 
         /**
          * @brief Renders a small inline push-button.
          * @param text Label text.
          * @return true if clicked.
          */
-        bool smallButton(string text);
+        bool smallButton(kString text);
 
         /**
          * @brief Renders an invisible hit-area button.
@@ -393,7 +393,7 @@ namespace kemena
          * @param flags ImGuiButtonFlags.
          * @return true if clicked.
          */
-        bool invisibleButton(string id, vec2 size, ImGuiButtonFlags flags = 0);
+        bool invisibleButton(kString id, kVec2 size, ImGuiButtonFlags flags = 0);
 
         /**
          * @brief Renders an arrow-shaped button.
@@ -401,7 +401,7 @@ namespace kemena
          * @param dir Arrow direction (ImGuiDir).
          * @return true if clicked.
          */
-        bool arrowButton(string id, ImGuiDir dir);
+        bool arrowButton(kString id, ImGuiDir dir);
 
         /**
          * @brief Renders a radio button.
@@ -409,7 +409,7 @@ namespace kemena
          * @param active Whether this button is currently selected.
          * @return true if clicked.
          */
-        bool radioButton(string label, bool active);
+        bool radioButton(kString label, bool active);
 
         /**
          * @brief Renders a radio button linked to an integer variable.
@@ -418,7 +418,7 @@ namespace kemena
          * @param vButton Value this button represents.
          * @return true if clicked.
          */
-        bool radioButton(string label, int *v, int vButton);
+        bool radioButton(kString label, int *v, int vButton);
 
         // ---- Checkbox ----
 
@@ -428,7 +428,7 @@ namespace kemena
          * @param output Pointer to the bool state.
          * @return true if the state changed.
          */
-        bool checkbox(string text, bool *output);
+        bool checkbox(kString text, bool *output);
 
         /**
          * @brief Renders a checkbox backed by integer flags (signed).
@@ -437,7 +437,7 @@ namespace kemena
          * @param flagsValue Bit mask this checkbox controls.
          * @return true if the state changed.
          */
-        bool checkboxFlags(string label, int *flags, int flagsValue);
+        bool checkboxFlags(kString label, int *flags, int flagsValue);
 
         /**
          * @brief Renders a checkbox backed by integer flags (unsigned).
@@ -446,130 +446,130 @@ namespace kemena
          * @param flagsValue Bit mask this checkbox controls.
          * @return true if the state changed.
          */
-        bool checkboxFlags(string label, unsigned int *flags, unsigned int flagsValue);
+        bool checkboxFlags(kString label, unsigned int *flags, unsigned int flagsValue);
 
         // ---- Input Text ----
 
         /**
          * @brief Renders a single-line text input field.
          * @param label     Field label.
-         * @param value     Reference to the string being edited.
+         * @param value     Reference to the kString being edited.
          * @param maxLength Maximum character count (default 256).
          * @param flags     ImGuiInputTextFlags.
          * @return true if the value changed.
          */
-        bool inputText(string label, string &value, size_t maxLength = 256, ImGuiInputTextFlags flags = 0);
+        bool inputText(kString label, kString &value, size_t maxLength = 256, ImGuiInputTextFlags flags = 0);
 
         /**
          * @brief Renders a multi-line text input field.
          * @param label     Field label.
-         * @param value     Reference to the string being edited.
+         * @param value     Reference to the kString being edited.
          * @param maxLength Maximum character count.
          * @param size      Widget size (0 = auto).
          * @param flags     ImGuiInputTextFlags.
          * @return true if the value changed.
          */
-        bool inputTextMultiline(string label, string &value, size_t maxLength = 1024, vec2 size = vec2(0, 0), ImGuiInputTextFlags flags = 0);
+        bool inputTextMultiline(kString label, kString &value, size_t maxLength = 1024, kVec2 size = kVec2(0, 0), ImGuiInputTextFlags flags = 0);
 
         /**
          * @brief Renders a single-line text input with a placeholder hint.
          * @param label     Field label.
          * @param hint      Greyed placeholder text shown when empty.
-         * @param value     Reference to the string being edited.
+         * @param value     Reference to the kString being edited.
          * @param maxLength Maximum character count.
          * @param flags     ImGuiInputTextFlags.
          * @return true if the value changed.
          */
-        bool inputTextWithHint(string label, string hint, string &value, size_t maxLength = 256, ImGuiInputTextFlags flags = 0);
+        bool inputTextWithHint(kString label, kString hint, kString &value, size_t maxLength = 256, ImGuiInputTextFlags flags = 0);
 
         // ---- Input Scalar ----
 
         /** @brief Single float input. @return true if changed. */
-        bool inputFloat(string label, float *v, float step = 0.0f, float stepFast = 0.0f, string format = "%.3f", ImGuiInputTextFlags flags = 0);
+        bool inputFloat(kString label, float *v, float step = 0.0f, float stepFast = 0.0f, kString format = "%.3f", ImGuiInputTextFlags flags = 0);
         /** @brief Two-component float input. @return true if changed. */
-        bool inputFloat2(string label, float v[2], string format = "%.3f", ImGuiInputTextFlags flags = 0);
+        bool inputFloat2(kString label, float v[2], kString format = "%.3f", ImGuiInputTextFlags flags = 0);
         /** @brief Three-component float input. @return true if changed. */
-        bool inputFloat3(string label, float v[3], string format = "%.3f", ImGuiInputTextFlags flags = 0);
+        bool inputFloat3(kString label, float v[3], kString format = "%.3f", ImGuiInputTextFlags flags = 0);
         /** @brief Four-component float input. @return true if changed. */
-        bool inputFloat4(string label, float v[4], string format = "%.3f", ImGuiInputTextFlags flags = 0);
+        bool inputFloat4(kString label, float v[4], kString format = "%.3f", ImGuiInputTextFlags flags = 0);
         /** @brief Single integer input. @return true if changed. */
-        bool inputInt(string label, int *v, int step = 1, int stepFast = 100, ImGuiInputTextFlags flags = 0);
+        bool inputInt(kString label, int *v, int step = 1, int stepFast = 100, ImGuiInputTextFlags flags = 0);
         /** @brief Two-component integer input. @return true if changed. */
-        bool inputInt2(string label, int v[2], ImGuiInputTextFlags flags = 0);
+        bool inputInt2(kString label, int v[2], ImGuiInputTextFlags flags = 0);
         /** @brief Three-component integer input. @return true if changed. */
-        bool inputInt3(string label, int v[3], ImGuiInputTextFlags flags = 0);
+        bool inputInt3(kString label, int v[3], ImGuiInputTextFlags flags = 0);
         /** @brief Four-component integer input. @return true if changed. */
-        bool inputInt4(string label, int v[4], ImGuiInputTextFlags flags = 0);
+        bool inputInt4(kString label, int v[4], ImGuiInputTextFlags flags = 0);
         /** @brief Double-precision float input. @return true if changed. */
-        bool inputDouble(string label, double *v, double step = 0.0, double stepFast = 0.0, string format = "%.6f", ImGuiInputTextFlags flags = 0);
+        bool inputDouble(kString label, double *v, double step = 0.0, double stepFast = 0.0, kString format = "%.6f", ImGuiInputTextFlags flags = 0);
 
         // ---- Drag ----
 
         /** @brief Drag widget for a single float. @return true if changed. */
-        bool dragFloat(string label, float *v, float speed = 1.0f, float min = 0.0f, float max = 0.0f, string format = "%.3f", ImGuiSliderFlags flags = 0);
+        bool dragFloat(kString label, float *v, float speed = 1.0f, float min = 0.0f, float max = 0.0f, kString format = "%.3f", ImGuiSliderFlags flags = 0);
         /** @brief Drag widget for two floats. @return true if changed. */
-        bool dragFloat2(string label, float v[2], float speed = 1.0f, float min = 0.0f, float max = 0.0f, string format = "%.3f", ImGuiSliderFlags flags = 0);
+        bool dragFloat2(kString label, float v[2], float speed = 1.0f, float min = 0.0f, float max = 0.0f, kString format = "%.3f", ImGuiSliderFlags flags = 0);
         /** @brief Drag widget for three floats. @return true if changed. */
-        bool dragFloat3(string label, float v[3], float speed = 1.0f, float min = 0.0f, float max = 0.0f, string format = "%.3f", ImGuiSliderFlags flags = 0);
+        bool dragFloat3(kString label, float v[3], float speed = 1.0f, float min = 0.0f, float max = 0.0f, kString format = "%.3f", ImGuiSliderFlags flags = 0);
         /** @brief Drag widget for four floats. @return true if changed. */
-        bool dragFloat4(string label, float v[4], float speed = 1.0f, float min = 0.0f, float max = 0.0f, string format = "%.3f", ImGuiSliderFlags flags = 0);
+        bool dragFloat4(kString label, float v[4], float speed = 1.0f, float min = 0.0f, float max = 0.0f, kString format = "%.3f", ImGuiSliderFlags flags = 0);
         /** @brief Drag widget for a single integer. @return true if changed. */
-        bool dragInt(string label, int *v, float speed = 1.0f, int min = 0, int max = 0, string format = "%d", ImGuiSliderFlags flags = 0);
+        bool dragInt(kString label, int *v, float speed = 1.0f, int min = 0, int max = 0, kString format = "%d", ImGuiSliderFlags flags = 0);
         /** @brief Drag widget for two integers. @return true if changed. */
-        bool dragInt2(string label, int v[2], float speed = 1.0f, int min = 0, int max = 0, string format = "%d", ImGuiSliderFlags flags = 0);
+        bool dragInt2(kString label, int v[2], float speed = 1.0f, int min = 0, int max = 0, kString format = "%d", ImGuiSliderFlags flags = 0);
         /** @brief Drag widget for three integers. @return true if changed. */
-        bool dragInt3(string label, int v[3], float speed = 1.0f, int min = 0, int max = 0, string format = "%d", ImGuiSliderFlags flags = 0);
+        bool dragInt3(kString label, int v[3], float speed = 1.0f, int min = 0, int max = 0, kString format = "%d", ImGuiSliderFlags flags = 0);
         /** @brief Drag widget for four integers. @return true if changed. */
-        bool dragInt4(string label, int v[4], float speed = 1.0f, int min = 0, int max = 0, string format = "%d", ImGuiSliderFlags flags = 0);
+        bool dragInt4(kString label, int v[4], float speed = 1.0f, int min = 0, int max = 0, kString format = "%d", ImGuiSliderFlags flags = 0);
 
         /**
          * @brief Drag widget for a float range (min + max pair).
          * @return true if either value changed.
          */
-        bool dragFloatRange2(string label, float *vCurrentMin, float *vCurrentMax, float speed = 1.0f, float min = 0.0f, float max = 0.0f, string format = "%.3f", string formatMax = "", ImGuiSliderFlags flags = 0);
+        bool dragFloatRange2(kString label, float *vCurrentMin, float *vCurrentMax, float speed = 1.0f, float min = 0.0f, float max = 0.0f, kString format = "%.3f", kString formatMax = "", ImGuiSliderFlags flags = 0);
 
         /**
          * @brief Drag widget for an integer range (min + max pair).
          * @return true if either value changed.
          */
-        bool dragIntRange2(string label, int *vCurrentMin, int *vCurrentMax, float speed = 1.0f, int min = 0, int max = 0, string format = "%d", string formatMax = "", ImGuiSliderFlags flags = 0);
+        bool dragIntRange2(kString label, int *vCurrentMin, int *vCurrentMax, float speed = 1.0f, int min = 0, int max = 0, kString format = "%d", kString formatMax = "", ImGuiSliderFlags flags = 0);
 
         // ---- Slider ----
 
         /** @brief Horizontal slider for a single float. @return true if changed. */
-        bool sliderFloat(string label, float *v, float min, float max, string format = "%.3f", ImGuiSliderFlags flags = 0);
+        bool sliderFloat(kString label, float *v, float min, float max, kString format = "%.3f", ImGuiSliderFlags flags = 0);
         /** @brief Horizontal slider for two floats. @return true if changed. */
-        bool sliderFloat2(string label, float v[2], float min, float max, string format = "%.3f", ImGuiSliderFlags flags = 0);
+        bool sliderFloat2(kString label, float v[2], float min, float max, kString format = "%.3f", ImGuiSliderFlags flags = 0);
         /** @brief Horizontal slider for three floats. @return true if changed. */
-        bool sliderFloat3(string label, float v[3], float min, float max, string format = "%.3f", ImGuiSliderFlags flags = 0);
+        bool sliderFloat3(kString label, float v[3], float min, float max, kString format = "%.3f", ImGuiSliderFlags flags = 0);
         /** @brief Horizontal slider for four floats. @return true if changed. */
-        bool sliderFloat4(string label, float v[4], float min, float max, string format = "%.3f", ImGuiSliderFlags flags = 0);
+        bool sliderFloat4(kString label, float v[4], float min, float max, kString format = "%.3f", ImGuiSliderFlags flags = 0);
 
         /**
          * @brief Horizontal slider that displays and edits an angle in degrees.
          * @return true if changed.
          */
-        bool sliderAngle(string label, float *vRad, float vDegreesMin = -360.0f, float vDegreesMax = 360.0f, string format = "%.0f deg", ImGuiSliderFlags flags = 0);
+        bool sliderAngle(kString label, float *vRad, float vDegreesMin = -360.0f, float vDegreesMax = 360.0f, kString format = "%.0f deg", ImGuiSliderFlags flags = 0);
 
         /** @brief Horizontal slider for a single integer. @return true if changed. */
-        bool sliderInt(string label, int *v, int min, int max, string format = "%d", ImGuiSliderFlags flags = 0);
+        bool sliderInt(kString label, int *v, int min, int max, kString format = "%d", ImGuiSliderFlags flags = 0);
         /** @brief Horizontal slider for two integers. @return true if changed. */
-        bool sliderInt2(string label, int v[2], int min, int max, string format = "%d", ImGuiSliderFlags flags = 0);
+        bool sliderInt2(kString label, int v[2], int min, int max, kString format = "%d", ImGuiSliderFlags flags = 0);
         /** @brief Horizontal slider for three integers. @return true if changed. */
-        bool sliderInt3(string label, int v[3], int min, int max, string format = "%d", ImGuiSliderFlags flags = 0);
+        bool sliderInt3(kString label, int v[3], int min, int max, kString format = "%d", ImGuiSliderFlags flags = 0);
         /** @brief Horizontal slider for four integers. @return true if changed. */
-        bool sliderInt4(string label, int v[4], int min, int max, string format = "%d", ImGuiSliderFlags flags = 0);
+        bool sliderInt4(kString label, int v[4], int min, int max, kString format = "%d", ImGuiSliderFlags flags = 0);
 
         // ---- Color ----
 
         /** @brief RGB colour editor widget. @return true if changed. */
-        bool colorEdit3(string label, float col[3], ImGuiColorEditFlags flags = 0);
+        bool colorEdit3(kString label, float col[3], ImGuiColorEditFlags flags = 0);
         /** @brief RGBA colour editor widget. @return true if changed. */
-        bool colorEdit4(string label, float col[4], ImGuiColorEditFlags flags = 0);
+        bool colorEdit4(kString label, float col[4], ImGuiColorEditFlags flags = 0);
         /** @brief RGB colour picker widget. @return true if changed. */
-        bool colorPicker3(string label, float col[3], ImGuiColorEditFlags flags = 0);
+        bool colorPicker3(kString label, float col[3], ImGuiColorEditFlags flags = 0);
         /** @brief RGBA colour picker widget. @return true if changed. */
-        bool colorPicker4(string label, float col[4], ImGuiColorEditFlags flags = 0);
+        bool colorPicker4(kString label, float col[4], ImGuiColorEditFlags flags = 0);
 
         /**
          * @brief Renders a small coloured square button.
@@ -579,7 +579,7 @@ namespace kemena
          * @param size   Button size (0 = default).
          * @return true if clicked.
          */
-        bool colorButton(string descId, vec4 col, ImGuiColorEditFlags flags = 0, vec2 size = vec2(0, 0));
+        bool colorButton(kString descId, kVec4 col, ImGuiColorEditFlags flags = 0, kVec2 size = kVec2(0, 0));
 
         /**
          * @brief Sets global colour edit display options.
@@ -597,7 +597,7 @@ namespace kemena
          * @param popupMaxHeightInItems Maximum visible items in the popup (-1 = auto).
          * @return true if the selection changed.
          */
-        bool combo(string label, int *currentItem, std::vector<string> items, int popupMaxHeightInItems = -1);
+        bool combo(kString label, int *currentItem, std::vector<kString> items, int popupMaxHeightInItems = -1);
 
         /**
          * @brief Scrollable list box.
@@ -607,7 +607,7 @@ namespace kemena
          * @param heightInItems Visible row count (-1 = auto).
          * @return true if the selection changed.
          */
-        bool listBox(string label, int *currentItem, std::vector<string> items, int heightInItems = -1);
+        bool listBox(kString label, int *currentItem, std::vector<kString> items, int heightInItems = -1);
 
         /**
          * @brief Selectable row (state passed by value).
@@ -617,7 +617,7 @@ namespace kemena
          * @param size     Row size (0 = fill available).
          * @return true if clicked.
          */
-        bool selectable(string label, bool selected = false, ImGuiSelectableFlags flags = 0, vec2 size = vec2(0, 0));
+        bool selectable(kString label, bool selected = false, ImGuiSelectableFlags flags = 0, kVec2 size = kVec2(0, 0));
 
         /**
          * @brief Selectable row (state passed by pointer).
@@ -627,7 +627,7 @@ namespace kemena
          * @param size      Row size.
          * @return true if clicked.
          */
-        bool selectable(string label, bool *pSelected, ImGuiSelectableFlags flags = 0, vec2 size = vec2(0, 0));
+        bool selectable(kString label, bool *pSelected, ImGuiSelectableFlags flags = 0, kVec2 size = kVec2(0, 0));
 
         // ---- Tree / Collapsing ----
 
@@ -636,16 +636,16 @@ namespace kemena
          * @param label Node label.
          * @return true if the node is expanded.
          */
-        bool treeStart(string label);
+        bool treeStart(kString label);
 
         /**
          * @brief Begins a tree node with explicit ID and label.
-         * @param id    Unique ID string.
+         * @param id    Unique ID kString.
          * @param label Display label (empty = use id).
          * @param flags ImGuiTreeNodeFlags.
          * @return true if the node is expanded.
          */
-        bool treeStartEx(string id, string label = "", ImGuiTreeNodeFlags flags = 0);
+        bool treeStartEx(kString id, kString label = "", ImGuiTreeNodeFlags flags = 0);
 
         /** @brief Ends the current tree node (use when treeStart returned true). */
         void treeEnd();
@@ -658,7 +658,7 @@ namespace kemena
          * @param flags ImGuiTreeNodeFlags.
          * @return true if the section is expanded.
          */
-        bool collapsingHeader(string label, ImGuiTreeNodeFlags flags = 0);
+        bool collapsingHeader(kString label, ImGuiTreeNodeFlags flags = 0);
 
         /**
          * @brief Collapsible section header with a close button.
@@ -667,7 +667,7 @@ namespace kemena
          * @param flags   ImGuiTreeNodeFlags.
          * @return true if the section is expanded.
          */
-        bool collapsingHeader(string label, bool *visible, ImGuiTreeNodeFlags flags = 0);
+        bool collapsingHeader(kString label, bool *visible, ImGuiTreeNodeFlags flags = 0);
 
         /**
          * @brief Sets the open state of the next tree node.
@@ -685,7 +685,7 @@ namespace kemena
          * @param uv0       Top-left UV coordinate.
          * @param uv1       Bottom-right UV coordinate.
          */
-        void image(GLuint textureId, vec2 size, vec2 uv0 = vec2(0, 0), vec2 uv1 = vec2(1, 1));
+        void image(GLuint textureId, kVec2 size, kVec2 uv0 = kVec2(0, 0), kVec2 uv1 = kVec2(1, 1));
 
         /**
          * @brief Renders a GPU texture as a clickable image button.
@@ -696,7 +696,7 @@ namespace kemena
          * @param uv1       Bottom-right UV coordinate.
          * @return true if the button was clicked.
          */
-        bool imageButton(string id, GLuint textureId, vec2 size, vec2 uv0 = vec2(0, 0), vec2 uv1 = vec2(1, 1));
+        bool imageButton(kString id, GLuint textureId, kVec2 size, kVec2 uv0 = kVec2(0, 0), kVec2 uv1 = kVec2(1, 1));
 
         // ---- Progress ----
 
@@ -706,7 +706,7 @@ namespace kemena
          * @param size     Bar size (-FLT_MIN width = fill available).
          * @param overlay  Optional text drawn over the bar.
          */
-        void progressBar(float fraction, vec2 size = vec2(-FLT_MIN, 0), string overlay = "");
+        void progressBar(float fraction, kVec2 size = kVec2(-FLT_MIN, 0), kString overlay = "");
 
         // ---- Tooltip ----
 
@@ -714,7 +714,7 @@ namespace kemena
          * @brief Sets a tooltip shown when the last item is hovered.
          * @param text Tooltip text.
          */
-        void setItemTooltip(string text);
+        void setItemTooltip(kString text);
 
         /** @brief Begins a custom tooltip popup. */
         void beginTooltip();
@@ -728,7 +728,7 @@ namespace kemena
          * @param id    Popup identifier.
          * @param flags ImGuiPopupFlags.
          */
-        void openPopup(string id, ImGuiPopupFlags flags = 0);
+        void openPopup(kString id, ImGuiPopupFlags flags = 0);
 
         /**
          * @brief Begins rendering a named popup.
@@ -736,7 +736,7 @@ namespace kemena
          * @param flags ImGuiWindowFlags.
          * @return true if the popup is open.
          */
-        bool popupStart(string id, ImGuiWindowFlags flags = 0);
+        bool popupStart(kString id, ImGuiWindowFlags flags = 0);
 
         /** @brief Ends the current popup. */
         void popupEnd();
@@ -748,7 +748,7 @@ namespace kemena
          * @param flags ImGuiWindowFlags.
          * @return true while the modal is open.
          */
-        bool popupModal(string name, bool *open = nullptr, ImGuiWindowFlags flags = 0);
+        bool popupModal(kString name, bool *open = nullptr, ImGuiWindowFlags flags = 0);
 
         /**
          * @brief Begins a context menu popup on right-click of the last item.
@@ -756,7 +756,7 @@ namespace kemena
          * @param flags ImGuiPopupFlags.
          * @return true if the context menu opened.
          */
-        bool popupContextItemStart(string id = "", ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight);
+        bool popupContextItemStart(kString id = "", ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight);
 
         /**
          * @brief Begins a context menu popup on right-click of the current window.
@@ -764,7 +764,7 @@ namespace kemena
          * @param flags ImGuiPopupFlags.
          * @return true if the context menu opened.
          */
-        bool popupContextWindowStart(string id = "", ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight);
+        bool popupContextWindowStart(kString id = "", ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight);
 
         /**
          * @brief Returns whether a named popup is currently open.
@@ -772,7 +772,7 @@ namespace kemena
          * @param flags ImGuiPopupFlags.
          * @return true if open.
          */
-        bool isPopupOpen(string id, ImGuiPopupFlags flags = 0);
+        bool isPopupOpen(kString id, ImGuiPopupFlags flags = 0);
 
         /** @brief Closes the currently open popup. */
         void closeCurrentPopup();
@@ -785,7 +785,7 @@ namespace kemena
          * @param flags ImGuiTabBarFlags.
          * @return true if the tab bar is visible.
          */
-        bool tabBarStart(string id, ImGuiTabBarFlags flags = 0);
+        bool tabBarStart(kString id, ImGuiTabBarFlags flags = 0);
         /** @brief Ends the current tab bar. */
         void tabBarEnd();
 
@@ -796,7 +796,7 @@ namespace kemena
          * @param flags ImGuiTabItemFlags.
          * @return true if this tab is active.
          */
-        bool tabItemStart(string label, bool *open = nullptr, ImGuiTabItemFlags flags = 0);
+        bool tabItemStart(kString label, bool *open = nullptr, ImGuiTabItemFlags flags = 0);
         /** @brief Ends the current tab item. */
         void tabItemEnd();
 
@@ -804,7 +804,7 @@ namespace kemena
          * @brief Marks a tab (or docked window) as closed programmatically.
          * @param tabOrDockedWindowLabel Label of the tab or window to close.
          */
-        void setTabItemClosed(string tabOrDockedWindowLabel);
+        void setTabItemClosed(kString tabOrDockedWindowLabel);
 
         // ---- Tables ----
 
@@ -817,7 +817,7 @@ namespace kemena
          * @param innerWidth Inner horizontal scrolling width.
          * @return true if the table is visible.
          */
-        bool tableStart(string id, int columns, ImGuiTableFlags flags = 0, vec2 outerSize = vec2(0, 0), float innerWidth = 0.0f);
+        bool tableStart(kString id, int columns, ImGuiTableFlags flags = 0, kVec2 outerSize = kVec2(0, 0), float innerWidth = 0.0f);
         /** @brief Ends the current table. */
         void tableEnd();
 
@@ -847,7 +847,7 @@ namespace kemena
          * @param flags              ImGuiTableColumnFlags.
          * @param initWidthOrWeight  Initial width (fixed) or weight (stretch).
          */
-        void tableSetupColumn(string label, ImGuiTableColumnFlags flags = 0, float initWidthOrWeight = 0.0f);
+        void tableSetupColumn(kString label, ImGuiTableColumnFlags flags = 0, float initWidthOrWeight = 0.0f);
 
         /**
          * @brief Freezes leading columns/rows so they remain visible while scrolling.
@@ -863,7 +863,7 @@ namespace kemena
          * @brief Renders a single header cell.
          * @param label Header cell label.
          */
-        void tableHeader(string label);
+        void tableHeader(kString label);
 
         // ---- Scroll ----
 
@@ -919,11 +919,11 @@ namespace kemena
         /** @brief Returns whether any widget currently has focus. */
         bool isAnyItemFocused();
         /** @brief Returns the bounding box minimum of the last item (screen space). */
-        vec2 getItemRectMin();
+        kVec2 getItemRectMin();
         /** @brief Returns the bounding box maximum of the last item (screen space). */
-        vec2 getItemRectMax();
+        kVec2 getItemRectMax();
         /** @brief Returns the bounding box size of the last item. */
-        vec2 getItemRectSize();
+        kVec2 getItemRectSize();
 
         // ---- Mouse ----
 
@@ -941,11 +941,11 @@ namespace kemena
          * @param rMax Bottom-right corner.
          * @param clip Whether to clip by the current window's rect.
          */
-        bool isMouseHoveringRect(vec2 rMin, vec2 rMax, bool clip = true);
+        bool isMouseHoveringRect(kVec2 rMin, kVec2 rMax, bool clip = true);
         /** @brief Returns the current mouse position in screen coordinates. */
-        vec2 getMousePos();
+        kVec2 getMousePos();
         /** @brief Returns the mouse position delta since the last frame. */
-        vec2 getMouseDelta();
+        kVec2 getMouseDelta();
         /** @brief Returns the vertical mouse wheel delta. */
         float getMouseWheel();
 

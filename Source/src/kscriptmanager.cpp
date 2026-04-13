@@ -27,10 +27,10 @@ namespace kemena
     {
     }
 
-    kScript kScriptManager::loadScript(string fileName)
+    kScript kScriptManager::loadScript(kString fileName)
     {
         // Auto generate module name by removing ".as"
-        string moduleName = fileName;
+        kString moduleName = fileName;
         if (fileName.substr(moduleName.size() - 3, moduleName.size()) == ".as")
             moduleName = moduleName.substr(0, moduleName.size() - 3);
 
@@ -88,7 +88,7 @@ namespace kemena
         return newScript;
     }
 
-    void kScriptManager::registerGlobalFunction(string declaration, asSFuncPtr func)
+    void kScriptManager::registerGlobalFunction(kString declaration, asSFuncPtr func)
     {
         // Register the function that we want the scripts to call
         int result = engine->RegisterGlobalFunction(declaration.c_str(), func, asCALL_CDECL);

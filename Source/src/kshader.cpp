@@ -16,9 +16,9 @@ namespace kemena
         }
     }
 
-    string kShader::readFile(const string filePath)
+    kString kShader::readFile(const kString filePath)
     {
-        string content;
+        kString content;
         std::ifstream fileStream(filePath.c_str(), std::ios::in);
 
         if (!fileStream.is_open())
@@ -27,7 +27,7 @@ namespace kemena
             return "";
         }
 
-        string line = "";
+        kString line = "";
         while (!fileStream.eof())
         {
             std::getline(fileStream, line);
@@ -38,11 +38,11 @@ namespace kemena
         return content;
     }
 
-    void kShader::loadShadersFile(const string vertexShaderPath, const string fragmentShaderPath)
+    void kShader::loadShadersFile(const kString vertexShaderPath, const kString fragmentShaderPath)
     {
         const char *vertSrc = nullptr;
         const char *fragSrc = nullptr;
-        string vertStr, fragStr;
+        kString vertStr, fragStr;
 
         if (!vertexShaderPath.empty())
         {
@@ -83,42 +83,42 @@ namespace kemena
         return shaderProgram;
     }
 
-    void kShader::setValue(string name, std::vector<mat4> value)
+    void kShader::setValue(kString name, std::vector<kMat4> value)
     {
         kDriver::getCurrent()->setUniformMat4Array(shaderProgram, name, value);
     }
 
-    void kShader::setValue(string name, mat4 value)
+    void kShader::setValue(kString name, kMat4 value)
     {
         kDriver::getCurrent()->setUniformMat4(shaderProgram, name, value);
     }
 
-    void kShader::setValue(string name, vec3 value)
+    void kShader::setValue(kString name, kVec3 value)
     {
         kDriver::getCurrent()->setUniformVec3(shaderProgram, name, value);
     }
 
-    void kShader::setValue(string name, vec2 value)
+    void kShader::setValue(kString name, kVec2 value)
     {
         kDriver::getCurrent()->setUniformVec2(shaderProgram, name, value);
     }
 
-    void kShader::setValue(string name, float value)
+    void kShader::setValue(kString name, float value)
     {
         kDriver::getCurrent()->setUniformFloat(shaderProgram, name, value);
     }
 
-    void kShader::setValue(string name, int value)
+    void kShader::setValue(kString name, int value)
     {
         kDriver::getCurrent()->setUniformInt(shaderProgram, name, value);
     }
 
-    void kShader::setValue(string name, unsigned int value)
+    void kShader::setValue(kString name, unsigned int value)
     {
         kDriver::getCurrent()->setUniformUint(shaderProgram, name, value);
     }
 
-    void kShader::setValue(string name, bool value)
+    void kShader::setValue(kString name, bool value)
     {
         kDriver::getCurrent()->setUniformBool(shaderProgram, name, value);
     }

@@ -80,7 +80,7 @@ namespace kemena
          * @param name    Application name.
          * @param version Application version number.
          */
-        void setEngineInfo(const string name, uint32_t version);
+        void setEngineInfo(const kString name, uint32_t version);
 
         /**
          * @brief Returns the window the renderer was initialised with.
@@ -124,7 +124,7 @@ namespace kemena
          * @brief Returns the background clear colour.
          * @return RGBA colour in linear space.
          */
-        vec4 getClearColor();
+        kVec4 getClearColor();
 
         /**
          * @brief Sets the background clear colour.
@@ -133,7 +133,7 @@ namespace kemena
          * before being stored.
          * @param newColor sRGB RGBA colour.
          */
-        void setClearColor(vec4 newColor);
+        void setClearColor(kVec4 newColor);
 
         /**
          * @brief Enables or disables the off-screen screen buffer (post-process FBO).
@@ -231,7 +231,7 @@ namespace kemena
          * @param i Object ID.
          * @return RGB colour with each channel in [0, 255].
          */
-        vec3 idToRgb(unsigned int i);
+        kVec3 idToRgb(unsigned int i);
 
         /**
          * @brief Converts an RGB colour read back from the GPU to an object ID.
@@ -244,14 +244,14 @@ namespace kemena
 
     protected:
     private:
-        string engineName;           ///< Optional application name for diagnostics.
+        kString engineName;           ///< Optional application name for diagnostics.
         uint32_t engineVersion = 0;  ///< Optional application version for diagnostics.
         kWindow *appWindow = nullptr;
 
         kRendererType renderType;
         kDriver *driver = nullptr;
 
-        vec4 clearColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        kVec4 clearColor = kVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         /// Used to detect same-frame animation updates.
         int frameId = 0;
@@ -279,7 +279,7 @@ namespace kemena
          * @param deltaTime        Frame delta time in seconds.
          */
         void renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *rootNode,
-                                    mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection,
+                                    kMat4 lightSpaceMatrix, kMat4 lightView, kMat4 lightProjection,
                                     bool transparent = false, float deltaTime = 0.0f);
 
         // Screen FBO
@@ -297,7 +297,7 @@ namespace kemena
         uint32_t shadowFbo = 0;
         const unsigned int shadowWidth = 1024, shadowHeight = 1024;
         uint32_t shadowFboTex = 0;
-        mat4 lightSpaceMatrix;
+        kMat4 lightSpaceMatrix;
 
         // Auto exposure
         bool enableAutoExposure = false;

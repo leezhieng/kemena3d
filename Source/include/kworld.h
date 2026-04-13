@@ -44,7 +44,7 @@ namespace kemena
      *   kWorld world;
      *   world.setAssetManager(&assetMgr);
      *   kScene *scene = world.createScene("Main");
-     *   kCamera *cam  = world.addCamera(vec3(0,0,5));
+     *   kCamera *cam  = world.addCamera(kVec3(0,0,5));
      *   world.setMainCamera(cam);
      * @endcode
      */
@@ -56,15 +56,15 @@ namespace kemena
 
         /**
          * @brief Returns the UUID of this world.
-         * @return UUID v4 string.
+         * @return UUID v4 kString.
          */
-        string getUuid();
+        kString getUuid();
 
         /**
          * @brief Sets the UUID of this world.
-         * @param newUuid UUID v4 string.
+         * @param newUuid UUID v4 kString.
          */
-        void setUuid(string newUuid);
+        void setUuid(kString newUuid);
 
         /**
          * @brief Creates a new scene and registers it in this world.
@@ -72,14 +72,14 @@ namespace kemena
          * @param sceneUuid Optional UUID; auto-generated if empty.
          * @return Pointer to the newly created kScene.
          */
-        kScene *createScene(string sceneName, string sceneUuid = "");
+        kScene *createScene(kString sceneName, kString sceneUuid = "");
 
         /**
          * @brief Registers an existing scene in this world.
          * @param scene     Pre-constructed scene to add.
          * @param sceneUuid Optional UUID override.
          */
-        void addScene(kScene *scene, string sceneUuid = "");
+        void addScene(kScene *scene, kString sceneUuid = "");
 
         /**
          * @brief Creates and registers a camera in this world.
@@ -89,14 +89,14 @@ namespace kemena
          * @param objectUuid Optional UUID for the camera node.
          * @return Pointer to the newly created kCamera.
          */
-        kCamera *addCamera(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 lookAt = vec3(0.0f, 0.0f, 0.0f), kCameraType type = kCameraType::CAMERA_TYPE_FREE, string objectUuid = "");
+        kCamera *addCamera(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 lookAt = kVec3(0.0f, 0.0f, 0.0f), kCameraType type = kCameraType::CAMERA_TYPE_FREE, kString objectUuid = "");
 
         /**
          * @brief Registers an existing camera in this world.
          * @param camera     Pre-constructed camera to add.
          * @param objectUuid Optional UUID override.
          */
-        void addCamera(kCamera *camera, string objectUuid = "");
+        void addCamera(kCamera *camera, kString objectUuid = "");
 
         /**
          * @brief Returns the camera used by the renderer for the main view.
@@ -156,7 +156,7 @@ namespace kemena
 
         kCamera *mainCamera = nullptr; ///< Active render camera.
 
-        string uuid; ///< World UUID.
+        kString uuid; ///< World UUID.
     };
 }
 

@@ -11,7 +11,7 @@ namespace kemena
     {
     }
 
-    bool kWindow::init(int width, int height, string title, bool maximized, kWindowType type, void *nativeHandle)
+    bool kWindow::init(int width, int height, kString title, bool maximized, kWindowType type, void *nativeHandle)
     {
         windowWidth = width;
         windowHeight = height;
@@ -83,12 +83,12 @@ namespace kemena
         return windowHeight;
     }
 
-    string kWindow::getWindowTitle()
+    kString kWindow::getWindowTitle()
     {
         return windowTitle;
     }
 	
-	void kWindow::setWindowTitle(string newTitle)
+	void kWindow::setWindowTitle(kString newTitle)
 	{
 		windowTitle = newTitle;
 		SDL_SetWindowTitle(sdlWindow, newTitle.c_str());

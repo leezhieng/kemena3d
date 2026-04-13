@@ -30,7 +30,7 @@ namespace kemena
      */
     struct KEMENA3D_API kScriptFunc
     {
-        string             decl;   ///< AngelScript function declaration string.
+        kString             decl;   ///< AngelScript function declaration kString.
         asIScriptFunction *asFunc; ///< Compiled AngelScript function handle.
         asSFuncPtr         cFunc;  ///< Native C function pointer for re-registration.
     };
@@ -39,17 +39,17 @@ namespace kemena
      * @brief Represents one loaded AngelScript module (script file).
      *
      * Holds all AngelScript objects needed to compile and execute a single
-     * script file.  Call call() to invoke a function by its declaration string,
+     * script file.  Call call() to invoke a function by its declaration kString,
      * or run() to execute all functions in the module sequentially.
      */
     struct KEMENA3D_API kScript
     {
-        string uuid;             ///< Script node UUID.
+        kString uuid;             ///< Script node UUID.
         bool   isActive = true;  ///< Whether the script is executed each frame.
-        string checksum;         ///< File checksum used to detect changes.
+        kString checksum;         ///< File checksum used to detect changes.
 
-        string             fileName;   ///< Source file path.
-        string             moduleName; ///< AngelScript module identifier.
+        kString             fileName;   ///< Source file path.
+        kString             moduleName; ///< AngelScript module identifier.
         asIScriptEngine   *engine;     ///< Shared script engine.
         asIScriptContext  *context;    ///< Execution context for this script.
         asIScriptModule   *module;     ///< Compiled module.
@@ -59,7 +59,7 @@ namespace kemena
          * @brief Calls a single function by its AngelScript declaration.
          * @param declaration Full function declaration, e.g. @c "void onUpdate()".
          */
-        void call(string declaration)
+        void call(kString declaration)
         {
             context->Prepare(module->GetFunctionByDecl(declaration.c_str()));
 
@@ -114,14 +114,14 @@ namespace kemena
     /**
      * @brief Manages an AngelScript engine instance and a list of loaded scripts.
      *
-     * Initialises the AngelScript engine, registers standard string support,
+     * Initialises the AngelScript engine, registers standard kString support,
      * and provides methods to load scripts from disk and register native C
      * functions that can be called from scripts.
      *
      * Example:
      * @code
      *   kScriptManager mgr;
-     *   mgr.registerGlobalFunction("void print(string)", FUNCTION(myPrint));
+     *   mgr.registerGlobalFunction("void print(kString)", FUNCTION(myPrint));
      *   kScript s = mgr.loadScript("game.as");
      *   s.call("void onStart()");
      * @endcode
@@ -137,14 +137,14 @@ namespace kemena
          * @param fileName Path to the AngelScript source file (.as).
          * @return kScript descriptor ready for execution.
          */
-        kScript loadScript(string fileName);
+        kScript loadScript(kString fileName);
 
         /**
          * @brief Registers a native C function as a global callable from scripts.
-         * @param declaration AngelScript function declaration string.
+         * @param declaration AngelScript function declaration kString.
          * @param func        Pointer to the native function (use the FUNCTION macro).
          */
-        void registerGlobalFunction(string declaration, asSFuncPtr func);
+        void registerGlobalFunction(kString declaration, asSFuncPtr func);
 
         /**
          * @brief Executes all functions in all loaded scripts sequentially.

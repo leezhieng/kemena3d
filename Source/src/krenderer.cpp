@@ -65,7 +65,7 @@ namespace kemena
         driver = nullptr;
     }
 
-    void kRenderer::setEngineInfo(const string name, uint32_t version)
+    void kRenderer::setEngineInfo(const kString name, uint32_t version)
     {
         engineName = name;
         engineVersion = version;
@@ -116,12 +116,12 @@ namespace kemena
 
                     shadowShader->use();
 
-                    vec3 lightPos = currentLight->getPosition();
-                    vec3 lightDir = glm::normalize(currentLight->getDirection());
+                    kVec3 lightPos = currentLight->getPosition();
+                    kVec3 lightDir = glm::normalize(currentLight->getDirection());
 
                     float near_plane = 1.0f, far_plane = 20.0f;
-                    mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-                    mat4 lightView = glm::lookAt(lightPos, lightPos + lightDir, vec3(0.0f, 1.0f, 0.0f));
+                    kMat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+                    kMat4 lightView = glm::lookAt(lightPos, lightPos + lightDir, kVec3(0.0f, 1.0f, 0.0f));
 
                     lightSpaceMatrix = lightProjection * lightView;
 
@@ -166,7 +166,7 @@ namespace kemena
                     driver->setDepthWrite(false);
                     driver->setCullFace(false);
 
-                    skyboxShader->setValue("viewMatrix", mat4(mat3(world->getMainCamera()->getViewMatrix())));
+                    skyboxShader->setValue("viewMatrix", kMat4(kMat3(world->getMainCamera()->getViewMatrix())));
                     skyboxShader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
 
                     if (skyboxMaterial->getTextures().size() > 0 &&
@@ -306,7 +306,7 @@ namespace kemena
                     shader->setValue("material.metallic",  currentMesh->getMaterial()->getMetallic());
                     shader->setValue("material.roughness", currentMesh->getMaterial()->getRoughness());
 
-                    std::vector<mat4> boneTransforms(128, mat4(1.0f));
+                    std::vector<kMat4> boneTransforms(128, kMat4(1.0f));
                     if (currentMesh->getSkinned() && currentMesh->getAnimator() != nullptr)
                     {
                         currentMesh->getAnimator()->updateAnimation(
@@ -324,7 +324,7 @@ namespace kemena
 
                         if (light->getLightType() == LIGHT_TYPE_SUN)
                         {
-                            string idx = std::to_string(countSun);
+                            kString idx = std::to_string(countSun);
                             shader->setValue("sunLights[" + idx + "].power",     light->getPower());
                             shader->setValue("sunLights[" + idx + "].direction", light->getDirection());
                             shader->setValue("sunLights[" + idx + "].ambient",   light->getAmbientColor());
@@ -334,7 +334,7 @@ namespace kemena
                         }
                         else if (light->getLightType() == LIGHT_TYPE_POINT)
                         {
-                            string idx = std::to_string(countPoint);
+                            kString idx = std::to_string(countPoint);
                             shader->setValue("pointLights[" + idx + "].power",     light->getPower());
                             shader->setValue("pointLights[" + idx + "].position",  light->getPosition());
                             shader->setValue("pointLights[" + idx + "].constant",  light->getConstant());
@@ -347,7 +347,7 @@ namespace kemena
                         }
                         else if (light->getLightType() == LIGHT_TYPE_SPOT)
                         {
-                            string idx = std::to_string(countSpot);
+                            kString idx = std::to_string(countSpot);
                             shader->setValue("spotLights[" + idx + "].power",       light->getPower());
                             shader->setValue("spotLights[" + idx + "].position",    light->getPosition());
                             shader->setValue("spotLights[" + idx + "].direction",   light->getDirection());
@@ -407,10 +407,10 @@ namespace kemena
 
             if (world->getMainCamera() != nullptr && currentLight->getMaterial() != nullptr)
             {
-                mat4 view = lookAt(world->getMainCamera()->getPosition(),
+                kMat4 view = lookAt(world->getMainCamera()->getPosition(),
                                    world->getMainCamera()->getLookAt(),
                                    world->getMainCamera()->calculateUp());
-                mat4 projection = glm::perspective(glm::radians(world->getMainCamera()->getFOV()),
+                kMat4 projection = glm::perspective(glm::radians(world->getMainCamera()->getFOV()),
                                                    world->getMainCamera()->getAspectRatio(),
                                                    world->getMainCamera()->getNearClip(),
                                                    world->getMainCamera()->getFarClip());
@@ -431,10 +431,10 @@ namespace kemena
                     shader->use();
 
                     shader->setValue("viewProjection",           projection * view);
-                    shader->setValue("cameraRightWorldSpace",    vec3(view[0][0], view[1][0], view[2][0]));
-                    shader->setValue("cameraUpWorldSpace",       vec3(view[0][1], view[1][1], view[2][1]));
+                    shader->setValue("cameraRightWorldSpace",    kVec3(view[0][0], view[1][0], view[2][0]));
+                    shader->setValue("cameraUpWorldSpace",       kVec3(view[0][1], view[1][1], view[2][1]));
                     shader->setValue("billboardPosition",        currentLight->getPosition());
-                    shader->setValue("billboardSize",            vec2(0.8f, 0.8f));
+                    shader->setValue("billboardSize",            kVec2(0.8f, 0.8f));
                     shader->setValue("color",                    currentLight->getDiffuseColor());
 
                     for (size_t l = 0; l < currentLight->getMaterial()->getTextures().size(); l++)
@@ -495,7 +495,7 @@ namespace kemena
         }
     }
 
-    void kRenderer::renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *currentNode, mat4 lightSpaceMatrix, mat4 lightView, mat4 lightProjection, bool transparent, float deltaTime)
+    void kRenderer::renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *currentNode, kMat4 lightSpaceMatrix, kMat4 lightView, kMat4 lightProjection, bool transparent, float deltaTime)
     {
         if (currentNode == nullptr || !currentNode->getActive()) return;
 
@@ -512,7 +512,7 @@ namespace kemena
                 shadowShader->setValue("viewMatrix",       lightView);
                 shadowShader->setValue("projectionMatrix", lightProjection);
 
-                std::vector<mat4> boneTransforms(128, mat4(1.0f));
+                std::vector<kMat4> boneTransforms(128, kMat4(1.0f));
                 if (currentMesh->getSkinned() && currentMesh->getAnimator() != nullptr)
                 {
                     currentMesh->getAnimator()->updateAnimation(
@@ -533,12 +533,12 @@ namespace kemena
         }
     }
 
-    vec4 kRenderer::getClearColor()
+    kVec4 kRenderer::getClearColor()
     {
         return clearColor;
     }
 
-    void kRenderer::setClearColor(vec4 newColor)
+    void kRenderer::setClearColor(kVec4 newColor)
     {
         newColor.r = srgbToLinear(newColor.r);
         newColor.g = srgbToLinear(newColor.g);
@@ -610,20 +610,20 @@ namespace kemena
 
             if (useDefaultShader)
             {
-                string vertexShader = R"(#version 330 core
-layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec2 aTexCoord;
-out vec2 TexCoord;
+                kString vertexShader = R"(#version 330 core
+layout(location = 0) in kVec2 aPos;
+layout(location = 1) in kVec2 aTexCoord;
+out kVec2 TexCoord;
 
 void main()
 {
     TexCoord = aTexCoord;
-    gl_Position = vec4(aPos, 0.0, 1.0);
+    gl_Position = kVec4(aPos, 0.0, 1.0);
 })";
 
-                string fragmentShader = R"(#version 330 core
-in vec2 TexCoord;
-out vec4 FragColor;
+                kString fragmentShader = R"(#version 330 core
+in kVec2 TexCoord;
+out kVec4 FragColor;
 
 uniform sampler2D screenTexture;
 uniform int enable_autoExposure;
@@ -633,11 +633,11 @@ uniform float gamma;
 
 void main()
 {
-    vec3 color = texture(screenTexture, TexCoord).rgb;
-    vec3 mapped = color * exposure;
+    kVec3 color = texture(screenTexture, TexCoord).rgb;
+    kVec3 mapped = color * exposure;
     mapped = (mapped - 0.5) * contrast + 0.5;
-    mapped = pow(mapped, vec3(1.0 / gamma));
-    FragColor = vec4(mapped, 1.0);
+    mapped = pow(mapped, kVec3(1.0 / gamma));
+    FragColor = kVec4(mapped, 1.0);
 })";
 
                 kShader *newScreenShader = new kShader();
@@ -683,26 +683,26 @@ void main()
 
             if (useDefaultShader)
             {
-                string vertexShader = R"(#version 330 core
-layout (location = 0) in vec3 vertexPosition;
-layout (location = 6) in ivec4 boneIDs;
-layout (location = 7) in vec4 weights;
+                kString vertexShader = R"(#version 330 core
+layout (location = 0) in kVec3 vertexPosition;
+layout (location = 6) in kIvec4 boneIDs;
+layout (location = 7) in kVec4 weights;
 
-uniform mat4 lightSpaceMatrix;
-uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
+uniform kMat4 lightSpaceMatrix;
+uniform kMat4 modelMatrix;
+uniform kMat4 viewMatrix;
+uniform kMat4 projectionMatrix;
 
 const int MAX_BONES = 128;
 const int MAX_BONE_INFLUENCE = 4;
 
-uniform mat4 finalBonesMatrices[MAX_BONES];
+uniform kMat4 finalBonesMatrices[MAX_BONES];
 
-out vec3 vertexPositionFrag;
+out kVec3 vertexPositionFrag;
 
 void main()
 {
-    vec4 totalPosition = vec4(vertexPosition, 1.0f);
+    kVec4 totalPosition = kVec4(vertexPosition, 1.0f);
     float totalWeight = 0.0;
 
     for(int i = 0; i < MAX_BONE_INFLUENCE; i++)
@@ -715,26 +715,26 @@ void main()
 
         if(boneID >= MAX_BONES)
         {
-            totalPosition = vec4(vertexPosition, 1.0f);
+            totalPosition = kVec4(vertexPosition, 1.0f);
             break;
         }
 
-        totalPosition += (finalBonesMatrices[boneID] * vec4(vertexPosition, 1.0f)) * weight;
-        mat3 normalMatrixBone = transpose(inverse(mat3(finalBonesMatrices[boneID])));
+        totalPosition += (finalBonesMatrices[boneID] * kVec4(vertexPosition, 1.0f)) * weight;
+        kMat3 normalMatrixBone = transpose(inverse(kMat3(finalBonesMatrices[boneID])));
         totalWeight += weight;
     }
 
     if (totalWeight == 0.0)
-        totalPosition = vec4(vertexPosition, 1.0f);
+        totalPosition = kVec4(vertexPosition, 1.0f);
 
-    vec4 worldPosition = modelMatrix * totalPosition;
+    kVec4 worldPosition = modelMatrix * totalPosition;
     vertexPositionFrag = (lightSpaceMatrix * worldPosition).xyz;
     gl_Position = lightSpaceMatrix * worldPosition;
 })";
 
-                string fragmentShader = R"(#version 330 core
-in vec3 vertexPositionFrag;
-out vec4 fragColor;
+                kString fragmentShader = R"(#version 330 core
+in kVec3 vertexPositionFrag;
+out kVec4 fragColor;
 
 void main()
 {
@@ -825,12 +825,12 @@ void main()
         return (c <= 0.04045f) ? (c / 12.92f) : std::pow((c + 0.055f) / 1.055f, 2.4f);
     }
 
-    vec3 kRenderer::idToRgb(unsigned int i)
+    kVec3 kRenderer::idToRgb(unsigned int i)
     {
         int r = (i & 0x000000FF) >> 0;
         int g = (i & 0x0000FF00) >> 8;
         int b = (i & 0x00FF0000) >> 16;
-        return vec3(r, g, b);
+        return kVec3(r, g, b);
     }
 
     unsigned int kRenderer::rgbToId(unsigned int r, unsigned int g, unsigned int b)

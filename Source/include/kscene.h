@@ -76,27 +76,27 @@ namespace kemena
 
         /**
          * @brief Returns the UUID of this scene.
-         * @return UUID v4 string.
+         * @return UUID v4 kString.
          */
-        string getUuid();
+        kString getUuid();
 
         /**
          * @brief Sets the UUID of this scene.
-         * @param newUuid UUID v4 string.
+         * @param newUuid UUID v4 kString.
          */
-        void setUuid(string newUuid);
+        void setUuid(kString newUuid);
 
         /**
          * @brief Returns the human-readable scene name.
-         * @return Scene name string.
+         * @return Scene name kString.
          */
-        string getName();
+        kString getName();
 
         /**
          * @brief Sets the human-readable scene name.
-         * @param newName New name string.
+         * @param newName New name kString.
          */
-        void setName(string newName);
+        void setName(kString newName);
 
         /**
          * @brief Returns the auto-increment counter used to assign object IDs.
@@ -139,7 +139,7 @@ namespace kemena
          * @param object     Object to add; ownership is not transferred.
          * @param objectUuid Optional UUID to assign; auto-generated if empty.
          */
-        void addObject(kObject *object, string objectUuid = "");
+        void addObject(kObject *object, kString objectUuid = "");
 
         /**
          * @brief Loads a mesh asset and adds it to the scene.
@@ -147,26 +147,26 @@ namespace kemena
          * @param objectUuid Optional UUID for the new mesh node.
          * @return Pointer to the created kMesh.
          */
-        kMesh *addMesh(string fileName, string objectUuid = "");
+        kMesh *addMesh(kString fileName, kString objectUuid = "");
 
         /**
          * @brief Adds an existing mesh node to the scene graph.
          * @param mesh       Pre-constructed mesh to add.
          * @param objectUuid Optional UUID override.
          */
-        void addMesh(kMesh *mesh, string objectUuid = "");
+        void addMesh(kMesh *mesh, kString objectUuid = "");
 
         /**
          * @brief Returns the scene-level ambient light colour.
          * @return RGB ambient colour.
          */
-        vec3 getAmbientLightColor();
+        kVec3 getAmbientLightColor();
 
         /**
          * @brief Sets the scene-level ambient light colour.
          * @param newColor RGB ambient colour.
          */
-        void setAmbientLightColor(vec3 newColor);
+        void setAmbientLightColor(kVec3 newColor);
 
         /**
          * @brief Creates and adds a directional (sun) light.
@@ -178,7 +178,7 @@ namespace kemena
          * @param objectUuid    Optional UUID for the new node.
          * @return Pointer to the created kLight.
          */
-        kLight *addSunLight(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 direction = vec3(0.0f, -1.0f, 0.0f), vec3 ambientColor = vec3(1.0f, 1.0f, 1.0f), vec3 diffuseColor = vec3(1.0f, 1.0f, 1.0f), vec3 specularColor = vec3(1.0f, 1.0f, 1.0f), string objectUuid = "");
+        kLight *addSunLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 direction = kVec3(0.0f, -1.0f, 0.0f), kVec3 ambientColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
 
         /**
          * @brief Creates and adds an omnidirectional point light.
@@ -189,7 +189,7 @@ namespace kemena
          * @param objectUuid    Optional UUID for the new node.
          * @return Pointer to the created kLight.
          */
-        kLight *addPointLight(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 ambientColor = vec3(1.0f, 1.0f, 1.0f), vec3 diffuseColor = vec3(1.0f, 1.0f, 1.0f), vec3 specularColor = vec3(1.0f, 1.0f, 1.0f), string objectUuid = "");
+        kLight *addPointLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 ambientColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
 
         /**
          * @brief Creates and adds a cone spotlight.
@@ -201,7 +201,7 @@ namespace kemena
          * @param objectUuid    Optional UUID for the new node.
          * @return Pointer to the created kLight.
          */
-        kLight *addSpotLight(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 direction = vec3(0.0f, 1.0f, 0.0f), vec3 ambientColor = vec3(1.0f, 1.0f, 1.0f), vec3 diffuseColor = vec3(1.0f, 1.0f, 1.0f), vec3 specularColor = vec3(1.0f, 1.0f, 1.0f), string objectUuid = "");
+        kLight *addSpotLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 direction = kVec3(0.0f, 1.0f, 0.0f), kVec3 ambientColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
 
         /**
          * @brief Sets the skybox material and mesh.
@@ -241,8 +241,8 @@ namespace kemena
 
         bool isActive = true; ///< Scene active flag.
 
-        string uuid; ///< Scene UUID.
-        string name; ///< Human-readable scene name.
+        kString uuid; ///< Scene UUID.
+        kString name; ///< Human-readable scene name.
 
         std::vector<kObject *> objects; ///< Generic scene-graph nodes.
         std::vector<kMesh *>   meshes;  ///< Mesh nodes.
@@ -250,7 +250,7 @@ namespace kemena
 
         kObject *rootNode = nullptr; ///< Scene-graph root.
 
-        vec3 ambientLightColor = vec3(0.0f, 0.0f, 0.0f); ///< Scene ambient colour.
+        kVec3 ambientLightColor = kVec3(0.0f, 0.0f, 0.0f); ///< Scene ambient colour.
 
         kMaterial *skyMaterial = nullptr; ///< Skybox material.
         kMesh     *skyMesh     = nullptr; ///< Skybox geometry.
