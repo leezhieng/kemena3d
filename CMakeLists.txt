@@ -78,9 +78,12 @@ target_include_directories(kemena3d
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_$<CONFIG>/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/stb
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/miniaudio
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/portable-file-dialogs
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/slang-2026.5.2-windows-x86_64/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt
 )
 
 # Link directories (per-config)
@@ -140,7 +143,26 @@ target_link_libraries(kemena3d
             ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_Release/libassimp.dll.a
         >
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/${GLEW_LIB}.lib
+        # Slang is Release-only (no Debug build available)
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/slang-2026.5.2-windows-x86_64/lib/slang.lib
 )
+
+# Jolt Physics (always static; output path differs between MSVC multi-config and MinGW single-config)
+if(MSVC)
+    target_link_libraries(kemena3d PUBLIC
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/build_Debug/Debug/Jolt.lib,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/build_Release/Release/Jolt.lib
+        >
+    )
+else()
+    target_link_libraries(kemena3d PUBLIC
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/build_Debug/libJolt.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/build_Release/libJolt.a
+        >
+    )
+endif()
 
 # Suppress some noisy warnings
 if (MSVC)
@@ -202,8 +224,15 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/portable-file-dialogs
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo/
     DESTINATION include FILES_MATCHING PATTERN "*.h*"
 )
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt/
-#	DESTINATION Output/include/jolt FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/slang-2026.5.2-windows-x86_64/include/
+    DESTINATION include FILES_MATCHING PATTERN "*.h*"
+)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/miniaudio/
+    DESTINATION include FILES_MATCHING PATTERN "*.h*"
+)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt/
+    DESTINATION include/Jolt FILES_MATCHING PATTERN "*.h*"
+)
 #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/include/
 #	DESTINATION Output/include/recast/Recast FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/include/

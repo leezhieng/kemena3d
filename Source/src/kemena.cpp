@@ -58,4 +58,18 @@ namespace kemena
         manager->init(renderer);
         return manager;
     }
+
+    kAudioManager *createAudioManager()
+    {
+        kAudioManager *manager = new kAudioManager();
+        manager->init();
+        return manager;
+    }
+
+    kPhysicsManager *createPhysicsManager()
+    {
+        kPhysicsManager *manager = new kPhysicsManager();
+        manager->init();
+        return manager;
+    }
 }

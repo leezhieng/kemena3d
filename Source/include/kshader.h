@@ -18,6 +18,22 @@
 namespace kemena
 {
     /**
+     * @brief Specifies the output language/format produced by the Slang compiler.
+     *
+     * Pass one of these to loadSlangFile() or loadSlangCode() to control what the
+     * Slang front-end emits before handing the result to the active kDriver.
+     */
+    enum class kSlangTarget
+    {
+        GLSL,  ///< Cross-compile to GLSL (OpenGL / Vulkan GLSL; most compatible with current backend).
+        SPIRV, ///< Cross-compile to SPIR-V binary (requires OpenGL 4.6 / ARB_gl_spirv or Vulkan).
+        HLSL,  ///< Cross-compile to HLSL source (Direct3D 11/12).
+        DXIL,  ///< Cross-compile to DXIL binary (Direct3D 12, requires DXC).
+        DXBC,  ///< Cross-compile to DXBC binary (Direct3D 11, requires FXC).
+    };
+
+
+    /**
      * @brief Wraps a compiled GLSL shader program.
      *
      * Shaders can be loaded from source files or inline code strings.
@@ -60,6 +76,38 @@ namespace kemena
          * @param fragmentShaderCode Null-terminated GLSL fragment shader source, or nullptr.
          */
         void loadShadersCode(const char *vertexShaderCode, const char *fragmentShaderCode);
+
+        // --- Slang shaders ---------------------------------------------------
+
+        /**
+         * @brief Compiles a Slang source file and loads it into the active driver.
+         *
+         * Slang is used as a universal shading language front-end.  The source is
+         * compiled to @p target (GLSL, SPIR-V, HLSL, …) and then handed to the
+         * current kDriver for linking into a GPU program.
+         *
+         * @param filePath   Path to the @c .slang source file on disk.
+         * @param vertEntry  Name of the vertex entry-point function (default: "vertexMain").
+         * @param fragEntry  Name of the fragment entry-point function (default: "fragmentMain").
+         * @param target     Output shading language / binary format (default: GLSL).
+         */
+        void loadSlangFile(const kString& filePath,
+                           const kString& vertEntry = "vertexMain",
+                           const kString& fragEntry = "fragmentMain",
+                           kSlangTarget target = kSlangTarget::GLSL);
+
+        /**
+         * @brief Compiles an inline Slang source string and loads it into the active driver.
+         *
+         * @param source    Null-terminated Slang source code.
+         * @param vertEntry Name of the vertex entry-point function (default: "vertexMain").
+         * @param fragEntry Name of the fragment entry-point function (default: "fragmentMain").
+         * @param target    Output shading language / binary format (default: GLSL).
+         */
+        void loadSlangCode(const kString& source,
+                           const kString& vertEntry = "vertexMain",
+                           const kString& fragEntry = "fragmentMain",
+                           kSlangTarget target = kSlangTarget::GLSL);
 
         /** @brief Binds this shader program for subsequent draw calls. */
         void use();

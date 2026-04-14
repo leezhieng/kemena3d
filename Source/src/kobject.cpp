@@ -350,4 +350,29 @@ namespace kemena
     void kObject::deserialize(json data)
     {
     }
+
+    // --- Physics -------------------------------------------------------------
+
+    void kObject::attachPhysics(kPhysicsObject *physicsObj)
+    {
+        physicsObject = physicsObj;
+    }
+
+    void kObject::detachPhysics()
+    {
+        physicsObject = nullptr;
+    }
+
+    kPhysicsObject *kObject::getPhysicsObject()
+    {
+        return physicsObject;
+    }
+
+    void kObject::syncFromPhysics()
+    {
+        if (!physicsObject) return;
+
+        position = physicsObject->getPosition();
+        rotation = physicsObject->getRotation();
+    }
 }

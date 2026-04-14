@@ -1,0 +1,341 @@
+#include "kphysicsobject.h"
+
+JPH_SUPPRESS_WARNINGS_PUSH
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Body/BodyLockInterface.h>
+#include <Jolt/Physics/Body/MotionProperties.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/CylinderShape.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+JPH_SUPPRESS_WARNINGS_POP
+
+#include <iostream>
+
+// Layer indices — must match those used in kphysicsmanager.cpp
+static constexpr JPH::ObjectLayer LAYER_NON_MOVING = 0;
+static constexpr JPH::ObjectLayer LAYER_MOVING     = 1;
+
+namespace kemena
+{
+    struct kPhysicsObject::Impl
+    {
+        JPH::PhysicsSystem *physicsSystem = nullptr;
+        JPH::BodyID         bodyId;
+        kPhysicsObjectType  type      = kPhysicsObjectType::Dynamic;
+        kPhysicsShapeType   shapeType = kPhysicsShapeType::Box;
+        bool                initialized = false;
+    };
+
+    kPhysicsObject::kPhysicsObject()
+        : m_impl(new Impl())
+    {
+    }
+
+    kPhysicsObject::~kPhysicsObject()
+    {
+        uninit();
+        delete m_impl;
+    }
+
+    bool kPhysicsObject::init(void *physSys, const kPhysicsObjectDesc &desc)
+    {
+        if (m_impl->initialized)
+            uninit();
+
+        auto *ps = static_cast<JPH::PhysicsSystem *>(physSys);
+
+        // --- Build shape -------------------------------------------------
+        JPH::ShapeRefC shape;
+        const kPhysicsShapeDesc &sd = desc.shape;
+
+        switch (sd.type)
+        {
+            case kPhysicsShapeType::Sphere:
+                shape = new JPH::SphereShape(sd.radius);
+                break;
+
+            case kPhysicsShapeType::Box:
+                shape = new JPH::BoxShape(
+                    JPH::Vec3(sd.halfExtents.x, sd.halfExtents.y, sd.halfExtents.z));
+                break;
+
+            case kPhysicsShapeType::Capsule:
+                // Jolt CapsuleShape(halfHeight, radius)
+                shape = new JPH::CapsuleShape(sd.height * 0.5f, sd.radius);
+                break;
+
+            case kPhysicsShapeType::Cylinder:
+                // Jolt CylinderShape(halfHeight, radius)
+                shape = new JPH::CylinderShape(sd.height * 0.5f, sd.radius);
+                break;
+        }
+
+        // --- Motion type and layer ---------------------------------------
+        JPH::EMotionType motionType;
+        JPH::ObjectLayer layer;
+
+        switch (desc.type)
+        {
+            case kPhysicsObjectType::Dynamic:
+                motionType = JPH::EMotionType::Dynamic;
+                layer      = LAYER_MOVING;
+                break;
+
+            case kPhysicsObjectType::Static:
+                motionType = JPH::EMotionType::Static;
+                layer      = LAYER_NON_MOVING;
+                break;
+
+            case kPhysicsObjectType::Kinematic:
+                motionType = JPH::EMotionType::Kinematic;
+                layer      = LAYER_MOVING;
+                break;
+
+            case kPhysicsObjectType::Trigger:
+                motionType = JPH::EMotionType::Dynamic;
+                layer      = LAYER_MOVING;
+                break;
+
+            default:
+                motionType = JPH::EMotionType::Dynamic;
+                layer      = LAYER_MOVING;
+                break;
+        }
+
+        // --- Body creation settings --------------------------------------
+        JPH::BodyCreationSettings settings(
+            shape,
+            JPH::RVec3(desc.position.x, desc.position.y, desc.position.z),
+            JPH::Quat(desc.rotation.x, desc.rotation.y, desc.rotation.z, desc.rotation.w),
+            motionType,
+            layer);
+
+        settings.mIsSensor        = (desc.type == kPhysicsObjectType::Trigger);
+        settings.mFriction        = desc.friction;
+        settings.mRestitution     = desc.restitution;
+        settings.mLinearDamping   = desc.linearDamping;
+        settings.mAngularDamping  = desc.angularDamping;
+        settings.mGravityFactor   = desc.gravityFactor;
+
+        if (motionType == JPH::EMotionType::Dynamic && desc.mass > 0.0f)
+        {
+            settings.mOverrideMassProperties         = JPH::EOverrideMassProperties::CalculateInertia;
+            settings.mMassPropertiesOverride.mMass   = desc.mass;
+        }
+
+        // --- Create and add body -----------------------------------------
+        JPH::BodyInterface &bi = ps->GetBodyInterface();
+        m_impl->bodyId = bi.CreateAndAddBody(settings, JPH::EActivation::Activate);
+
+        if (m_impl->bodyId.IsInvalid())
+        {
+            std::cout << "[kPhysicsObject] Failed to create physics body." << std::endl;
+            return false;
+        }
+
+        m_impl->physicsSystem = ps;
+        m_impl->type          = desc.type;
+        m_impl->shapeType     = desc.shape.type;
+        m_impl->initialized   = true;
+        return true;
+    }
+
+    void kPhysicsObject::uninit()
+    {
+        if (!m_impl->initialized)
+            return;
+
+        JPH::BodyInterface &bi = m_impl->physicsSystem->GetBodyInterface();
+        bi.RemoveBody(m_impl->bodyId);
+        bi.DestroyBody(m_impl->bodyId);
+
+        m_impl->physicsSystem = nullptr;
+        m_impl->bodyId        = JPH::BodyID();
+        m_impl->initialized   = false;
+    }
+
+    uint32_t kPhysicsObject::getBodyId() const
+    {
+        return m_impl->bodyId.GetIndexAndSequenceNumber();
+    }
+
+    // --- Transform -------------------------------------------------------
+
+    void kPhysicsObject::setPosition(const kVec3 &position)
+    {
+        if (!m_impl->initialized) return;
+        m_impl->physicsSystem->GetBodyInterface().SetPosition(
+            m_impl->bodyId,
+            JPH::RVec3(position.x, position.y, position.z),
+            JPH::EActivation::Activate);
+    }
+
+    void kPhysicsObject::setRotation(const kQuat &rotation)
+    {
+        if (!m_impl->initialized) return;
+        m_impl->physicsSystem->GetBodyInterface().SetRotation(
+            m_impl->bodyId,
+            JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w),
+            JPH::EActivation::Activate);
+    }
+
+    kVec3 kPhysicsObject::getPosition() const
+    {
+        if (!m_impl->initialized) return kVec3(0.0f);
+        JPH::RVec3 p = m_impl->physicsSystem->GetBodyInterface().GetPosition(m_impl->bodyId);
+        return kVec3(p.GetX(), p.GetY(), p.GetZ());
+    }
+
+    kQuat kPhysicsObject::getRotation() const
+    {
+        if (!m_impl->initialized) return kQuat(1.0f, 0.0f, 0.0f, 0.0f);
+        JPH::Quat q = m_impl->physicsSystem->GetBodyInterface().GetRotation(m_impl->bodyId);
+        return kQuat(q.GetW(), q.GetX(), q.GetY(), q.GetZ());
+    }
+
+    // --- Velocity --------------------------------------------------------
+
+    void kPhysicsObject::setLinearVelocity(const kVec3 &velocity)
+    {
+        if (!m_impl->initialized) return;
+        m_impl->physicsSystem->GetBodyInterface().SetLinearVelocity(
+            m_impl->bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+    }
+
+    void kPhysicsObject::setAngularVelocity(const kVec3 &velocity)
+    {
+        if (!m_impl->initialized) return;
+        m_impl->physicsSystem->GetBodyInterface().SetAngularVelocity(
+            m_impl->bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+    }
+
+    kVec3 kPhysicsObject::getLinearVelocity() const
+    {
+        if (!m_impl->initialized) return kVec3(0.0f);
+        JPH::Vec3 v = m_impl->physicsSystem->GetBodyInterface().GetLinearVelocity(m_impl->bodyId);
+        return kVec3(v.GetX(), v.GetY(), v.GetZ());
+    }
+
+    kVec3 kPhysicsObject::getAngularVelocity() const
+    {
+        if (!m_impl->initialized) return kVec3(0.0f);
+        JPH::Vec3 v = m_impl->physicsSystem->GetBodyInterface().GetAngularVelocity(m_impl->bodyId);
+        return kVec3(v.GetX(), v.GetY(), v.GetZ());
+    }
+
+    // --- Forces ----------------------------------------------------------
+
+    void kPhysicsObject::applyForce(const kVec3 &force)
+    {
+        if (!m_impl->initialized) return;
+        m_impl->physicsSystem->GetBodyInterface().AddForce(
+            m_impl->bodyId, JPH::Vec3(force.x, force.y, force.z));
+    }
+
+    void kPhysicsObject::applyImpulse(const kVec3 &impulse)
+    {
+        if (!m_impl->initialized) return;
+        m_impl->physicsSystem->GetBodyInterface().AddImpulse(
+            m_impl->bodyId, JPH::Vec3(impulse.x, impulse.y, impulse.z));
+    }
+
+    void kPhysicsObject::applyTorque(const kVec3 &torque)
+    {
+        if (!m_impl->initialized) return;
+        m_impl->physicsSystem->GetBodyInterface().AddTorque(
+            m_impl->bodyId, JPH::Vec3(torque.x, torque.y, torque.z));
+    }
+
+    // --- Properties ------------------------------------------------------
+
+    void kPhysicsObject::setMass(float mass)
+    {
+        if (!m_impl->initialized || mass <= 0.0f) return;
+
+        JPH::BodyLockWrite lock(m_impl->physicsSystem->GetBodyLockInterface(),
+                                m_impl->bodyId);
+        if (lock.Succeeded())
+        {
+            JPH::Body *body = lock.GetBody();
+            if (body->GetMotionType() == JPH::EMotionType::Dynamic)
+                body->GetMotionProperties()->SetInverseMass(1.0f / mass);
+        }
+    }
+
+    void kPhysicsObject::setFriction(float friction)
+    {
+        if (!m_impl->initialized) return;
+        m_impl->physicsSystem->GetBodyInterface().SetFriction(m_impl->bodyId, friction);
+    }
+
+    void kPhysicsObject::setRestitution(float restitution)
+    {
+        if (!m_impl->initialized) return;
+        m_impl->physicsSystem->GetBodyInterface().SetRestitution(m_impl->bodyId, restitution);
+    }
+
+    void kPhysicsObject::setLinearDamping(float damping)
+    {
+        if (!m_impl->initialized) return;
+
+        JPH::BodyLockWrite lock(m_impl->physicsSystem->GetBodyLockInterface(),
+                                m_impl->bodyId);
+        if (lock.Succeeded())
+        {
+            JPH::Body *body = lock.GetBody();
+            if (body->GetMotionProperties())
+                body->GetMotionProperties()->SetLinearDamping(damping);
+        }
+    }
+
+    void kPhysicsObject::setAngularDamping(float damping)
+    {
+        if (!m_impl->initialized) return;
+
+        JPH::BodyLockWrite lock(m_impl->physicsSystem->GetBodyLockInterface(),
+                                m_impl->bodyId);
+        if (lock.Succeeded())
+        {
+            JPH::Body *body = lock.GetBody();
+            if (body->GetMotionProperties())
+                body->GetMotionProperties()->SetAngularDamping(damping);
+        }
+    }
+
+    void kPhysicsObject::setGravityFactor(float factor)
+    {
+        if (!m_impl->initialized) return;
+
+        JPH::BodyLockWrite lock(m_impl->physicsSystem->GetBodyLockInterface(),
+                                m_impl->bodyId);
+        if (lock.Succeeded())
+        {
+            JPH::Body *body = lock.GetBody();
+            if (body->GetMotionProperties())
+                body->GetMotionProperties()->SetGravityFactor(factor);
+        }
+    }
+
+    // --- State queries ---------------------------------------------------
+
+    bool kPhysicsObject::isActive() const
+    {
+        if (!m_impl->initialized) return false;
+        return m_impl->physicsSystem->GetBodyInterface().IsActive(m_impl->bodyId);
+    }
+
+    kPhysicsObjectType kPhysicsObject::getObjectType() const
+    {
+        return m_impl->type;
+    }
+
+    kPhysicsShapeType kPhysicsObject::getShapeType() const
+    {
+        return m_impl->shapeType;
+    }
+
+} // namespace kemena

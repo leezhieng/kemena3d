@@ -211,6 +211,93 @@ namespace kemena
         return static_cast<uint32_t>(program);
     }
 
+    uint32_t kOpenGLDriver::compileShaderProgramSpirv(const std::vector<uint8_t> &vertSpirv,
+                                                       const kString &vertEntry,
+                                                       const std::vector<uint8_t> &fragSpirv,
+                                                       const kString &fragEntry)
+    {
+        // GL_ARB_gl_spirv / OpenGL 4.6 required
+        if (!GLEW_ARB_gl_spirv && !GLEW_VERSION_4_6)
+        {
+            std::cout << "[kOpenGLDriver] SPIR-V shaders require OpenGL 4.6 or GL_ARB_gl_spirv." << std::endl;
+            return 0;
+        }
+
+        auto specializeShader = [](GLuint shader, const kString &entry) -> bool
+        {
+            GLint status = GL_FALSE;
+            glSpecializeShaderARB(shader, entry.c_str(), 0, nullptr, nullptr);
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+            if (status == GL_FALSE)
+            {
+                GLint logLen = 0;
+                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLen);
+                if (logLen > 1)
+                {
+                    std::vector<char> log(logLen);
+                    glGetShaderInfoLog(shader, logLen, nullptr, log.data());
+                    std::cout << "SPIR-V specialization error: " << log.data() << std::endl;
+                }
+                return false;
+            }
+            return true;
+        };
+
+        GLuint vertShader = 0, fragShader = 0;
+
+        if (!vertSpirv.empty())
+        {
+            vertShader = glCreateShader(GL_VERTEX_SHADER);
+            glShaderBinary(1, &vertShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                           vertSpirv.data(), static_cast<GLsizei>(vertSpirv.size()));
+            if (!specializeShader(vertShader, vertEntry))
+            {
+                glDeleteShader(vertShader);
+                return 0;
+            }
+        }
+
+        if (!fragSpirv.empty())
+        {
+            fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+            glShaderBinary(1, &fragShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
+                           fragSpirv.data(), static_cast<GLsizei>(fragSpirv.size()));
+            if (!specializeShader(fragShader, fragEntry))
+            {
+                glDeleteShader(vertShader);
+                glDeleteShader(fragShader);
+                return 0;
+            }
+        }
+
+        GLuint program = glCreateProgram();
+        if (vertShader) glAttachShader(program, vertShader);
+        if (fragShader) glAttachShader(program, fragShader);
+        glLinkProgram(program);
+
+        GLint result = GL_FALSE;
+        glGetProgramiv(program, GL_LINK_STATUS, &result);
+        if (result == GL_FALSE)
+        {
+            GLint logLen = 0;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLen);
+            if (logLen > 1)
+            {
+                std::vector<char> err(logLen);
+                glGetProgramInfoLog(program, logLen, nullptr, err.data());
+                std::cout << "SPIR-V link error: " << err.data() << std::endl;
+            }
+            glDeleteShader(vertShader);
+            glDeleteShader(fragShader);
+            glDeleteProgram(program);
+            return 0;
+        }
+
+        glDeleteShader(vertShader);
+        glDeleteShader(fragShader);
+        return static_cast<uint32_t>(program);
+    }
+
     void kOpenGLDriver::deleteShaderProgram(uint32_t id)
     {
         if (id) glDeleteProgram(static_cast<GLuint>(id));

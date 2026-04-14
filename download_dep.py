@@ -2,6 +2,7 @@
 # Kemena3D Dependency Setup (pure standard library only)
 
 import os
+import stat
 import sys
 import shutil
 import zipfile
@@ -15,7 +16,7 @@ system = platform.system()
 # ------------------------------------------------------------------------
 # Config / Paths
 # ------------------------------------------------------------------------
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent / "Dependencies"
 TEMP = ROOT / "temp"
 
 # VS and MinGW defaults (edit if your paths differ)
@@ -56,13 +57,28 @@ PFD_TAG = "main"
 IMGUIZMO_GIT = "https://github.com/CedricGuillemet/ImGuizmo.git"
 IMGUIZMO_TAG = "master"
 
+JOLT_ZIP = "https://github.com/jrouwe/JoltPhysics/archive/refs/tags/v5.3.0.zip"
+
 # Optional (commented in batch script)
 RECAST_ZIP = "https://github.com/recastnavigation/recastnavigation/archive/refs/tags/v1.6.0.zip"
-JOLT_ZIP = "https://github.com/jrouwe/JoltPhysics/archive/refs/tags/v5.3.0.zip"
+
+SLANG_GIT = "https://github.com/shader-slang/slang.git"
+SLANG_TAG = "v2026.5.2"
+MINIAUDIO_GIT = "https://github.com/mackron/miniaudio.git"
+MINIAUDIO_TAG = "0.11.25"
 
 # ------------------------------------------------------------------------
 # Utilities
 # ------------------------------------------------------------------------
+def remove_readonly(func, path, _):
+    """Error handler for shutil.rmtree: clears read-only bit then retries."""
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+def rmtree(path: Path):
+    """shutil.rmtree wrapper that handles read-only files on Windows."""
+    shutil.rmtree(path, onerror=remove_readonly)
+
 def die(msg: str, code: int = 1):
     print(f"[ERROR] {msg}")
     sys.exit(code)
@@ -83,7 +99,7 @@ def ensure_dir(p: Path):
 
 def clean_temp():
     if TEMP.exists():
-        shutil.rmtree(TEMP)
+        rmtree(TEMP)
     ensure_dir(TEMP)
 
 def download_zip(url, out_path):
@@ -154,7 +170,8 @@ def clone_git(name: str, version: str, repo: str, destfolder: Path, revision: st
     if revision:
         run(f"git checkout {revision}", cwd=TEMP)
     run("git submodule update --init --recursive", cwd=TEMP)
-    shutil.move(str(TEMP), str(destfolder))
+    shutil.copytree(str(TEMP), str(destfolder))
+    rmtree(TEMP)
     print(f"[OK] {name} setup complete at '{destfolder}'.")
 
 def is_msvc(generator: str) -> bool:
@@ -470,11 +487,62 @@ def main():
             build_with_cmake("imGuizmo", ROOT / "imguizmo", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
 
     # --------------------------------------------------------------------
-    # Optional: Recast Navigation / JoltPhysics (kept commented like batch)
+    # JoltPhysics (always static — no shared build option)
+    # --------------------------------------------------------------------
+    download_and_extract_zip("JoltPhysics", "v5.3.0", JOLT_ZIP, ROOT / "jolt", flatten=True)
+    jolt_flags = (
+        "-DTARGET_UNIT_TESTS=OFF "
+        "-DTARGET_HELLO_WORLD=OFF "
+        "-DTARGET_SAMPLES=OFF "
+        "-DTARGET_VIEWER=OFF "
+        "-DBUILD_SHARED_LIBS=OFF"
+    )
+    if compiler == "1":
+        build_with_cmake("JoltPhysics", ROOT / "jolt", "Debug",   jolt_flags, generator)
+        build_with_cmake("JoltPhysics", ROOT / "jolt", "Release", jolt_flags, generator)
+    else:
+        cc = f'-DCMAKE_C_COMPILER="{GCC_PATH}" -DCMAKE_CXX_COMPILER="{GPP_PATH}"'
+        build_with_cmake("JoltPhysics", ROOT / "jolt", "Debug",   f"{cc} {jolt_flags}", generator)
+        build_with_cmake("JoltPhysics", ROOT / "jolt", "Release", f"{cc} {jolt_flags}", generator)
+
+    # --------------------------------------------------------------------
+    # Recast Navigation (kept commented — not yet integrated)
     # --------------------------------------------------------------------
     # download_and_extract_zip("Recast Navigation", "v1.6.0", RECAST_ZIP, ROOT / "recast", flatten=True)
-    # download_and_extract_zip("JoltPhysics", "v5.3.0", JOLT_ZIP, ROOT / "jolt", flatten=True)
-    # (Add their build steps here if you enable them)
+
+    # --------------------------------------------------------------------
+    # Slang - Only build Release, there's an annoying memory leak error when building Debug
+    # --------------------------------------------------------------------
+    clone_git("Slang", "v2026.5.2", SLANG_GIT, ROOT / "slang", revision=SLANG_TAG)
+    if compiler == "1":
+        if linking == "1":
+            build_with_cmake("Slang", ROOT / "slang", "Release",f"-DBUILD_SHARED_LIBS=OFF", generator)
+        else:
+            build_with_cmake("Slang", ROOT / "slang", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
+    else:
+        if linking == "1":
+            build_with_cmake("Slang", ROOT / "slang", "Release",f"-DBUILD_SHARED_LIBS=OFF", generator)
+        else:
+            build_with_cmake("Slang", ROOT / "slang", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
+
+    # --------------------------------------------------------------------
+    # miniaudio
+    # --------------------------------------------------------------------
+    clone_git("miniaudio", "0.11.25", MINIAUDIO_GIT, ROOT / "miniaudio", revision=MINIAUDIO_TAG)
+    if compiler == "1":
+        if linking == "1":
+            build_with_cmake("miniaudio", ROOT / "miniaudio", "Debug",  f"-DBUILD_SHARED_LIBS=OFF", generator)
+            build_with_cmake("miniaudio", ROOT / "miniaudio", "Release",f"-DBUILD_SHARED_LIBS=OFF", generator)
+        else:
+            build_with_cmake("miniaudio", ROOT / "miniaudio", "Debug",  f"-DBUILD_SHARED_LIBS=ON", generator)
+            build_with_cmake("miniaudio", ROOT / "miniaudio", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
+    else:
+        if linking == "1":
+            build_with_cmake("miniaudio", ROOT / "miniaudio", "Debug",  f"-DBUILD_SHARED_LIBS=OFF", generator)
+            build_with_cmake("miniaudio", ROOT / "miniaudio", "Release",f"-DBUILD_SHARED_LIBS=OFF", generator)
+        else:
+            build_with_cmake("miniaudio", ROOT / "miniaudio", "Debug",  f"-DBUILD_SHARED_LIBS=ON", generator)
+            build_with_cmake("miniaudio", ROOT / "miniaudio", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
 
     print("\n------------------------------------------------------------------------")
     print("All dependencies have been downloaded and compiled successfully.")

@@ -211,12 +211,28 @@ namespace kemena
         // --- Shader programs -------------------------------------------------
 
         /**
-         * @brief Compiles and links a vertex + fragment shader pair.
+         * @brief Compiles and links a vertex + fragment shader pair from GLSL source.
          * @param vertSrc GLSL vertex shader source kString, or nullptr to skip.
          * @param fragSrc GLSL fragment shader source kString, or nullptr to skip.
          * @return Opaque program handle (0 on failure).
          */
         virtual uint32_t compileShaderProgram(const char *vertSrc, const char *fragSrc) = 0;
+
+        /**
+         * @brief Compiles and links a vertex + fragment shader pair from SPIR-V binary.
+         *
+         * Requires OpenGL 4.6 or the @c GL_ARB_gl_spirv extension.
+         *
+         * @param vertSpirv  SPIR-V binary for the vertex stage.
+         * @param vertEntry  Entry-point name inside the vertex SPIR-V module.
+         * @param fragSpirv  SPIR-V binary for the fragment stage.
+         * @param fragEntry  Entry-point name inside the fragment SPIR-V module.
+         * @return Opaque program handle (0 on failure or if SPIR-V is unsupported).
+         */
+        virtual uint32_t compileShaderProgramSpirv(const std::vector<uint8_t> &vertSpirv,
+                                                   const kString &vertEntry,
+                                                   const std::vector<uint8_t> &fragSpirv,
+                                                   const kString &fragEntry) = 0;
 
         /**
          * @brief Destroys a previously-compiled shader program.

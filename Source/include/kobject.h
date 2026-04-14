@@ -21,6 +21,7 @@
 #include "kdatatype.h"
 #include "kmaterial.h"
 #include "kscriptmanager.h"
+#include "kphysicsobject.h"
 
 using json = nlohmann::json;
 
@@ -263,6 +264,39 @@ namespace kemena
          */
         virtual void deserialize(json data);
 
+        // --- Physics ---------------------------------------------------------
+
+        /**
+         * @brief Attaches a physics body to this object.
+         *
+         * The kObject does NOT take ownership of @p physicsObj — it must be
+         * managed (and destroyed) via kPhysicsManager::destroyObject().
+         *
+         * @param physicsObj Physics body created by kPhysicsManager::createObject().
+         */
+        void attachPhysics(kPhysicsObject *physicsObj);
+
+        /**
+         * @brief Detaches the physics body without destroying it.
+         */
+        void detachPhysics();
+
+        /**
+         * @brief Returns the attached physics body, or nullptr if none is attached.
+         */
+        kPhysicsObject *getPhysicsObject();
+
+        /**
+         * @brief Copies the physics body's current position and rotation into
+         *        this object's local transform.
+         *
+         * Call this once per frame after kPhysicsManager::update() to keep the
+         * scene node in sync with the simulation.
+         *
+         * Has no effect if no physics body is attached.
+         */
+        void syncFromPhysics();
+
     protected:
     private:
         kObject *parent = nullptr;
@@ -282,7 +316,8 @@ namespace kemena
         kMat4 localTransform = kMat4(1.0f); ///< Model matrix (local space).
         kMat4 worldTransform = kMat4(1.0f); ///< Model matrix (world space).
 
-        kMaterial *material = nullptr;
+        kMaterial       *material      = nullptr;
+        kPhysicsObject  *physicsObject = nullptr;
 
         uint32_t iconVAO = 0;          ///< VAO for the billboard icon quad (lazy-init).
         uint32_t iconVertexBuffer = 0; ///< VBO for the billboard icon vertices (lazy-init).

@@ -91,6 +91,10 @@ namespace kemena
         // --- Shader programs -------------------------------------------------
 
         uint32_t compileShaderProgram(const char *vertSrc, const char *fragSrc) override;
+        uint32_t compileShaderProgramSpirv(const std::vector<uint8_t> &vertSpirv,
+                                           const kString &vertEntry,
+                                           const std::vector<uint8_t> &fragSpirv,
+                                           const kString &fragEntry) override;
         void deleteShaderProgram(uint32_t id) override;
         void bindShaderProgram(uint32_t id) override;
         void unbindShaderProgram() override;
