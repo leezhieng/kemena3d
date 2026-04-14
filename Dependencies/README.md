@@ -74,11 +74,9 @@ The automated batch script performs its tasks using the configurations below. If
 
 - **Website**: [GLEW GitHub](https://github.com/nigels-com/glew)
 - **Version**: `2.2.0`
-- **Download (Windows)**: [glew-2.2.0-win32.zip](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip)
-- **Download (macOS)**: [glew-2.2.0.tgz](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
+- **Download**: [glew-2.2.0.tgz](https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz)
 - **Extract to**: `glew`
-- **Build Required (Windows)**: ❌ No
-- **Build Required (macOS)**: ✅ Yes
+- **Build Required**: ✅ Yes
 
 ### Dear Imgui
 
@@ -120,7 +118,7 @@ The automated batch script performs its tasks using the configurations below. If
 - **Extract to**: `jolt`
 - **Build Required**: ✅ Yes
 
-### Recast Navigation (Not enabled for now)
+### Recast Navigation
 
 - **Website**: [Recast GitHub](https://github.com/recastnavigation/recastnavigation)
 - **Version**: `1.6.0`

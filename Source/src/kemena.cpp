@@ -72,4 +72,11 @@ namespace kemena
         manager->init();
         return manager;
     }
+
+    kNavManager *createNavManager(kNavMesh *mesh, int maxAgents)
+    {
+        kNavManager *manager = new kNavManager(mesh, maxAgents);
+        manager->init();
+        return manager;
+    }
 }

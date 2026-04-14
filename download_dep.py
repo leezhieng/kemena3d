@@ -45,7 +45,7 @@ SDL_BRANCH = "release-3.2.16"
 IMGUI_GIT = "https://github.com/ocornut/imgui.git"
 GLM_GIT = "https://github.com/g-truc/glm.git"
 GLM_TAG = "1.0.1"
-GLEW_ZIP = "https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip"
+GLEW_SRC_ZIP = "https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.zip"
 ASSIMP_GIT = "https://github.com/assimp/assimp.git"
 ASSIMP_TAG = "v6.0.2"
 STB_GIT = "https://github.com/nothings/stb.git"
@@ -56,12 +56,8 @@ PFD_GIT = "https://github.com/samhocevar/portable-file-dialogs.git"
 PFD_TAG = "main"
 IMGUIZMO_GIT = "https://github.com/CedricGuillemet/ImGuizmo.git"
 IMGUIZMO_TAG = "master"
-
 JOLT_ZIP = "https://github.com/jrouwe/JoltPhysics/archive/refs/tags/v5.3.0.zip"
-
-# Optional (commented in batch script)
 RECAST_ZIP = "https://github.com/recastnavigation/recastnavigation/archive/refs/tags/v1.6.0.zip"
-
 SLANG_GIT = "https://github.com/shader-slang/slang.git"
 SLANG_TAG = "v2026.5.2"
 MINIAUDIO_GIT = "https://github.com/mackron/miniaudio.git"
@@ -399,9 +395,25 @@ def main():
     clone_git("GLM", "v1.0.1", GLM_GIT, ROOT / "glm", revision=GLM_TAG)
 
     # --------------------------------------------------------------------
-    # GLEW (prebuilt - headers + libs)
+    # GLEW (built from source)
     # --------------------------------------------------------------------
-    download_and_extract_zip("GLEW", "v2.2.0", GLEW_ZIP, ROOT / "glew", flatten=True)
+    download_and_extract_zip("GLEW", "v2.2.0", GLEW_SRC_ZIP, ROOT / "glew", flatten=True)
+    glew_src = ROOT / "glew" / "build" / "cmake"
+    if compiler == "1":
+        if linking == "1":
+            build_with_cmake("GLEW", glew_src, "Debug",   "-DBUILD_SHARED_LIBS=OFF", generator)
+            build_with_cmake("GLEW", glew_src, "Release", "-DBUILD_SHARED_LIBS=OFF", generator)
+        else:
+            build_with_cmake("GLEW", glew_src, "Debug",   "-DBUILD_SHARED_LIBS=ON", generator)
+            build_with_cmake("GLEW", glew_src, "Release", "-DBUILD_SHARED_LIBS=ON", generator)
+    else:
+        cc = f'-DCMAKE_C_COMPILER="{GCC_PATH}" -DCMAKE_CXX_COMPILER="{GPP_PATH}"'
+        if linking == "1":
+            build_with_cmake("GLEW", glew_src, "Debug",   f"{cc} -DBUILD_SHARED_LIBS=OFF", generator)
+            build_with_cmake("GLEW", glew_src, "Release", f"{cc} -DBUILD_SHARED_LIBS=OFF", generator)
+        else:
+            build_with_cmake("GLEW", glew_src, "Debug",   f"{cc} -DBUILD_SHARED_LIBS=ON", generator)
+            build_with_cmake("GLEW", glew_src, "Release", f"{cc} -DBUILD_SHARED_LIBS=ON", generator)
 
     # --------------------------------------------------------------------
     # Assimp
@@ -497,33 +509,66 @@ def main():
         "-DTARGET_VIEWER=OFF "
         "-DBUILD_SHARED_LIBS=OFF"
     )
+    jolt_src = ROOT / "jolt" / "Build"
     if compiler == "1":
-        build_with_cmake("JoltPhysics", ROOT / "jolt", "Debug",   jolt_flags, generator)
-        build_with_cmake("JoltPhysics", ROOT / "jolt", "Release", jolt_flags, generator)
+        build_with_cmake("JoltPhysics", jolt_src, "Debug",   jolt_flags, generator)
+        build_with_cmake("JoltPhysics", jolt_src, "Release", jolt_flags, generator)
     else:
         cc = f'-DCMAKE_C_COMPILER="{GCC_PATH}" -DCMAKE_CXX_COMPILER="{GPP_PATH}"'
-        build_with_cmake("JoltPhysics", ROOT / "jolt", "Debug",   f"{cc} {jolt_flags}", generator)
-        build_with_cmake("JoltPhysics", ROOT / "jolt", "Release", f"{cc} {jolt_flags}", generator)
+        build_with_cmake("JoltPhysics", jolt_src, "Debug",   f"{cc} {jolt_flags}", generator)
+        build_with_cmake("JoltPhysics", jolt_src, "Release", f"{cc} {jolt_flags}", generator)
 
     # --------------------------------------------------------------------
-    # Recast Navigation (kept commented — not yet integrated)
+    # Recast Navigation
     # --------------------------------------------------------------------
-    # download_and_extract_zip("Recast Navigation", "v1.6.0", RECAST_ZIP, ROOT / "recast", flatten=True)
+    download_and_extract_zip("Recast Navigation", "v1.6.0", RECAST_ZIP, ROOT / "recast", flatten=True)
+    recast_src   = ROOT / "recast"
+    recast_flags = (
+        "-DRECASTNAVIGATION_DEMO=OFF "
+        "-DRECASTNAVIGATION_TESTS=OFF "
+        "-DRECASTNAVIGATION_EXAMPLES=OFF "
+        "-DBUILD_SHARED_LIBS=OFF"
+    )
+    for cfg in ("Debug", "Release"):
+        install_prefix = f'-DCMAKE_INSTALL_PREFIX="{recast_src / "dist"}"'
+        if compiler == "1":
+            build_with_cmake("Recast Navigation", recast_src, cfg,
+                             f"{recast_flags} {install_prefix}", generator)
+            run(f'cmake --install "{recast_src / f"build_{cfg}"}" --config {cfg}',
+                cwd=recast_src)
+        else:
+            cc = f'-DCMAKE_C_COMPILER="{GCC_PATH}" -DCMAKE_CXX_COMPILER="{GPP_PATH}"'
+            build_with_cmake("Recast Navigation", recast_src, cfg,
+                             f"{cc} {recast_flags} {install_prefix}", generator)
+            run(f'cmake --install "{recast_src / f"build_{cfg}"}"', cwd=recast_src)
+        # Move installed libs into dist/lib/{cfg} for predictable CMakeLists.txt paths
+        installed_lib = recast_src / "dist" / "lib"
+        target_lib    = recast_src / "dist" / "lib" / cfg
+        if installed_lib.exists() and not target_lib.exists():
+            target_lib.mkdir(parents=True, exist_ok=True)
+            for f in installed_lib.iterdir():
+                if f.is_file():
+                    shutil.move(str(f), str(target_lib / f.name))
+    print("[OK] Recast Navigation built and installed to 'dist/'.")
 
     # --------------------------------------------------------------------
     # Slang - Only build Release, there's an annoying memory leak error when building Debug
     # --------------------------------------------------------------------
     clone_git("Slang", "v2026.5.2", SLANG_GIT, ROOT / "slang", revision=SLANG_TAG)
-    if compiler == "1":
-        if linking == "1":
-            build_with_cmake("Slang", ROOT / "slang", "Release",f"-DBUILD_SHARED_LIBS=OFF", generator)
-        else:
-            build_with_cmake("Slang", ROOT / "slang", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
-    else:
-        if linking == "1":
-            build_with_cmake("Slang", ROOT / "slang", "Release",f"-DBUILD_SHARED_LIBS=OFF", generator)
-        else:
-            build_with_cmake("Slang", ROOT / "slang", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
+    slang_flags = "-DBUILD_SHARED_LIBS=OFF" if linking == "1" else "-DBUILD_SHARED_LIBS=ON"
+    build_with_cmake("Slang", ROOT / "slang", "Release", slang_flags, generator)
+
+    # Rename the versioned output dir (e.g. slang-2026.5.2-windows-x86_64) to 'dist'
+    # so CMakeLists.txt paths stay version- and platform-neutral.
+    slang_build = ROOT / "slang" / "build_Release"
+    for entry in slang_build.iterdir():
+        if entry.is_dir() and entry.name.startswith("slang-"):
+            dist = slang_build / "dist"
+            if dist.exists():
+                rmtree(dist)
+            shutil.move(str(entry), str(dist))
+            print(f"[OK] Slang: normalized '{entry.name}' → 'dist'")
+            break
 
     # --------------------------------------------------------------------
     # miniaudio

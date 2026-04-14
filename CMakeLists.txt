@@ -82,8 +82,9 @@ target_include_directories(kemena3d
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/portable-file-dialogs
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/slang-2026.5.2-windows-x86_64/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/dist/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/include
 )
 
 # Link directories (per-config)
@@ -142,24 +143,81 @@ target_link_libraries(kemena3d
             ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_Debug/libassimp.dll.a,
             ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_Release/libassimp.dll.a
         >
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/${GLEW_LIB}.lib
         # Slang is Release-only (no Debug build available)
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/slang-2026.5.2-windows-x86_64/lib/slang.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/dist/lib/slang.lib
 )
 
-# Jolt Physics (always static; output path differs between MSVC multi-config and MinGW single-config)
+# GLEW (built from source via build/cmake/)
 if(MSVC)
     target_link_libraries(kemena3d PUBLIC
         $<IF:$<CONFIG:Debug>,
-            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/build_Debug/Debug/Jolt.lib,
-            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/build_Release/Release/Jolt.lib
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Debug/lib/Debug/${GLEW_LIB}.lib,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Release/lib/Release/${GLEW_LIB}.lib
         >
     )
 else()
     target_link_libraries(kemena3d PUBLIC
         $<IF:$<CONFIG:Debug>,
-            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/build_Debug/libJolt.a,
-            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/build_Release/libJolt.a
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Debug/lib/lib${GLEW_LIB}.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Release/lib/lib${GLEW_LIB}.a
+        >
+    )
+endif()
+
+# Jolt Physics (always static; output path differs between MSVC multi-config and MinGW single-config)
+if(MSVC)
+    target_link_libraries(kemena3d PUBLIC
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/build_Debug/Debug/Jolt.lib,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/build_Release/Release/Jolt.lib
+        >
+    )
+else()
+    target_link_libraries(kemena3d PUBLIC
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/build_Debug/libJolt.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/build_Release/libJolt.a
+        >
+    )
+endif()
+
+# Recast Navigation (Recast, Detour, DetourCrowd, DetourTileCache)
+if(MSVC)
+    target_link_libraries(kemena3d PUBLIC
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Debug/Recast.lib,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Release/Recast.lib
+        >
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Debug/Detour.lib,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Release/Detour.lib
+        >
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Debug/DetourCrowd.lib,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Release/DetourCrowd.lib
+        >
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Debug/DetourTileCache.lib,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Release/DetourTileCache.lib
+        >
+    )
+else()
+    target_link_libraries(kemena3d PUBLIC
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Debug/libRecast.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Release/libRecast.a
+        >
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Debug/libDetour.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Release/libDetour.a
+        >
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Debug/libDetourCrowd.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Release/libDetourCrowd.a
+        >
+        $<IF:$<CONFIG:Debug>,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Debug/libDetourTileCache.a,
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/lib/Release/libDetourTileCache.a
         >
     )
 endif()
@@ -224,7 +282,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/portable-file-dialogs
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo/
     DESTINATION include FILES_MATCHING PATTERN "*.h*"
 )
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/slang-2026.5.2-windows-x86_64/include/
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/dist/include/
     DESTINATION include FILES_MATCHING PATTERN "*.h*"
 )
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/miniaudio/
@@ -233,10 +291,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/miniaudio/
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Jolt/
     DESTINATION include/Jolt FILES_MATCHING PATTERN "*.h*"
 )
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Recast/include/
-#	DESTINATION Output/include/recast/Recast FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/Detour/include/
-#	DESTINATION Output/include/recast/Detour FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/include/
+    DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 
 # Dependency libs (per-config into Output/lib/{Debug,Release})
 file(GLOB_RECURSE LIBS_DEBUG
@@ -258,10 +314,15 @@ file(GLOB_RECURSE LIBS_RELEASE
 install(FILES ${LIBS_DEBUG}   DESTINATION lib   CONFIGURATIONS Debug)
 install(FILES ${LIBS_RELEASE} DESTINATION lib	CONFIGURATIONS Release)
 
-# GLEW is special (not per-config, it’s in Release/x64)
-file(GLOB GLEW_LIBS
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/*.lib
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/*.dll
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/lib/Release/x64/*.a
+file(GLOB GLEW_LIBS_DEBUG
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Debug/lib/Debug/*.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Debug/lib/*.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Debug/bin/Debug/*.dll"
 )
-install(FILES ${GLEW_LIBS} DESTINATION lib)
+file(GLOB GLEW_LIBS_RELEASE
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Release/lib/Release/*.lib"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Release/lib/*.a"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glew/build/cmake/build_Release/bin/Release/*.dll"
+)
+install(FILES ${GLEW_LIBS_DEBUG}   DESTINATION lib CONFIGURATIONS Debug)
+install(FILES ${GLEW_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)

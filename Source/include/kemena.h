@@ -12,6 +12,7 @@
 #include "kguimanager.h"
 #include "kaudiomanager.h"
 #include "kphysicsmanager.h"
+#include "knavmanager.h"
 
 namespace kemena
 {
@@ -26,6 +27,7 @@ namespace kemena
     KEMENA3D_API kGuiManager *createGuiManager(kRenderer *renderer);
     KEMENA3D_API kAudioManager   *createAudioManager();
     KEMENA3D_API kPhysicsManager *createPhysicsManager();
+    KEMENA3D_API kNavManager     *createNavManager(kNavMesh *mesh, int maxAgents = 128);
 }
 
 #endif // KEMENA_H
