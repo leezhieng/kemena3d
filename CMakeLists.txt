@@ -97,13 +97,19 @@ link_directories(
 # Definitions and static linking behavior
 if (NOT BUILD_SHARED_LIBS)
     target_compile_definitions(kemena3d PRIVATE GLEW_STATIC)
-    set(GLEW_LIB glew32s)
+    set(GLEW_LIB libglew32)
 else()
     set(GLEW_LIB glew32)
 endif()
 
 # Use GLEW for imgui
 target_compile_definitions(kemena3d PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLEW)
+
+# Jolt was built with DEBUG_RENDERER_IN_DEBUG_AND_RELEASE=ON, which makes JPH_DEBUG_RENDERER a
+# PUBLIC define on the Jolt target for Debug and Release configs.  Since we link the prebuilt
+# Jolt.lib directly (no imported target), we must mirror that define here so our object files
+# use the same GetSubmergedVolume signature (7-param) that Jolt.lib exports.
+target_compile_definitions(kemena3d PUBLIC JPH_DEBUG_RENDERER)
 
 # Platform specific
 if (WIN32)
@@ -326,3 +332,24 @@ file(GLOB GLEW_LIBS_RELEASE
 )
 install(FILES ${GLEW_LIBS_DEBUG}   DESTINATION lib CONFIGURATIONS Debug)
 install(FILES ${GLEW_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)
+
+# Jolt Physics — MSVC multi-config puts the .lib one level deeper inside build_<Config>/<Config>/
+if(MSVC)
+    install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/build_Debug/Debug/Jolt.lib"
+        DESTINATION lib CONFIGURATIONS Debug
+    )
+    install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/build_Release/Release/Jolt.lib"
+        DESTINATION lib CONFIGURATIONS Release
+    )
+else()
+    install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/build_Debug/libJolt.a"
+        DESTINATION lib CONFIGURATIONS Debug
+    )
+    install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt/Build/build_Release/libJolt.a"
+        DESTINATION lib CONFIGURATIONS Release
+    )
+endif()
