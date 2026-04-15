@@ -15,6 +15,7 @@
 #include <SDL3/SDL.h>
 
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "backends/imgui_impl_sdl3.h"
 #include "backends/imgui_impl_opengl3.h"
 
@@ -140,6 +141,36 @@ namespace kemena
          */
         bool isWindowHovered(ImGuiHoveredFlags flags = 0);
 
+        /**
+         * @brief Returns the content region minimum bound in window-local coordinates.
+         * @note Prefer GetCursorScreenPos() + GetContentRegionAvail() for new code.
+         */
+        kVec2 getWindowContentRegionMin();
+
+        /**
+         * @brief Returns the content region maximum bound in window-local coordinates.
+         * @note Prefer GetCursorScreenPos() + GetContentRegionAvail() for new code.
+         */
+        kVec2 getWindowContentRegionMax();
+
+        /** @brief Returns the center of the main viewport in screen coordinates. */
+        kVec2 getMainViewportCenter();
+
+        // ---- Child Window ----
+
+        /**
+         * @brief Begins a scrollable child region.
+         * @param id          Unique identifier.
+         * @param size        Size in pixels (0 = fill remaining; negative = remaining minus value).
+         * @param childFlags  ImGuiChildFlags (e.g. ImGuiChildFlags_Borders).
+         * @param windowFlags ImGuiWindowFlags.
+         * @return true if the child region is visible; always call childEnd() regardless.
+         */
+        bool childStart(kString id, kVec2 size = kVec2(0, 0), ImGuiChildFlags childFlags = 0, ImGuiWindowFlags windowFlags = 0);
+
+        /** @brief Ends the current child region. Always call this after childStart(). */
+        void childEnd();
+
         // ---- Dockspace ----
 
         /**
@@ -193,6 +224,15 @@ namespace kemena
         void groupStart();
         /** @brief Ends a layout group. */
         void groupEnd();
+
+        /**
+         * @brief Disables all user interaction and dims widgets.
+         * @param disabled Pass true to enter disabled state (default).
+         */
+        void beginDisabled(bool disabled = true);
+
+        /** @brief Ends a disabled section opened with beginDisabled(). */
+        void endDisabled();
 
         /**
          * @brief Places the next widget on the same line as the previous one.
@@ -252,6 +292,13 @@ namespace kemena
         float getCursorPosY();
         /** @brief Returns the cursor position in screen coordinates. */
         kVec2 getCursorScreenPos();
+
+        /**
+         * @brief Moves the cursor to an absolute screen-space position.
+         * @param pos Absolute screen-space coordinates.
+         */
+        void setCursorScreenPos(kVec2 pos);
+
         /** @brief Returns the available content region size in the current window. */
         kVec2 getContentRegionAvail();
 
@@ -278,6 +325,12 @@ namespace kemena
         void pushTextWrapPos(float wrapLocalPosX = 0.0f);
         /** @brief Pops the last text wrap position. */
         void popTextWrapPos();
+
+        /** @brief Returns the height of a typical framed widget in pixels (FontSize + FramePadding * 2). */
+        float getFrameHeight();
+
+        /** @brief Returns the height of a framed widget plus item spacing (distance between two consecutive widget rows). */
+        float getFrameHeightWithSpacing();
 
         // ---- ID Stack ----
 
@@ -340,6 +393,9 @@ namespace kemena
         /** @brief Pops the last font from the font stack. */
         void popFont();
 
+        /** @brief Returns the current scaled font size in pixels. */
+        float getFontSize();
+
         // ---- Text ----
 
         /** @brief Renders a plain text kString. @param text Text to display. */
@@ -368,6 +424,15 @@ namespace kemena
         void bulletText(kString text);
         /** @brief Renders a bullet point without text. */
         void bullet();
+
+        /**
+         * @brief Returns the rendered size of a text kString.
+         * @param text                     Text to measure.
+         * @param hideTextAfterDoubleHash  If true, text after "##" is not measured.
+         * @param wrapWidth                Wrap width (-1 = no wrap).
+         * @return Bounding size in pixels.
+         */
+        kVec2 calcTextSize(kString text, bool hideTextAfterDoubleHash = false, float wrapWidth = -1.0f);
 
         // ---- Buttons ----
 
@@ -694,9 +759,10 @@ namespace kemena
          * @param size      Display size in pixels.
          * @param uv0       Top-left UV coordinate.
          * @param uv1       Bottom-right UV coordinate.
+         * @param tint      Tint color multiplied over the image (default white = no tint).
          * @return true if the button was clicked.
          */
-        bool imageButton(kString id, GLuint textureId, kVec2 size, kVec2 uv0 = kVec2(0, 0), kVec2 uv1 = kVec2(1, 1));
+        bool imageButton(kString id, GLuint textureId, kVec2 size, kVec2 uv0 = kVec2(0, 0), kVec2 uv1 = kVec2(1, 1), kVec4 tint = kVec4(1, 1, 1, 1));
 
         // ---- Progress ----
 
@@ -865,6 +931,29 @@ namespace kemena
          */
         void tableHeader(kString label);
 
+        // ---- Columns ----
+
+        /**
+         * @brief Begins a legacy multi-column layout.
+         * @param count   Number of columns (1 = resets to single-column).
+         * @param id      Optional unique identifier.
+         * @param borders Whether to draw column border lines.
+         * @note Prefer the Tables API for new code.
+         */
+        void columnsStart(int count = 1, kString id = "", bool borders = true);
+
+        /** @brief Resets to a single-column layout, ending the columns region. */
+        void columnsEnd();
+
+        /** @brief Advances to the next column (wraps to the next row when needed). */
+        void nextColumn();
+
+        /**
+         * @brief Returns the width of a column in pixels.
+         * @param columnIndex Column index (-1 = current column).
+         */
+        float getColumnWidth(int columnIndex = -1);
+
         // ---- Scroll ----
 
         /** @brief Returns the current horizontal scroll position. */
@@ -925,6 +1014,12 @@ namespace kemena
         /** @brief Returns the bounding box size of the last item. */
         kVec2 getItemRectSize();
 
+        /**
+         * @brief Allows the next item to overlap previously drawn items.
+         * Call this before the item that should allow overlap.
+         */
+        void setNextItemAllowOverlap();
+
         // ---- Mouse ----
 
         /** @brief Returns whether a mouse button is held down. @param button ImGuiMouseButton. */
@@ -948,6 +1043,53 @@ namespace kemena
         kVec2 getMouseDelta();
         /** @brief Returns the vertical mouse wheel delta. */
         float getMouseWheel();
+
+        // ---- Keyboard ----
+
+        /** @brief Returns true if the Shift modifier key is currently held. */
+        bool isKeyShift();
+
+        /** @brief Returns true if the Ctrl modifier key is currently held. */
+        bool isKeyCtrl();
+
+        // ---- Draw ----
+
+        /**
+         * @brief Draws a textured rectangle directly onto the window draw list.
+         * @param textureId GPU texture handle.
+         * @param pMin      Top-left corner in screen coordinates.
+         * @param pMax      Bottom-right corner in screen coordinates.
+         * @param uvMin     Top-left UV coordinate.
+         * @param uvMax     Bottom-right UV coordinate.
+         * @param tint      Tint color (default white = no tint).
+         */
+        void drawListAddImage(GLuint textureId, kVec2 pMin, kVec2 pMax, kVec2 uvMin = kVec2(0, 0), kVec2 uvMax = kVec2(1, 1), kVec4 tint = kVec4(1, 1, 1, 1));
+
+        // ---- Utility ----
+
+        /**
+         * @brief Sets the OS clipboard text.
+         * @param text Text to place in the clipboard.
+         */
+        void setClipboardText(kString text);
+
+        /**
+         * @brief Saves the current ImGui layout state to a .ini file.
+         * @param filename Path to the .ini file.
+         */
+        void saveIniSettingsToDisk(kString filename);
+
+        /**
+         * @brief Loads ImGui layout state from a .ini file.
+         * @param filename Path to the .ini file.
+         */
+        void loadIniSettingsFromDisk(kString filename);
+
+        /**
+         * @brief Registers a custom .ini settings handler.
+         * @param handler Fully configured ImGuiSettingsHandler struct.
+         */
+        void addSettingsHandler(ImGuiSettingsHandler handler);
 
         /**
          * @brief Shuts down ImGui and releases backend resources.

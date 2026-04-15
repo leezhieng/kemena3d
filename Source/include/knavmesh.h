@@ -169,9 +169,10 @@ namespace kemena
         /** @brief Returns the internal dtTileCache pointer (null for non-tiled builds). */
         void *getTileCache()    const;
 
+        struct Impl; ///< Opaque implementation (defined in knavmesh.cpp).
+
     protected:
     private:
-        struct Impl;
         Impl *m_impl;
     };
 

@@ -1,6 +1,8 @@
 #include "kphysicsmanager.h"
 
-JPH_SUPPRESS_WARNINGS_PUSH
+#ifdef _MSC_VER
+#  pragma warning(push, 0)
+#endif
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -9,7 +11,9 @@ JPH_SUPPRESS_WARNINGS_PUSH
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
-JPH_SUPPRESS_WARNINGS_POP
+#ifdef _MSC_VER
+#  pragma warning(pop)
+#endif
 
 #include <iostream>
 #include <memory>

@@ -810,9 +810,9 @@ namespace kemena
 		ImGui::Image((ImTextureID)(intptr_t)textureId, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
 	}
 
-	bool kGuiManager::imageButton(kString id, GLuint textureId, kVec2 size, kVec2 uv0, kVec2 uv1)
+	bool kGuiManager::imageButton(kString id, GLuint textureId, kVec2 size, kVec2 uv0, kVec2 uv1, kVec4 tint)
 	{
-		return ImGui::ImageButton(id.c_str(), (ImTextureID)(intptr_t)textureId, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
+		return ImGui::ImageButton(id.c_str(), (ImTextureID)(intptr_t)textureId, ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y), ImVec4(0, 0, 0, 0), ImVec4(tint.x, tint.y, tint.z, tint.w));
 	}
 
 	// ---- Progress ----
@@ -1124,6 +1124,153 @@ namespace kemena
 	float kGuiManager::getMouseWheel()
 	{
 		return ImGui::GetIO().MouseWheel;
+	}
+
+	// ---- Child Window ----
+
+	kVec2 kGuiManager::getWindowContentRegionMin()
+	{
+		ImVec2 v = ImGui::GetWindowContentRegionMin();
+		return kVec2(v.x, v.y);
+	}
+
+	kVec2 kGuiManager::getWindowContentRegionMax()
+	{
+		ImVec2 v = ImGui::GetWindowContentRegionMax();
+		return kVec2(v.x, v.y);
+	}
+
+	kVec2 kGuiManager::getMainViewportCenter()
+	{
+		ImVec2 v = ImGui::GetMainViewport()->GetCenter();
+		return kVec2(v.x, v.y);
+	}
+
+	bool kGuiManager::childStart(kString id, kVec2 size, ImGuiChildFlags childFlags, ImGuiWindowFlags windowFlags)
+	{
+		return ImGui::BeginChild(id.c_str(), ImVec2(size.x, size.y), childFlags, windowFlags);
+	}
+
+	void kGuiManager::childEnd()
+	{
+		ImGui::EndChild();
+	}
+
+	// ---- Layout (disabled / frame metrics / screen cursor) ----
+
+	void kGuiManager::beginDisabled(bool disabled)
+	{
+		ImGui::BeginDisabled(disabled);
+	}
+
+	void kGuiManager::endDisabled()
+	{
+		ImGui::EndDisabled();
+	}
+
+	void kGuiManager::setCursorScreenPos(kVec2 pos)
+	{
+		ImGui::SetCursorScreenPos(ImVec2(pos.x, pos.y));
+	}
+
+	float kGuiManager::getFrameHeight()
+	{
+		return ImGui::GetFrameHeight();
+	}
+
+	float kGuiManager::getFrameHeightWithSpacing()
+	{
+		return ImGui::GetFrameHeightWithSpacing();
+	}
+
+	// ---- Style ----
+
+	float kGuiManager::getFontSize()
+	{
+		return ImGui::GetFontSize();
+	}
+
+	// ---- Text ----
+
+	kVec2 kGuiManager::calcTextSize(kString text, bool hideTextAfterDoubleHash, float wrapWidth)
+	{
+		ImVec2 v = ImGui::CalcTextSize(text.c_str(), nullptr, hideTextAfterDoubleHash, wrapWidth);
+		return kVec2(v.x, v.y);
+	}
+
+	// ---- Columns ----
+
+	void kGuiManager::columnsStart(int count, kString id, bool borders)
+	{
+		ImGui::Columns(count, id.empty() ? nullptr : id.c_str(), borders);
+	}
+
+	void kGuiManager::columnsEnd()
+	{
+		ImGui::Columns(1);
+	}
+
+	void kGuiManager::nextColumn()
+	{
+		ImGui::NextColumn();
+	}
+
+	float kGuiManager::getColumnWidth(int columnIndex)
+	{
+		return ImGui::GetColumnWidth(columnIndex);
+	}
+
+	// ---- Item Queries ----
+
+	void kGuiManager::setNextItemAllowOverlap()
+	{
+		ImGui::SetNextItemAllowOverlap();
+	}
+
+	// ---- Keyboard ----
+
+	bool kGuiManager::isKeyShift()
+	{
+		return ImGui::GetIO().KeyShift;
+	}
+
+	bool kGuiManager::isKeyCtrl()
+	{
+		return ImGui::GetIO().KeyCtrl;
+	}
+
+	// ---- Draw ----
+
+	void kGuiManager::drawListAddImage(GLuint textureId, kVec2 pMin, kVec2 pMax, kVec2 uvMin, kVec2 uvMax, kVec4 tint)
+	{
+		ImU32 col = ImGui::ColorConvertFloat4ToU32(ImVec4(tint.x, tint.y, tint.z, tint.w));
+		ImGui::GetWindowDrawList()->AddImage(
+			(ImTextureID)(intptr_t)textureId,
+			ImVec2(pMin.x, pMin.y), ImVec2(pMax.x, pMax.y),
+			ImVec2(uvMin.x, uvMin.y), ImVec2(uvMax.x, uvMax.y),
+			col);
+	}
+
+	// ---- Utility ----
+
+	void kGuiManager::setClipboardText(kString text)
+	{
+		ImGui::SetClipboardText(text.c_str());
+	}
+
+	void kGuiManager::saveIniSettingsToDisk(kString filename)
+	{
+		ImGui::SaveIniSettingsToDisk(filename.c_str());
+	}
+
+	void kGuiManager::loadIniSettingsFromDisk(kString filename)
+	{
+		ImGui::LoadIniSettingsFromDisk(filename.c_str());
+	}
+
+	void kGuiManager::addSettingsHandler(ImGuiSettingsHandler handler)
+	{
+		ImGui::AddSettingsHandler(&handler);
 	}
 
 	void kGuiManager::destroy()

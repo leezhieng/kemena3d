@@ -25,9 +25,9 @@ namespace kemena
     KEMENA3D_API kWorld *createWorld(kAssetManager *assetManager);
     KEMENA3D_API kScriptManager *createScriptManager();
     KEMENA3D_API kGuiManager *createGuiManager(kRenderer *renderer);
-    KEMENA3D_API kAudioManager   *createAudioManager();
+    KEMENA3D_API kAudioManager *createAudioManager();
     KEMENA3D_API kPhysicsManager *createPhysicsManager();
-    KEMENA3D_API kNavManager     *createNavManager(kNavMesh *mesh, int maxAgents = 128);
+    KEMENA3D_API kNavManager *createNavManager(kNavMesh *mesh, int maxAgents = 128);
 }
 
 #endif // KEMENA_H

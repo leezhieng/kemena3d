@@ -1,6 +1,8 @@
 #include "kphysicsobject.h"
 
-JPH_SUPPRESS_WARNINGS_PUSH
+#ifdef _MSC_VER
+#  pragma warning(push, 0)
+#endif
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
@@ -11,7 +13,9 @@ JPH_SUPPRESS_WARNINGS_PUSH
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/CylinderShape.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
-JPH_SUPPRESS_WARNINGS_POP
+#ifdef _MSC_VER
+#  pragma warning(pop)
+#endif
 
 #include <iostream>
 
@@ -260,7 +264,7 @@ namespace kemena
                                 m_impl->bodyId);
         if (lock.Succeeded())
         {
-            JPH::Body *body = lock.GetBody();
+            JPH::Body *body = &lock.GetBody();
             if (body->GetMotionType() == JPH::EMotionType::Dynamic)
                 body->GetMotionProperties()->SetInverseMass(1.0f / mass);
         }
@@ -286,7 +290,7 @@ namespace kemena
                                 m_impl->bodyId);
         if (lock.Succeeded())
         {
-            JPH::Body *body = lock.GetBody();
+            JPH::Body *body = &lock.GetBody();
             if (body->GetMotionProperties())
                 body->GetMotionProperties()->SetLinearDamping(damping);
         }
@@ -300,7 +304,7 @@ namespace kemena
                                 m_impl->bodyId);
         if (lock.Succeeded())
         {
-            JPH::Body *body = lock.GetBody();
+            JPH::Body *body = &lock.GetBody();
             if (body->GetMotionProperties())
                 body->GetMotionProperties()->SetAngularDamping(damping);
         }
@@ -314,7 +318,7 @@ namespace kemena
                                 m_impl->bodyId);
         if (lock.Succeeded())
         {
-            JPH::Body *body = lock.GetBody();
+            JPH::Body *body = &lock.GetBody();
             if (body->GetMotionProperties())
                 body->GetMotionProperties()->SetGravityFactor(factor);
         }

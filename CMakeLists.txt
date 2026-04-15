@@ -84,7 +84,7 @@ target_include_directories(kemena3d
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/dist/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/include/recastnavigation
 )
 
 # Link directories (per-config)
