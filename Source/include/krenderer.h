@@ -312,6 +312,22 @@ namespace kemena
                            kVec4 color     = kVec4(1.0f, 0.6f, 0.0f, 1.0f),
                            float thickness = 0.03f);
 
+        /**
+         * @brief Draws editor debug shapes for selected lights and cameras.
+         *
+         * Renders wire shapes (light range spheres/cones, camera frustums, sun
+         * direction arrows) for any selected light or camera node.
+         *
+         * Must be called after render() and before the final ImGui pass.
+         * Requires setEnableScreenBuffer(true).
+         *
+         * @param world         World containing the active editor camera.
+         * @param scene         Scene whose lights and cameras are inspected.
+         * @param selectedUuids UUIDs of currently selected objects.
+         */
+        void renderDebugShapes(kWorld *world, kScene *scene,
+                               const std::vector<kString> &selectedUuids);
+
     protected:
     private:
         kString engineName;           ///< Optional application name for diagnostics.
@@ -393,6 +409,11 @@ namespace kemena
         kShader *debugNormalsShader = nullptr;
         kShader *debugWireShader    = nullptr;
         kShader *debugDepthShader   = nullptr;
+
+        // Debug shape line rendering
+        kShader  *debugLineShader = nullptr;
+        uint32_t  debugLineVao    = 0;
+        uint32_t  debugLineVbo    = 0;
 
         kRenderMode renderMode = kRenderMode::RENDER_MODE_FULL;
 

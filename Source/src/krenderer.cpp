@@ -78,6 +78,10 @@ namespace kemena
         if (debugWireShader)    { delete debugWireShader;    debugWireShader    = nullptr; }
         if (debugDepthShader)   { delete debugDepthShader;   debugDepthShader   = nullptr; }
 
+        if (debugLineShader) { delete debugLineShader; debugLineShader = nullptr; }
+        if (debugLineVao)    { driver->deleteVertexArray(debugLineVao); debugLineVao = 0; }
+        if (debugLineVbo)    { driver->deleteBuffer(debugLineVbo);      debugLineVbo = 0; }
+
         driver->destroy();
         delete driver;
         driver = nullptr;
@@ -1373,6 +1377,42 @@ uniform vec4 outlineColor;
 void main() { fragColor = outlineColor; }
 )";
 
+    static const char *kDebugLineVS = R"(
+#version 330 core
+layout(location = 0) in vec3 aPos;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+void main() {
+    gl_Position = projectionMatrix * viewMatrix * vec4(aPos, 1.0);
+}
+)";
+
+    static const char *kDebugLineFS = R"(
+#version 330 core
+out vec4 outColor;
+uniform vec3 lineColor;
+void main() { outColor = vec4(lineColor, 1.0); }
+)";
+
+    static void appendCircle(std::vector<float> &verts, kVec3 center,
+                             kVec3 axisU, kVec3 axisV, float radius, int segments = 32)
+    {
+        const float pi2 = 2.0f * glm::pi<float>();
+        for (int i = 0; i < segments; ++i)
+        {
+            float a0 = pi2 * i / segments;
+            float a1 = pi2 * (i + 1) / segments;
+            kVec3 p0 = center + axisU * (radius * cosf(a0)) + axisV * (radius * sinf(a0));
+            kVec3 p1 = center + axisU * (radius * cosf(a1)) + axisV * (radius * sinf(a1));
+            verts.insert(verts.end(), { p0.x, p0.y, p0.z, p1.x, p1.y, p1.z });
+        }
+    }
+
+    static void appendLine(std::vector<float> &verts, kVec3 a, kVec3 b)
+    {
+        verts.insert(verts.end(), { a.x, a.y, a.z, b.x, b.y, b.z });
+    }
+
     static kObject *findNodeByUuid(kObject *node, const kString &uuid)
     {
         if (!node) return nullptr;
@@ -1396,7 +1436,7 @@ void main() { fragColor = outlineColor; }
         if (!outlineShader)
         {
             kShader *newShader = new kShader();
-            newShader->compileShaderProgram(kOutlineVS, kOutlineFS);
+            newShader->loadShadersCode(kOutlineVS, kOutlineFS);
             outlineShader = newShader;
         }
 
@@ -1481,6 +1521,202 @@ void main() { fragColor = outlineColor; }
         outlineShader->unuse();
 
         // Blit updated MSAA buffer to the resolve FBO (display texture)
+        driver->bindReadFramebuffer(fboMsaa);
+        driver->bindDrawFramebuffer(fbo);
+        driver->blitFramebufferColor(0, 0, fboWidth, fboHeight, 0, 0, fboWidth, fboHeight);
+        driver->unbindFramebuffer();
+    }
+
+    void kRenderer::renderDebugShapes(kWorld *world, kScene *scene,
+                                      const std::vector<kString> &selectedUuids)
+    {
+        if (!enableScreenBuffer || !world || !scene || selectedUuids.empty()) return;
+        if (!world->getMainCamera()) return;
+
+        // Lazy-compile line shader
+        if (!debugLineShader)
+        {
+            debugLineShader = new kShader();
+            debugLineShader->loadShadersCode(kDebugLineVS, kDebugLineFS);
+        }
+
+        // Create VAO/VBO on first use with dynamic draw hint
+        if (!debugLineVao)
+        {
+            debugLineVao = driver->createVertexArray();
+            debugLineVbo = driver->createBuffer();
+            glBindVertexArray(static_cast<GLuint>(debugLineVao));
+            glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(debugLineVbo));
+            glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+            glEnableVertexAttribArray(0);
+            glBindVertexArray(0);
+        }
+
+        // Helper: upload vertices and draw as lines
+        auto drawLines = [&](const std::vector<float> &verts, kVec3 color)
+        {
+            if (verts.empty()) return;
+            glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(debugLineVbo));
+            glBufferData(GL_ARRAY_BUFFER,
+                         static_cast<GLsizeiptr>(verts.size() * sizeof(float)),
+                         verts.data(), GL_DYNAMIC_DRAW);
+            debugLineShader->setValue("lineColor", color);
+            driver->drawArrays(debugLineVao, kPrimitiveType::LINES,
+                               static_cast<int>(verts.size() / 3));
+        };
+
+        driver->bindFramebuffer(fboMsaa);
+        driver->setViewport(0, 0, fboWidth, fboHeight);
+
+        debugLineShader->use();
+        debugLineShader->setValue("viewMatrix",       world->getMainCamera()->getViewMatrix());
+        debugLineShader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
+
+        driver->setDepthTest(true);
+        driver->setDepthWrite(false);
+        driver->setCullFace(false);
+        driver->setBlend(false);
+
+        // Build a fast lookup set for selected UUIDs
+        std::set<kString> selectedSet(selectedUuids.begin(), selectedUuids.end());
+
+        // --- Lights ---
+        for (kLight *light : scene->getLights())
+        {
+            if (!light->getActive()) continue;
+            if (selectedSet.find(light->getUuid()) == selectedSet.end()) continue;
+            light->calculateModelMatrix();
+
+            std::vector<float> verts;
+            kVec3 color;
+            kVec3 pos = light->getGlobalPosition();
+            kLightType lt = light->getLightType();
+
+            if (lt == kLightType::LIGHT_TYPE_POINT)
+            {
+                color = kVec3(1.0f, 1.0f, 0.0f); // yellow
+                float L = light->getLinear();
+                float Q = light->getQuadratic();
+                float C = light->getConstant();
+                float P = light->getPower();
+                float radius = 3.0f;
+                if (Q > 0.0001f)
+                {
+                    float target = 256.0f * P - C;
+                    float disc   = L * L + 4.0f * Q * target;
+                    if (disc > 0.0f) radius = (-L + sqrtf(disc)) / (2.0f * Q);
+                }
+                appendCircle(verts, pos, kVec3(1, 0, 0), kVec3(0, 1, 0), radius);
+                appendCircle(verts, pos, kVec3(1, 0, 0), kVec3(0, 0, 1), radius);
+                appendCircle(verts, pos, kVec3(0, 1, 0), kVec3(0, 0, 1), radius);
+            }
+            else if (lt == kLightType::LIGHT_TYPE_SPOT)
+            {
+                color = kVec3(1.0f, 0.6f, 0.0f); // orange
+                float innerAngle = glm::acos(glm::clamp(light->getCutOff(),      -1.0f, 1.0f));
+                float outerAngle = glm::acos(glm::clamp(light->getOuterCutOff(), -1.0f, 1.0f));
+                float coneLen = 5.0f;
+                float innerR  = tanf(innerAngle) * coneLen;
+                float outerR  = tanf(outerAngle) * coneLen;
+
+                kVec3 dir   = glm::normalize(light->getDirection());
+                kVec3 right = glm::normalize(glm::cross(dir, kVec3(0, 1, 0)));
+                if (glm::length(right) < 0.01f)
+                    right = glm::normalize(glm::cross(dir, kVec3(1, 0, 0)));
+                kVec3 up = glm::normalize(glm::cross(right, dir));
+
+                kVec3 endCenter = pos + dir * coneLen;
+
+                // 8 lines from origin to outer cone circle
+                const int coneSegs = 8;
+                for (int i = 0; i < coneSegs; ++i)
+                {
+                    float a    = 2.0f * glm::pi<float>() * i / coneSegs;
+                    kVec3 edge = endCenter + right * (outerR * cosf(a)) + up * (outerR * sinf(a));
+                    appendLine(verts, pos, edge);
+                }
+                appendCircle(verts, endCenter, right, up, innerR);
+                appendCircle(verts, endCenter, right, up, outerR);
+            }
+            else if (lt == kLightType::LIGHT_TYPE_SUN)
+            {
+                color = kVec3(1.0f, 1.0f, 0.3f); // bright yellow
+                kVec3 dir      = glm::normalize(light->getDirection());
+                float arrowLen = 3.0f;
+                float headLen  = 0.5f;
+
+                kVec3 perp = glm::normalize(glm::cross(dir, kVec3(0, 1, 0)));
+                if (glm::length(perp) < 0.01f)
+                    perp = glm::normalize(glm::cross(dir, kVec3(1, 0, 0)));
+
+                const float offsets[] = { 0.0f, -1.0f, 1.0f, -2.0f, 2.0f };
+                for (float off : offsets)
+                {
+                    kVec3 start = pos + perp * off;
+                    kVec3 end   = start + dir * arrowLen;
+                    appendLine(verts, start, end);
+                    kVec3 back = -dir;
+                    appendLine(verts, end, end + back * headLen + perp  * (headLen * 0.4f));
+                    appendLine(verts, end, end + back * headLen - perp  * (headLen * 0.4f));
+                }
+            }
+
+            drawLines(verts, color);
+        }
+
+        // --- Cameras ---
+        for (kObject *obj : scene->getObjects())
+        {
+            if (obj->getType() != kNodeType::NODE_TYPE_CAMERA) continue;
+            if (!obj->getActive()) continue;
+            if (selectedSet.find(obj->getUuid()) == selectedSet.end()) continue;
+            obj->calculateModelMatrix();
+
+            kCamera *cam = static_cast<kCamera *>(obj);
+            float fovRad = glm::radians(cam->getFOV());
+            float aspect = cam->getAspectRatio();
+            float nearD  = cam->getNearClip();
+            float farD   = glm::min(cam->getFarClip(), 50.0f);
+
+            float nearH = tanf(fovRad * 0.5f) * nearD;
+            float nearW = nearH * aspect;
+            float farH  = tanf(fovRad * 0.5f) * farD;
+            float farW  = farH * aspect;
+
+            kMat4 invView = glm::inverse(cam->getViewMatrix());
+            auto corner = [&](float x, float y, float z) -> kVec3 {
+                return kVec3(invView * kVec4(x, y, z, 1.0f));
+            };
+
+            kVec3 nBL = corner(-nearW, -nearH, -nearD);
+            kVec3 nBR = corner( nearW, -nearH, -nearD);
+            kVec3 nTL = corner(-nearW,  nearH, -nearD);
+            kVec3 nTR = corner( nearW,  nearH, -nearD);
+            kVec3 fBL = corner(-farW, -farH, -farD);
+            kVec3 fBR = corner( farW, -farH, -farD);
+            kVec3 fTL = corner(-farW,  farH, -farD);
+            kVec3 fTR = corner( farW,  farH, -farD);
+
+            std::vector<float> verts;
+            // Near plane
+            appendLine(verts, nBL, nBR); appendLine(verts, nBR, nTR);
+            appendLine(verts, nTR, nTL); appendLine(verts, nTL, nBL);
+            // Far plane
+            appendLine(verts, fBL, fBR); appendLine(verts, fBR, fTR);
+            appendLine(verts, fTR, fTL); appendLine(verts, fTL, fBL);
+            // Connecting edges
+            appendLine(verts, nBL, fBL); appendLine(verts, nBR, fBR);
+            appendLine(verts, nTL, fTL); appendLine(verts, nTR, fTR);
+
+            drawLines(verts, kVec3(0.5f, 0.8f, 1.0f)); // light blue
+        }
+
+        // Restore state
+        driver->setDepthWrite(true);
+        debugLineShader->unuse();
+
+        // Blit updated MSAA buffer to the resolve FBO
         driver->bindReadFramebuffer(fboMsaa);
         driver->bindDrawFramebuffer(fbo);
         driver->blitFramebufferColor(0, 0, fboWidth, fboHeight, 0, 0, fboWidth, fboHeight);

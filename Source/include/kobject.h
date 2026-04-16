@@ -99,6 +99,18 @@ namespace kemena
         void setActive(bool newActive);
 
         /**
+         * @brief Returns whether editor debug visualization is enabled.
+         * @return true if debug shapes (frustum, light range, etc.) are drawn.
+         */
+        bool getDebugMode();
+
+        /**
+         * @brief Enables or disables editor debug visualization for this object.
+         * @param newMode true to draw debug shapes in the editor viewport.
+         */
+        void setDebugMode(bool newMode);
+
+        /**
          * @brief Returns the numeric identifier of this object.
          * @return Unique unsigned integer ID.
          */
@@ -310,7 +322,8 @@ namespace kemena
         kObject *parent = nullptr;
         std::vector<kObject *> children;
 
-        bool isActive = true;
+        bool isActive   = true;
+        bool debugMode  = false;
 
         kNodeType type = NODE_TYPE_OBJECT;
         unsigned int id;

@@ -67,6 +67,16 @@ namespace kemena
         isActive = newActive;
     }
 
+    bool kObject::getDebugMode()
+    {
+        return debugMode;
+    }
+
+    void kObject::setDebugMode(bool newMode)
+    {
+        debugMode = newMode;
+    }
+
     unsigned int kObject::getId()
     {
         return id;
