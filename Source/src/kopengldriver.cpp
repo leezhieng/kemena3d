@@ -482,6 +482,16 @@ namespace kemena
         glGetTexImage(GL_TEXTURE_2D, mipLevel, GL_RGB, GL_FLOAT, pixels);
     }
 
+    void kOpenGLDriver::readPixelsRGBA(int x, int y, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a)
+    {
+        uint8_t pixel[4] = {0, 0, 0, 0};
+        glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+        r = pixel[0];
+        g = pixel[1];
+        b = pixel[2];
+        a = pixel[3];
+    }
+
     // -------------------------------------------------------------------------
     // Framebuffers
     // -------------------------------------------------------------------------

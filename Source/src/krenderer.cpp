@@ -60,6 +60,13 @@ namespace kemena
             if (shadowFboTex) { driver->deleteFBOTexture(shadowFboTex); shadowFboTex = 0; }
         }
 
+        if (enablePicking)
+        {
+            if (pickFbo)      { driver->deleteFramebuffer(pickFbo);    pickFbo = 0; }
+            if (pickFboTex)   { driver->deleteFBOTexture(pickFboTex);  pickFboTex = 0; }
+            if (pickRboDepth) { driver->deleteRenderbuffer(pickRboDepth); pickRboDepth = 0; }
+        }
+
         driver->destroy();
         delete driver;
         driver = nullptr;
@@ -836,5 +843,201 @@ void main()
     unsigned int kRenderer::rgbToId(unsigned int r, unsigned int g, unsigned int b)
     {
         return r + g * 256 + b * 256 * 256;
+    }
+
+    // -------------------------------------------------------------------------
+    // Color ID object picking
+    // -------------------------------------------------------------------------
+
+    void kRenderer::setEnableObjectPicking(bool enable, bool useDefaultShader)
+    {
+        enablePicking = enable;
+
+        if (enable)
+        {
+            // Allocate picking FBO at 1×1; it will be resized on first use.
+            pickFbo     = driver->createFramebuffer();
+            pickFboTex  = driver->createFBOColorTexture(1, 1);
+            driver->attachFBOColorTexture(pickFbo, pickFboTex);
+            pickRboDepth = driver->createRenderbuffer();
+            driver->setupRenderbuffer(pickRboDepth, 1, 1);
+            driver->attachRenderbufferDepthStencil(pickFbo, pickRboDepth);
+            driver->bindFramebuffer(pickFbo);
+            driver->setFramebufferDrawBuffer();
+            if (!driver->isFramebufferComplete())
+                std::cerr << "Picking FBO not complete!" << std::endl;
+            driver->unbindFramebuffer();
+            pickFboWidth  = 1;
+            pickFboHeight = 1;
+
+            if (useDefaultShader)
+            {
+                const char *vertSrc = R"(#version 330 core
+layout(location = 0) in vec3 vertexPosition;
+layout(location = 6) in ivec4 boneIDs;
+layout(location = 7) in vec4 weights;
+
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+
+const int MAX_BONES = 128;
+const int MAX_BONE_INFLUENCE = 4;
+uniform mat4 finalBonesMatrices[MAX_BONES];
+
+void main()
+{
+    vec4 totalPosition = vec4(vertexPosition, 1.0);
+    float totalWeight = 0.0;
+
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+    {
+        int boneID = boneIDs[i];
+        float weight = weights[i];
+        if (boneID == -1 || weight <= 0.0) continue;
+        if (boneID >= MAX_BONES) { totalPosition = vec4(vertexPosition, 1.0); break; }
+        totalPosition += (finalBonesMatrices[boneID] * vec4(vertexPosition, 1.0)) * weight;
+        totalWeight += weight;
+    }
+
+    if (totalWeight == 0.0)
+        totalPosition = vec4(vertexPosition, 1.0);
+
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * totalPosition;
+})";
+
+                const char *fragSrc = R"(#version 330 core
+out vec4 fragColor;
+uniform vec3 pickColor;
+
+void main()
+{
+    fragColor = vec4(pickColor, 1.0);
+})";
+
+                kShader *newPickShader = new kShader();
+                newPickShader->loadShadersCode(vertSrc, fragSrc);
+                pickingShader = newPickShader;
+            }
+        }
+        else
+        {
+            if (pickFbo)      { driver->deleteFramebuffer(pickFbo);      pickFbo = 0; }
+            if (pickFboTex)   { driver->deleteFBOTexture(pickFboTex);    pickFboTex = 0; }
+            if (pickRboDepth) { driver->deleteRenderbuffer(pickRboDepth); pickRboDepth = 0; }
+            delete pickingShader;
+            pickingShader = nullptr;
+            pickFboWidth  = 0;
+            pickFboHeight = 0;
+        }
+    }
+
+    bool kRenderer::getEnableObjectPicking()
+    {
+        return enablePicking;
+    }
+
+    void kRenderer::renderSceneGraphPicking(kWorld *world, kScene *scene, kObject *currentNode)
+    {
+        if (currentNode == nullptr || !currentNode->getActive()) return;
+
+        currentNode->calculateModelMatrix();
+
+        if (currentNode->getType() == kNodeType::NODE_TYPE_MESH)
+        {
+            kMesh *currentMesh = (kMesh *)currentNode;
+            if (currentMesh->getLoaded())
+            {
+                kVec3 idColor = idToRgb(currentMesh->getId());
+                pickingShader->setValue("modelMatrix", currentMesh->getModelMatrixWorld());
+                pickingShader->setValue("pickColor",   kVec3(idColor.r / 255.0f,
+                                                             idColor.g / 255.0f,
+                                                             idColor.b / 255.0f));
+
+                std::vector<kMat4> boneTransforms(128, kMat4(1.0f));
+                if (currentMesh->getSkinned() && currentMesh->getAnimator() != nullptr)
+                    boneTransforms = currentMesh->getAnimator()->getFinalBoneMatrices();
+                pickingShader->setValue("finalBonesMatrices", boneTransforms);
+
+                currentMesh->draw();
+            }
+        }
+
+        for (size_t i = 0; i < currentNode->getChildren().size(); ++i)
+        {
+            if (currentNode->getChildren().at(i) != nullptr)
+                renderSceneGraphPicking(world, scene, currentNode->getChildren().at(i));
+        }
+    }
+
+    static kObject *findObjectById(kObject *node, unsigned int id)
+    {
+        if (node == nullptr) return nullptr;
+        if (node->getId() == id) return node;
+        for (kObject *child : node->getChildren())
+        {
+            kObject *found = findObjectById(child, id);
+            if (found) return found;
+        }
+        return nullptr;
+    }
+
+    kObject *kRenderer::pickObject(kWorld *world, kScene *scene,
+                                   int mouseX, int mouseY,
+                                   int viewWidth, int viewHeight)
+    {
+        if (!enablePicking || pickingShader == nullptr) return nullptr;
+        if (world->getMainCamera() == nullptr) return nullptr;
+        if (viewWidth <= 0 || viewHeight <= 0) return nullptr;
+
+        // Resize picking FBO if the viewport dimensions changed.
+        if (viewWidth != pickFboWidth || viewHeight != pickFboHeight)
+        {
+            driver->resizeFBOColorTexture(pickFboTex, viewWidth, viewHeight);
+            driver->setupRenderbuffer(pickRboDepth, viewWidth, viewHeight);
+            driver->attachFBOColorTexture(pickFbo, pickFboTex);
+            driver->attachRenderbufferDepthStencil(pickFbo, pickRboDepth);
+            pickFboWidth  = viewWidth;
+            pickFboHeight = viewHeight;
+        }
+
+        // Disable sRGB encoding so ID colors are stored and read back exactly.
+        driver->setSRGBEncoding(false);
+
+        driver->bindFramebuffer(pickFbo);
+        driver->setViewport(0, 0, viewWidth, viewHeight);
+        driver->setClearColor(0.0f, 0.0f, 0.0f, 1.0f); // ID 0 = no object
+        driver->clear(true, true, false);
+        driver->setDepthTest(true);
+        driver->setDepthWrite(true);
+        driver->setBlend(false);
+        driver->setCullFace(false);
+
+        world->getMainCamera()->setAspectRatio((float)viewWidth / (float)viewHeight);
+
+        pickingShader->use();
+        pickingShader->setValue("viewMatrix",       world->getMainCamera()->getViewMatrix());
+        pickingShader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
+
+        renderSceneGraphPicking(world, scene, scene->getRootNode());
+
+        pickingShader->unuse();
+
+        // Read the pixel — OpenGL origin is bottom-left, screen Y is top-down, so flip Y.
+        int glX = mouseX;
+        int glY = viewHeight - 1 - mouseY;
+        uint8_t r = 0, g = 0, b = 0, a = 0;
+        driver->readPixelsRGBA(glX, glY, r, g, b, a);
+
+        driver->unbindFramebuffer();
+
+        // Restore sRGB state for the main render pipeline.
+        if (!enableScreenBuffer)
+            driver->setSRGBEncoding(true);
+
+        unsigned int pickedId = rgbToId(r, g, b);
+        if (pickedId == 0) return nullptr;
+
+        return findObjectById(scene->getRootNode(), pickedId);
     }
 }

@@ -11,6 +11,10 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Body/BodyLockInterface.h>
 #ifdef _MSC_VER
 #  pragma warning(pop)
 #endif
@@ -302,6 +306,58 @@ namespace kemena
 
         object->uninit();
         delete object;
+    }
+
+    // -----------------------------------------------------------------------
+    // Queries
+    // -----------------------------------------------------------------------
+
+    kPhysicsRaycastHit kPhysicsManager::raycast(const kVec3 &origin,
+                                                 const kVec3 &direction,
+                                                 float maxDistance)
+    {
+        kPhysicsRaycastHit result;
+        if (!m_impl->initialized) return result;
+
+        JPH::RRayCast ray{
+            JPH::RVec3(origin.x, origin.y, origin.z),
+            JPH::Vec3(direction.x, direction.y, direction.z) * maxDistance
+        };
+
+        JPH::RayCastResult hit;
+        if (!m_impl->physicsSystem->GetNarrowPhaseQuery().CastRay(ray, hit))
+            return result;
+
+        result.hit      = true;
+        result.distance = hit.mFraction * maxDistance;
+        result.hitPoint = origin + direction * result.distance;
+
+        // Retrieve surface normal via a body read lock.
+        {
+            JPH::BodyLockRead lock(m_impl->physicsSystem->GetBodyLockInterface(),
+                                   hit.mBodyID);
+            if (lock.Succeeded())
+            {
+                const JPH::Body &body = lock.GetBody();
+                JPH::Vec3 normal = body.GetWorldSpaceSurfaceNormal(
+                    hit.mSubShapeID2,
+                    JPH::RVec3(result.hitPoint.x, result.hitPoint.y, result.hitPoint.z));
+                result.hitNormal = kVec3(normal.GetX(), normal.GetY(), normal.GetZ());
+            }
+        }
+
+        // Map the Jolt BodyID back to the kPhysicsObject owned by this manager.
+        uint32_t bodyIdVal = hit.mBodyID.GetIndexAndSequenceNumber();
+        for (kPhysicsObject *obj : m_impl->objects)
+        {
+            if (obj->getBodyId() == bodyIdVal)
+            {
+                result.object = obj;
+                break;
+            }
+        }
+
+        return result;
     }
 
 } // namespace kemena

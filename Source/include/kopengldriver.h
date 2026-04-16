@@ -136,6 +136,7 @@ namespace kemena
         void unbindTextureCube(int unit) override;
         void generateMipmaps2D(uint32_t id) override;
         void readTexture2DRGB(uint32_t id, int mipLevel, float *pixels) override;
+        void readPixelsRGBA(int x, int y, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) override;
 
         // --- Framebuffers ----------------------------------------------------
 

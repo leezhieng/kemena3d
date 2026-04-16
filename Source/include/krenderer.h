@@ -242,6 +242,49 @@ namespace kemena
          */
         unsigned int rgbToId(unsigned int r, unsigned int g, unsigned int b);
 
+        // --- Color ID object picking -----------------------------------------
+
+        /**
+         * @brief Enables or disables the color-ID picking FBO and compiles the
+         *        built-in picking shader.
+         *
+         * When enabled, pickObject() can be called to determine which scene object
+         * is under a given screen coordinate by rendering all meshes with unique
+         * solid ID colors and reading back the clicked pixel.
+         *
+         * Intended for editor use — works for any object regardless of whether it
+         * has a physics body attached.
+         *
+         * @param enable           true to enable.
+         * @param useDefaultShader If true, a built-in picking shader is compiled
+         *                         automatically.
+         */
+        void setEnableObjectPicking(bool enable, bool useDefaultShader = true);
+
+        /** @brief Returns whether color-ID object picking is active. */
+        bool getEnableObjectPicking();
+
+        /**
+         * @brief Returns the scene object under the given viewport-relative
+         *        pixel coordinate using a color-ID render pass.
+         *
+         * Renders all mesh nodes into a dedicated picking FBO with each mesh
+         * colored by its unique ID, reads the pixel at (mouseX, mouseY), decodes
+         * the ID, and returns the corresponding kObject.
+         *
+         * @param world      World containing the active camera.
+         * @param scene      Scene to pick from.
+         * @param mouseX     Viewport-relative X coordinate (0 = left edge).
+         * @param mouseY     Viewport-relative Y coordinate (0 = top edge).
+         * @param viewWidth  Viewport width in pixels.
+         * @param viewHeight Viewport height in pixels.
+         * @return Pointer to the picked kObject, or nullptr if nothing was hit.
+         *         setEnableObjectPicking(true) must have been called first.
+         */
+        kObject *pickObject(kWorld *world, kScene *scene,
+                            int mouseX, int mouseY,
+                            int viewWidth, int viewHeight);
+
     protected:
     private:
         kString engineName;           ///< Optional application name for diagnostics.
@@ -282,6 +325,16 @@ namespace kemena
                                     kMat4 lightSpaceMatrix, kMat4 lightView, kMat4 lightProjection,
                                     bool transparent = false, float deltaTime = 0.0f);
 
+        /**
+         * @brief Recursively renders the scene graph into the picking FBO.
+         *
+         * Each mesh is drawn with its unique ID encoded as an RGB flat color.
+         * @param world     World containing the camera.
+         * @param scene     Active scene.
+         * @param rootNode  Current node to process.
+         */
+        void renderSceneGraphPicking(kWorld *world, kScene *scene, kObject *rootNode);
+
         // Screen FBO
         bool enableScreenBuffer = false;
         kShader *screenShader = nullptr;
@@ -298,6 +351,12 @@ namespace kemena
         const unsigned int shadowWidth = 1024, shadowHeight = 1024;
         uint32_t shadowFboTex = 0;
         kMat4 lightSpaceMatrix;
+
+        // Picking FBO
+        bool enablePicking = false;
+        kShader *pickingShader = nullptr;
+        uint32_t pickFbo = 0, pickFboTex = 0, pickRboDepth = 0;
+        int pickFboWidth = 0, pickFboHeight = 0;
 
         // Auto exposure
         bool enableAutoExposure = false;

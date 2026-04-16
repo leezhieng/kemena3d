@@ -139,6 +139,27 @@ namespace kemena
         setRotation(finalRotation);
     }
 
+    void kCamera::screenToRay(float mouseX, float mouseY,
+                              float viewWidth, float viewHeight,
+                              kVec3 &outOrigin, kVec3 &outDirection)
+    {
+        // Convert pixel coordinate to NDC [-1, 1].
+        // Screen Y is top-down; NDC Y is bottom-up, so flip.
+        float ndcX = (2.0f * mouseX / viewWidth)  - 1.0f;
+        float ndcY =  1.0f - (2.0f * mouseY / viewHeight);
+
+        kMat4 invVP = glm::inverse(getProjectionMatrix() * getViewMatrix());
+
+        kVec4 nearClip = invVP * kVec4(ndcX, ndcY, -1.0f, 1.0f);
+        kVec4 farClip  = invVP * kVec4(ndcX, ndcY,  1.0f, 1.0f);
+
+        nearClip /= nearClip.w;
+        farClip  /= farClip.w;
+
+        outOrigin    = kVec3(nearClip);
+        outDirection = glm::normalize(kVec3(farClip) - kVec3(nearClip));
+    }
+
     void kCamera::setPosition(kVec3 newPosition)
     {
         kObject::setPosition(newPosition);

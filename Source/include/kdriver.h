@@ -393,6 +393,20 @@ namespace kemena
          */
         virtual void readTexture2DRGB(uint32_t id, int mipLevel, float *pixels) = 0;
 
+        /**
+         * @brief Reads a single pixel from the currently-bound framebuffer.
+         *
+         * Uses the bottom-left origin convention (OpenGL standard).
+         * Primarily used for color-ID object picking.
+         * @param x  Pixel x coordinate from the left edge.
+         * @param y  Pixel y coordinate from the bottom edge.
+         * @param r  Output red channel [0, 255].
+         * @param g  Output green channel [0, 255].
+         * @param b  Output blue channel [0, 255].
+         * @param a  Output alpha channel [0, 255].
+         */
+        virtual void readPixelsRGBA(int x, int y, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) = 0;
+
         // --- Framebuffers ----------------------------------------------------
 
         /**

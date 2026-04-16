@@ -140,6 +140,29 @@ namespace kemena
          */
         void rotateByMouse(kQuat rotation, float deltaX, float deltaY, float sensitivity = 0.005f, float pitchLimit = 89.0f);
 
+        /**
+         * @brief Converts a viewport-relative pixel coordinate into a world-space ray.
+         *
+         * Use the returned ray with kPhysicsManager::raycast() for game-play
+         * picking, or with kRenderer::pickObject() for editor picking.
+         *
+         * @code
+         *   kVec3 origin, dir;
+         *   camera->screenToRay(mouseX, mouseY, viewWidth, viewHeight, origin, dir);
+         *   auto hit = physics->raycast(origin, dir, 1000.0f);
+         * @endcode
+         *
+         * @param mouseX      Viewport-relative X (0 = left edge).
+         * @param mouseY      Viewport-relative Y (0 = top edge).
+         * @param viewWidth   Viewport width in pixels.
+         * @param viewHeight  Viewport height in pixels.
+         * @param outOrigin   World-space ray origin (camera position).
+         * @param outDirection Normalised world-space ray direction.
+         */
+        void screenToRay(float mouseX, float mouseY,
+                         float viewWidth, float viewHeight,
+                         kVec3 &outOrigin, kVec3 &outDirection);
+
         /** @brief Sets the local position and updates all dependent matrices. */
         void setPosition(kVec3 newPosition);
         /** @brief Sets the local rotation and updates all dependent matrices. */

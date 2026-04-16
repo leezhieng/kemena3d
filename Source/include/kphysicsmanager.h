@@ -13,6 +13,21 @@
 namespace kemena
 {
     /**
+     * @brief Result of a physics raycast query.
+     *
+     * Returned by kPhysicsManager::raycast().  Check @c hit before accessing
+     * any other field.
+     */
+    struct kPhysicsRaycastHit
+    {
+        bool           hit      = false;   ///< true if the ray struck a body.
+        float          distance = 0.0f;    ///< Distance from the ray origin to the hit point.
+        kVec3          hitPoint;           ///< World-space position of the intersection.
+        kVec3          hitNormal;          ///< World-space surface normal at the hit point.
+        kPhysicsObject *object  = nullptr; ///< The physics body that was hit (manager-owned).
+    };
+
+    /**
      * @brief Owns the Jolt PhysicsSystem and manages the lifecycle of all physics bodies.
      *
      * Create one kPhysicsManager per scene.  Call init() once, then step the simulation
@@ -95,6 +110,33 @@ namespace kemena
          * @param object Pointer returned by createObject().
          */
         void destroyObject(kPhysicsObject *object);
+
+        // --- Queries ---------------------------------------------------------
+
+        /**
+         * @brief Casts a ray into the physics world and returns the closest hit.
+         *
+         * Intended for game-play use — requires objects to have physics bodies
+         * attached (created via createObject()).  For editor picking without
+         * physics bodies, use kRenderer::pickObject() instead.
+         *
+         * @code
+         *   kVec3 origin, dir;
+         *   camera->screenToRay(mouseX, mouseY, vpW, vpH, origin, dir);
+         *
+         *   auto hit = physicsManager->raycast(origin, dir, 1000.0f);
+         *   if (hit.hit)
+         *       myObject->setPosition(hit.hitPoint);
+         * @endcode
+         *
+         * @param origin      Ray origin in world space.
+         * @param direction   Normalised ray direction in world space.
+         * @param maxDistance Maximum distance along the ray to test.
+         * @return kPhysicsRaycastHit with hit == false if no body was struck.
+         */
+        kPhysicsRaycastHit raycast(const kVec3 &origin,
+                                   const kVec3 &direction,
+                                   float maxDistance = 1000.0f);
 
     protected:
     private:
