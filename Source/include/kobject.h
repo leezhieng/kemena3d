@@ -58,6 +58,14 @@ namespace kemena
         void setParent(kObject *newParent);
 
         /**
+         * @brief Removes this object from its parent's children list.
+         *
+         * The object is not deleted; its parent pointer is set to nullptr.
+         * Has no effect if the object has no parent.
+         */
+        void detachFromParent();
+
+        /**
          * @brief Returns the list of direct children.
          * @return Copy of the children vector.
          */

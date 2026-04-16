@@ -204,6 +204,30 @@ namespace kemena
         kLight *addSpotLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 direction = kVec3(0.0f, 1.0f, 0.0f), kVec3 ambientColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
 
         /**
+         * @brief Removes a generic object from the scene graph.
+         * @param object Object to detach; memory is NOT freed.
+         */
+        void removeObject(kObject *object);
+
+        /**
+         * @brief Removes a mesh node from the scene graph.
+         * @param mesh Mesh to detach; memory is NOT freed.
+         */
+        void removeMesh(kMesh *mesh);
+
+        /**
+         * @brief Removes a light node from the scene graph and the light list.
+         * @param light Light to detach; memory is NOT freed.
+         */
+        void removeLight(kLight *light);
+
+        /**
+         * @brief Re-attaches an existing light to the scene (used for undo).
+         * @param light Light to re-add; must already have its UUID set.
+         */
+        void addLight(kLight *light);
+
+        /**
          * @brief Sets the skybox material and mesh.
          * @param newMaterial Material with a cube-map texture.
          * @param newMesh     Unit-cube mesh used to render the skybox.

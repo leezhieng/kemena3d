@@ -29,6 +29,14 @@ namespace kemena
         parent->children.push_back(this);
     }
 
+    void kObject::detachFromParent()
+    {
+        if (parent == nullptr) return;
+        auto &siblings = parent->children;
+        siblings.erase(std::remove(siblings.begin(), siblings.end(), this), siblings.end());
+        parent = nullptr;
+    }
+
     std::vector<kObject *> kObject::getChildren()
     {
         return children;

@@ -186,6 +186,28 @@ namespace kemena
         return light;
     }
 
+    void kScene::removeObject(kObject *object)
+    {
+        object->detachFromParent();
+    }
+
+    void kScene::removeMesh(kMesh *mesh)
+    {
+        mesh->detachFromParent();
+    }
+
+    void kScene::removeLight(kLight *light)
+    {
+        light->detachFromParent();
+        lights.erase(std::remove(lights.begin(), lights.end(), light), lights.end());
+    }
+
+    void kScene::addLight(kLight *light)
+    {
+        light->setParent(rootNode);
+        lights.push_back(light);
+    }
+
     void kScene::setSkybox(kMaterial *newMaterial, kMesh *newMesh)
     {
         skyMaterial = newMaterial;
