@@ -67,6 +67,17 @@ namespace kemena
             if (pickRboDepth) { driver->deleteRenderbuffer(pickRboDepth); pickRboDepth = 0; }
         }
 
+        if (outlineShader)
+        {
+            delete outlineShader;
+            outlineShader = nullptr;
+        }
+
+        if (debugAlbedoShader)  { delete debugAlbedoShader;  debugAlbedoShader  = nullptr; }
+        if (debugNormalsShader) { delete debugNormalsShader; debugNormalsShader = nullptr; }
+        if (debugWireShader)    { delete debugWireShader;    debugWireShader    = nullptr; }
+        if (debugDepthShader)   { delete debugDepthShader;   debugDepthShader   = nullptr; }
+
         driver->destroy();
         delete driver;
         driver = nullptr;
@@ -205,7 +216,68 @@ namespace kemena
             driver->setDepthWrite(true);
             driver->setCullFace(true);
 
-            renderSceneGraph(world, scene, scene->getRootNode(), false, deltaTime);
+            if (renderMode == kRenderMode::RENDER_MODE_FULL ||
+                renderMode == kRenderMode::RENDER_MODE_FULL_WIREFRAME)
+            {
+                renderSceneGraph(world, scene, scene->getRootNode(), false, deltaTime);
+            }
+
+            if (renderMode != kRenderMode::RENDER_MODE_FULL)
+            {
+                kShader *dbgShader = nullptr;
+                bool wireframe = false;
+
+                switch (renderMode)
+                {
+                    case kRenderMode::RENDER_MODE_ALBEDO:
+                        if (!debugAlbedoShader) {
+                            debugAlbedoShader = new kShader();
+                            debugAlbedoShader->loadShadersCode(kDebugVS, kDebugAlbedoFS);
+                        }
+                        dbgShader = debugAlbedoShader;
+                        break;
+                    case kRenderMode::RENDER_MODE_NORMALS:
+                        if (!debugNormalsShader) {
+                            debugNormalsShader = new kShader();
+                            debugNormalsShader->loadShadersCode(kDebugVS, kDebugNormalsFS);
+                        }
+                        dbgShader = debugNormalsShader;
+                        break;
+                    case kRenderMode::RENDER_MODE_WIREFRAME:
+                        if (!debugWireShader) {
+                            debugWireShader = new kShader();
+                            debugWireShader->loadShadersCode(kDebugVS, kDebugWireFS);
+                        }
+                        dbgShader = debugWireShader;
+                        wireframe = true;
+                        break;
+                    case kRenderMode::RENDER_MODE_DEPTH:
+                        if (!debugDepthShader) {
+                            debugDepthShader = new kShader();
+                            debugDepthShader->loadShadersCode(kDebugVS, kDebugDepthFS);
+                        }
+                        dbgShader = debugDepthShader;
+                        // Set camera near/far once before the traversal
+                        dbgShader->use();
+                        dbgShader->setValue("near", world->getMainCamera()->getNearClip());
+                        dbgShader->setValue("far",  world->getMainCamera()->getFarClip());
+                        dbgShader->unuse();
+                        break;
+                    case kRenderMode::RENDER_MODE_FULL_WIREFRAME:
+                        if (!debugWireShader) {
+                            debugWireShader = new kShader();
+                            debugWireShader->loadShadersCode(kDebugVS, kDebugWireFS);
+                        }
+                        dbgShader = debugWireShader;
+                        wireframe = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (dbgShader)
+                    renderSceneGraphDebug(world, scene, scene->getRootNode(), dbgShader, wireframe);
+            }
         }
         else
         {
@@ -1039,5 +1111,379 @@ void main()
         if (pickedId == 0) return nullptr;
 
         return findObjectById(scene->getRootNode(), pickedId);
+    }
+
+    void kRenderer::setRenderMode(kRenderMode mode)
+    {
+        renderMode = mode;
+    }
+
+    kRenderMode kRenderer::getRenderMode()
+    {
+        return renderMode;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Debug / render-mode visualization
+    // ---------------------------------------------------------------------------
+
+    // Shared vertex shader for all debug modes.
+    // Outputs: vTexCoord, vNormal (world-space), vFragPos.
+    static const char *kDebugVS = R"(
+#version 330 core
+layout(location = 0) in vec3 vertexPosition;
+layout(location = 2) in vec2 vertexTexCoord;
+layout(location = 3) in vec3 vertexNormal;
+layout(location = 6) in ivec4 boneIDs;
+layout(location = 7) in vec4  weights;
+
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+
+const int MAX_BONES         = 128;
+const int MAX_BONE_INFLUENCE = 4;
+uniform mat4 finalBonesMatrices[MAX_BONES];
+
+out vec2 vTexCoord;
+out vec3 vNormal;
+
+void main()
+{
+    vec4  pos = vec4(vertexPosition, 1.0);
+    vec3  n   = vertexNormal;
+    float tw  = 0.0;
+
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+    {
+        int  id = boneIDs[i];
+        float w = weights[i];
+        if (id < 0 || w <= 0.0) continue;
+        if (id >= MAX_BONES) { pos = vec4(vertexPosition, 1.0); n = vertexNormal; break; }
+        pos += finalBonesMatrices[id] * vec4(vertexPosition, 1.0) * w;
+        n   += mat3(transpose(inverse(finalBonesMatrices[id]))) * vertexNormal * w;
+        tw  += w;
+    }
+    if (tw == 0.0) { pos = vec4(vertexPosition, 1.0); n = vertexNormal; }
+
+    vTexCoord = vertexTexCoord;
+    vNormal   = normalize(mat3(transpose(inverse(modelMatrix))) * n);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * pos;
+}
+)";
+
+    // Albedo mode — sample first texture or fall back to diffuse color.
+    static const char *kDebugAlbedoFS = R"(
+#version 330 core
+in vec2 vTexCoord;
+out vec4 fragColor;
+
+uniform sampler2D debugTex;
+uniform bool      hasDebugTex;
+uniform vec3      diffuseColor;
+
+void main()
+{
+    if (hasDebugTex)
+        fragColor = texture(debugTex, vTexCoord);
+    else
+        fragColor = vec4(diffuseColor, 1.0);
+}
+)";
+
+    // Normals mode — world-space normal as RGB.
+    static const char *kDebugNormalsFS = R"(
+#version 330 core
+in vec3 vNormal;
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = vec4(vNormal * 0.5 + 0.5, 1.0);
+}
+)";
+
+    // Wireframe mode — flat light-grey fill (used with GL_LINE polygon mode).
+    static const char *kDebugWireFS = R"(
+#version 330 core
+out vec4 fragColor;
+void main() { fragColor = vec4(0.85, 0.85, 0.85, 1.0); }
+)";
+
+    // Depth mode — linearized depth as greyscale.
+    static const char *kDebugDepthFS = R"(
+#version 330 core
+out vec4 fragColor;
+uniform float near;
+uniform float far;
+
+void main()
+{
+    float z = gl_FragCoord.z * 2.0 - 1.0;
+    float d = (2.0 * near * far) / (far + near - z * (far - near));
+    float lin = clamp(d / far, 0.0, 1.0);
+    fragColor = vec4(vec3(lin), 1.0);
+}
+)";
+
+    void kRenderer::renderSceneGraphDebug(kWorld *world, kScene *scene, kObject *currentNode,
+                                          kShader *shader, bool wireframe)
+    {
+        if (!currentNode || !currentNode->getActive()) return;
+        currentNode->calculateModelMatrix();
+
+        if (currentNode->getType() == kNodeType::NODE_TYPE_MESH)
+        {
+            kMesh *mesh = static_cast<kMesh *>(currentNode);
+            if (mesh->getLoaded())
+            {
+                shader->use();
+                shader->setValue("modelMatrix",      mesh->getModelMatrixWorld());
+                shader->setValue("viewMatrix",       world->getMainCamera()->getViewMatrix());
+                shader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
+
+                std::vector<kMat4> bones(128, kMat4(1.0f));
+                if (mesh->getSkinned() && mesh->getAnimator())
+                    bones = mesh->getAnimator()->getFinalBoneMatrices();
+                shader->setValue("finalBonesMatrices", bones);
+
+                // Bind first texture as albedo hint (used by albedo mode).
+                bool hasTex = false;
+                if (mesh->getMaterial() && !mesh->getMaterial()->getTextures().empty())
+                {
+                    kTexture *tex = mesh->getMaterial()->getTexture(0);
+                    if (tex && tex->getType() == kTextureType::TEX_TYPE_2D)
+                    {
+                        driver->bindTexture2D(0, tex->getTextureID());
+                        shader->setValue("debugTex",    0);
+                        shader->setValue("hasDebugTex", true);
+                        hasTex = true;
+                    }
+                }
+                if (!hasTex)
+                {
+                    shader->setValue("hasDebugTex", false);
+                    kVec3 diff = mesh->getMaterial()
+                                    ? mesh->getMaterial()->getDiffuseColor()
+                                    : kVec3(0.7f, 0.7f, 0.7f);
+                    shader->setValue("diffuseColor", diff);
+                }
+
+                driver->setBlend(false);
+                driver->setCullFace(false);
+
+                if (wireframe)
+                {
+                    glEnable(GL_POLYGON_OFFSET_LINE);
+                    glPolygonOffset(-1.0f, -1.0f);
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                }
+
+                mesh->draw();
+
+                if (wireframe)
+                {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glDisable(GL_POLYGON_OFFSET_LINE);
+                }
+
+                if (hasTex)
+                    driver->unbindTexture2D(0);
+
+                shader->unuse();
+            }
+        }
+
+        for (size_t i = 0; i < currentNode->getChildren().size(); ++i)
+            if (currentNode->getChildren().at(i))
+                renderSceneGraphDebug(world, scene, currentNode->getChildren().at(i), shader, wireframe);
+    }
+
+    // ---------------------------------------------------------------------------
+    // Outline rendering (stencil-based, two-pass)
+    // ---------------------------------------------------------------------------
+
+    // Inline GLSL — vertex shader shared by both passes.
+    // outlineThickness == 0  →  stencil mark pass (no expansion)
+    // outlineThickness  > 0  →  outline shell pass (screen-space normal expansion)
+    static const char *kOutlineVS = R"(
+#version 330 core
+layout(location = 0) in vec3 vertexPosition;
+layout(location = 3) in vec3 vertexNormal;
+layout(location = 6) in ivec4 boneIDs;
+layout(location = 7) in vec4  weights;
+
+uniform mat4  modelMatrix;
+uniform mat4  viewMatrix;
+uniform mat4  projectionMatrix;
+uniform float outlineThickness;
+
+const int MAX_BONES          = 128;
+const int MAX_BONE_INFLUENCE  = 4;
+uniform mat4 finalBonesMatrices[MAX_BONES];
+
+void main()
+{
+    vec4  totalPosition = vec4(vertexPosition, 1.0);
+    vec3  totalNormal   = vertexNormal;
+    float totalWeight   = 0.0;
+
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+    {
+        int   id = boneIDs[i];
+        float w  = weights[i];
+        if (id < 0 || w <= 0.0) continue;
+        if (id >= MAX_BONES)
+        {
+            totalPosition = vec4(vertexPosition, 1.0);
+            totalNormal   = vertexNormal;
+            break;
+        }
+        totalPosition += finalBonesMatrices[id] * vec4(vertexPosition, 1.0) * w;
+        totalNormal   += mat3(transpose(inverse(finalBonesMatrices[id]))) * vertexNormal * w;
+        totalWeight   += w;
+    }
+    if (totalWeight == 0.0)
+    {
+        totalPosition = vec4(vertexPosition, 1.0);
+        totalNormal   = vertexNormal;
+    }
+
+    vec4 clipPos = projectionMatrix * viewMatrix * modelMatrix * totalPosition;
+
+    if (outlineThickness > 0.0)
+    {
+        // Screen-space normal expansion: shift by the projected normal direction
+        // so the outline has uniform pixel thickness regardless of distance.
+        vec3 worldNormal = normalize(mat3(modelMatrix) * normalize(totalNormal));
+        vec4 clipNorm    = projectionMatrix * viewMatrix * vec4(worldNormal, 0.0);
+        float len        = length(clipNorm.xy);
+        vec2  dir        = (len > 1e-4) ? (clipNorm.xy / len) : vec2(0.0, 1.0);
+        clipPos.xy      += dir * outlineThickness;
+    }
+
+    gl_Position = clipPos;
+}
+)";
+
+    static const char *kOutlineFS = R"(
+#version 330 core
+out vec4 fragColor;
+uniform vec4 outlineColor;
+void main() { fragColor = outlineColor; }
+)";
+
+    static kObject *findNodeByUuid(kObject *node, const kString &uuid)
+    {
+        if (!node) return nullptr;
+        if (node->getUuid() == uuid) return node;
+        for (kObject *child : node->getChildren())
+        {
+            kObject *found = findNodeByUuid(child, uuid);
+            if (found) return found;
+        }
+        return nullptr;
+    }
+
+    void kRenderer::renderOutline(kWorld *world, kScene *scene,
+                                   const std::vector<kString> &selectedUuids,
+                                   kVec4 color, float thickness)
+    {
+        if (!enableScreenBuffer || selectedUuids.empty() || !world || !scene) return;
+        if (!world->getMainCamera()) return;
+
+        // Lazy-compile outline shader
+        if (!outlineShader)
+        {
+            kShader *newShader = new kShader();
+            newShader->compileShaderProgram(kOutlineVS, kOutlineFS);
+            outlineShader = newShader;
+        }
+
+        // Gather valid selected meshes
+        std::vector<kMesh *> meshes;
+        for (const auto &uuid : selectedUuids)
+        {
+            kObject *obj = findNodeByUuid(scene->getRootNode(), uuid);
+            if (!obj || !obj->getActive()) continue;
+            if (obj->getType() != kNodeType::NODE_TYPE_MESH) continue;
+            kMesh *mesh = static_cast<kMesh *>(obj);
+            if (mesh->getLoaded()) meshes.push_back(mesh);
+        }
+        if (meshes.empty()) return;
+
+        // Bind the MSAA FBO (scene has already been rendered into it)
+        driver->bindFramebuffer(fboMsaa);
+        driver->setViewport(0, 0, fboWidth, fboHeight);
+
+        // Clear only the stencil channel (preserve existing color and depth)
+        glClearStencil(0);
+        glClear(GL_STENCIL_BUFFER_BIT);
+
+        outlineShader->use();
+        outlineShader->setValue("viewMatrix",       world->getMainCamera()->getViewMatrix());
+        outlineShader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
+        outlineShader->setValue("outlineColor",     color);
+
+        // ------------------------------------------------------------------
+        // Pass 1 — stamp stencil=1 where selected mesh pixels land
+        // ------------------------------------------------------------------
+        glEnable(GL_STENCIL_TEST);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        glStencilMask(0xFF);
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glDepthMask(GL_FALSE);
+        glEnable(GL_DEPTH_TEST);
+        outlineShader->setValue("outlineThickness", 0.0f);
+
+        for (kMesh *mesh : meshes)
+        {
+            mesh->calculateModelMatrix();
+            outlineShader->setValue("modelMatrix", mesh->getModelMatrixWorld());
+            std::vector<kMat4> bones(128, kMat4(1.0f));
+            if (mesh->getSkinned() && mesh->getAnimator())
+                bones = mesh->getAnimator()->getFinalBoneMatrices();
+            outlineShader->setValue("finalBonesMatrices", bones);
+            mesh->draw();
+        }
+
+        // ------------------------------------------------------------------
+        // Pass 2 — draw outline ring only where stencil is NOT 1 (the border)
+        // ------------------------------------------------------------------
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glDepthMask(GL_FALSE);
+        glDisable(GL_DEPTH_TEST);          // X-ray: always visible
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        outlineShader->setValue("outlineThickness", thickness);
+
+        for (kMesh *mesh : meshes)
+        {
+            outlineShader->setValue("modelMatrix", mesh->getModelMatrixWorld());
+            std::vector<kMat4> bones(128, kMat4(1.0f));
+            if (mesh->getSkinned() && mesh->getAnimator())
+                bones = mesh->getAnimator()->getFinalBoneMatrices();
+            outlineShader->setValue("finalBonesMatrices", bones);
+            mesh->draw();
+        }
+
+        // ------------------------------------------------------------------
+        // Restore GL state
+        // ------------------------------------------------------------------
+        glDisable(GL_STENCIL_TEST);
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glStencilMask(0xFF);
+        glClear(GL_STENCIL_BUFFER_BIT);
+
+        outlineShader->unuse();
+
+        // Blit updated MSAA buffer to the resolve FBO (display texture)
+        driver->bindReadFramebuffer(fboMsaa);
+        driver->bindDrawFramebuffer(fbo);
+        driver->blitFramebufferColor(0, 0, fboWidth, fboHeight, 0, 0, fboWidth, fboHeight);
+        driver->unbindFramebuffer();
     }
 }

@@ -59,6 +59,19 @@ namespace kemena
     };
 
     /**
+     * @brief Selects the debug visualization mode for the scene viewport.
+     */
+    enum class kRenderMode
+    {
+        RENDER_MODE_FULL           = 0, ///< Normal fully-lit render.
+        RENDER_MODE_ALBEDO         = 1, ///< Albedo / diffuse texture only, no lighting.
+        RENDER_MODE_NORMALS        = 2, ///< World normals visualized as RGB.
+        RENDER_MODE_WIREFRAME      = 3, ///< Flat-color wireframe only.
+        RENDER_MODE_DEPTH          = 4, ///< Linearized depth as greyscale.
+        RENDER_MODE_FULL_WIREFRAME = 5, ///< Full lit render with wireframe overlay.
+    };
+
+    /**
      * @brief Window creation mode.
      */
     enum kWindowType

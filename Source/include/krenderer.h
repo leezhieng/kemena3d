@@ -285,6 +285,33 @@ namespace kemena
                             int mouseX, int mouseY,
                             int viewWidth, int viewHeight);
 
+        /**
+         * @brief Sets the debug visualization mode for subsequent render() calls.
+         * @param mode One of the kRenderMode values.
+         */
+        void setRenderMode(kRenderMode mode);
+
+        /** @brief Returns the current debug visualization mode. */
+        kRenderMode getRenderMode();
+
+        /**
+         * @brief Renders a stencil-based outline around selected objects.
+         *
+         * Uses a two-pass approach: pass 1 writes stencil where the mesh pixels are;
+         * pass 2 draws the expanded outline only where the stencil was NOT written.
+         * The outline is always visible (X-ray) regardless of occlusion.
+         *
+         * @param world         World containing the active camera.
+         * @param scene         Scene owning the selected objects.
+         * @param selectedUuids UUIDs of selected objects to outline.
+         * @param color         Outline RGBA colour (default: orange).
+         * @param thickness     Outline width in clip-space units (default: 0.03).
+         */
+        void renderOutline(kWorld *world, kScene *scene,
+                           const std::vector<kString> &selectedUuids,
+                           kVec4 color     = kVec4(1.0f, 0.6f, 0.0f, 1.0f),
+                           float thickness = 0.03f);
+
     protected:
     private:
         kString engineName;           ///< Optional application name for diagnostics.
@@ -357,6 +384,28 @@ namespace kemena
         kShader *pickingShader = nullptr;
         uint32_t pickFbo = 0, pickFboTex = 0, pickRboDepth = 0;
         int pickFboWidth = 0, pickFboHeight = 0;
+
+        // Outline shader (compiled on first renderOutline call)
+        kShader *outlineShader = nullptr;
+
+        // Debug / render-mode shaders (compiled on first use)
+        kShader *debugAlbedoShader  = nullptr;
+        kShader *debugNormalsShader = nullptr;
+        kShader *debugWireShader    = nullptr;
+        kShader *debugDepthShader   = nullptr;
+
+        kRenderMode renderMode = kRenderMode::RENDER_MODE_FULL;
+
+        /**
+         * @brief Renders the scene graph using a single override shader (no lights/shadows).
+         * @param world     World containing the active camera.
+         * @param scene     Scene to render.
+         * @param rootNode  Current node being processed.
+         * @param shader    Override shader to use for every mesh.
+         * @param wireframe If true, polygon mode is GL_LINE.
+         */
+        void renderSceneGraphDebug(kWorld *world, kScene *scene, kObject *rootNode,
+                                   kShader *shader, bool wireframe);
 
         // Auto exposure
         bool enableAutoExposure = false;
