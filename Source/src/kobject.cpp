@@ -2,8 +2,11 @@
 
 namespace kemena
 {
+    static unsigned int s_nextObjectId = 1;
+
     kObject::kObject(kObject *parentNode)
     {
+        id = s_nextObjectId++;
         if (parentNode != nullptr)
             setParent(parentNode);
         setType(kNodeType::NODE_TYPE_OBJECT);

@@ -326,7 +326,7 @@ namespace kemena
         bool debugMode  = false;
 
         kNodeType type = NODE_TYPE_OBJECT;
-        unsigned int id;
+        unsigned int id = 0;
         kString uuid;
         kString name;
 

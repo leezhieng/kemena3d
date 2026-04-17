@@ -398,6 +398,8 @@ namespace kemena
         // Picking FBO
         bool enablePicking = false;
         kShader *pickingShader = nullptr;
+        kShader *pickingIconShader = nullptr;
+        uint32_t pickingIconVAO = 0, pickingIconVBO = 0;
         uint32_t pickFbo = 0, pickFboTex = 0, pickRboDepth = 0;
         int pickFboWidth = 0, pickFboHeight = 0;
 

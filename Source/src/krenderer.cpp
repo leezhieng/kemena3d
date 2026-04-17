@@ -242,7 +242,7 @@ void main()
                     shadowShader->use();
 
                     kVec3 lightPos = currentLight->getPosition();
-                    kVec3 lightDir = glm::normalize(currentLight->getDirection());
+                    kVec3 lightDir = glm::normalize(currentLight->getRotation() * kVec3(0.0f, -1.0f, 0.0f));
 
                     float near_plane = 1.0f, far_plane = 20.0f;
                     kMat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
@@ -513,7 +513,7 @@ void main()
                         {
                             kString idx = std::to_string(countSun);
                             shader->setValue("sunLights[" + idx + "].power",     light->getPower());
-                            shader->setValue("sunLights[" + idx + "].direction", light->getDirection());
+                            shader->setValue("sunLights[" + idx + "].direction", glm::normalize(light->getRotation() * kVec3(0.0f, -1.0f, 0.0f)));
                             shader->setValue("sunLights[" + idx + "].ambient",   light->getAmbientColor());
                             shader->setValue("sunLights[" + idx + "].diffuse",   light->getDiffuseColor());
                             shader->setValue("sunLights[" + idx + "].specular",  light->getSpecularColor());
@@ -1097,6 +1097,42 @@ void main()
                 kShader *newPickShader = new kShader();
                 newPickShader->loadShadersCode(vertSrc, fragSrc);
                 pickingShader = newPickShader;
+
+                // Billboard picking shader (for lights, cameras, empty objects)
+                const char *iconVertSrc = R"(#version 330 core
+layout(location = 0) in vec3 vertexPosition;
+
+uniform vec3  cameraRightWorldSpace;
+uniform vec3  cameraUpWorldSpace;
+uniform mat4  viewProjection;
+uniform vec3  billboardPosition;
+uniform vec2  billboardSize;
+
+void main()
+{
+    vec3 worldPos = billboardPosition
+        + cameraRightWorldSpace * vertexPosition.x * billboardSize.x
+        + cameraUpWorldSpace    * vertexPosition.y * billboardSize.y;
+    gl_Position = viewProjection * vec4(worldPos, 1.0);
+})";
+
+                kShader *newIconPickShader = new kShader();
+                newIconPickShader->loadShadersCode(iconVertSrc, fragSrc);
+                pickingIconShader = newIconPickShader;
+
+                // Create a reusable billboard quad VAO
+                float iconVerts[12] = {
+                    -0.5f, -0.5f, 0.0f,
+                     0.5f, -0.5f, 0.0f,
+                    -0.5f,  0.5f, 0.0f,
+                     0.5f,  0.5f, 0.0f,
+                };
+                pickingIconVAO = driver->createVertexArray();
+                pickingIconVBO = driver->createBuffer();
+                driver->bindVertexArray(pickingIconVAO);
+                driver->uploadVertexBuffer(pickingIconVBO, iconVerts, sizeof(iconVerts));
+                driver->setVertexAttribFloat(0, 3, 3 * sizeof(float), 0);
+                driver->unbindVertexArray();
             }
         }
         else
@@ -1104,8 +1140,10 @@ void main()
             if (pickFbo)      { driver->deleteFramebuffer(pickFbo);      pickFbo = 0; }
             if (pickFboTex)   { driver->deleteFBOTexture(pickFboTex);    pickFboTex = 0; }
             if (pickRboDepth) { driver->deleteRenderbuffer(pickRboDepth); pickRboDepth = 0; }
-            delete pickingShader;
-            pickingShader = nullptr;
+            delete pickingShader;     pickingShader     = nullptr;
+            delete pickingIconShader; pickingIconShader = nullptr;
+            if (pickingIconVAO) { driver->deleteVertexArray(pickingIconVAO); pickingIconVAO = 0; }
+            if (pickingIconVBO) { driver->deleteBuffer(pickingIconVBO);      pickingIconVBO = 0; }
             pickFboWidth  = 0;
             pickFboHeight = 0;
         }
@@ -1140,6 +1178,40 @@ void main()
 
                 currentMesh->draw();
             }
+        }
+        else if (pickingIconShader && pickingIconVAO &&
+                 (currentNode->getType() == kNodeType::NODE_TYPE_LIGHT ||
+                  currentNode->getType() == kNodeType::NODE_TYPE_CAMERA ||
+                  currentNode->getType() == kNodeType::NODE_TYPE_OBJECT) &&
+                 currentNode->getMaterial() != nullptr &&
+                 world->getMainCamera() != nullptr)
+        {
+            // Render icon billboard for non-mesh scene objects
+            pickingShader->unuse();
+            pickingIconShader->use();
+
+            kMat4 view = lookAt(world->getMainCamera()->getPosition(),
+                                world->getMainCamera()->getLookAt(),
+                                world->getMainCamera()->calculateUp());
+            kMat4 proj = glm::perspective(glm::radians(world->getMainCamera()->getFOV()),
+                                          world->getMainCamera()->getAspectRatio(),
+                                          world->getMainCamera()->getNearClip(),
+                                          world->getMainCamera()->getFarClip());
+
+            kVec3 idColor = idToRgb(currentNode->getId());
+            pickingIconShader->setValue("viewProjection",        proj * view);
+            pickingIconShader->setValue("cameraRightWorldSpace", kVec3(view[0][0], view[1][0], view[2][0]));
+            pickingIconShader->setValue("cameraUpWorldSpace",    kVec3(view[0][1], view[1][1], view[2][1]));
+            pickingIconShader->setValue("billboardPosition",     currentNode->getPosition());
+            pickingIconShader->setValue("billboardSize",         kVec2(0.8f, 0.8f));
+            pickingIconShader->setValue("pickColor",             kVec3(idColor.r / 255.0f,
+                                                                       idColor.g / 255.0f,
+                                                                       idColor.b / 255.0f));
+
+            driver->drawArrays(pickingIconVAO, kPrimitiveType::TRIANGLE_STRIP, 4);
+
+            pickingIconShader->unuse();
+            pickingShader->use();
         }
 
         for (size_t i = 0; i < currentNode->getChildren().size(); ++i)
@@ -1642,15 +1714,16 @@ void main() { outColor = vec4(lineColor, 1.0); }
             else if (lt == kLightType::LIGHT_TYPE_SUN)
             {
                 color = kVec3(1.0f, 1.0f, 0.3f); // bright yellow
-                kVec3 dir      = glm::normalize(light->getDirection());
+                kVec3 dir      = glm::normalize(light->getRotation() * kVec3(0.0f, -1.0f, 0.0f));
                 float arrowLen = 3.0f;
                 float headLen  = 0.5f;
 
-                kVec3 perp = glm::normalize(glm::cross(dir, kVec3(0, 1, 0)));
+                kVec3 perp = glm::cross(dir, kVec3(0, 1, 0));
                 if (glm::length(perp) < 0.01f)
-                    perp = glm::normalize(glm::cross(dir, kVec3(1, 0, 0)));
+                    perp = glm::cross(dir, kVec3(1, 0, 0));
+                perp = glm::normalize(perp);
 
-                const float offsets[] = { 0.0f, -1.0f, 1.0f, -2.0f, 2.0f };
+                const float offsets[] = { 0.0f, -1.0f, 1.0f };
                 for (float off : offsets)
                 {
                     kVec3 start = pos + perp * off;
