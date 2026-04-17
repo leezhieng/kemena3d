@@ -104,6 +104,7 @@ namespace kemena
         void setUniformFloat(uint32_t progId, const kString &name, float v) override;
         void setUniformVec2(uint32_t progId, const kString &name, const kVec2 &v) override;
         void setUniformVec3(uint32_t progId, const kString &name, const kVec3 &v) override;
+        void setUniformVec4(uint32_t progId, const kString &name, const kVec4 &v) override;
         void setUniformMat4(uint32_t progId, const kString &name, const kMat4 &v) override;
         void setUniformMat4Array(uint32_t progId, const kString &name, const std::vector<kMat4> &v) override;
 

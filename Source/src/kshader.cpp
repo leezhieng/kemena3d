@@ -1,12 +1,15 @@
 #include "kshader.h"
 
+#ifdef KEMENA_SLANG_SUPPORT
 #include <slang.h>
 #include <slang-com-ptr.h>
+#endif
 
 #include <mutex>
 
 namespace kemena
 {
+#ifdef KEMENA_SLANG_SUPPORT
     // -------------------------------------------------------------------------
     // Slang global session – created once, shared across all kShader instances.
     // -------------------------------------------------------------------------
@@ -21,6 +24,7 @@ namespace kemena
         });
         return s_session.get();
     }
+#endif
 
 
     kShader::kShader()
@@ -114,6 +118,11 @@ namespace kemena
         kDriver::getCurrent()->setUniformMat4(shaderProgram, name, value);
     }
 
+    void kShader::setValue(kString name, kVec4 value)
+    {
+        kDriver::getCurrent()->setUniformVec4(shaderProgram, name, value);
+    }
+
     void kShader::setValue(kString name, kVec3 value)
     {
         kDriver::getCurrent()->setUniformVec3(shaderProgram, name, value);
@@ -144,6 +153,7 @@ namespace kemena
         kDriver::getCurrent()->setUniformBool(shaderProgram, name, value);
     }
 
+#ifdef KEMENA_SLANG_SUPPORT
     // -------------------------------------------------------------------------
     // Slang compilation
     // -------------------------------------------------------------------------
@@ -302,4 +312,5 @@ namespace kemena
                       << " (HLSL/DXIL/DXBC) is not supported by the current backend." << std::endl;
         }
     }
+#endif // KEMENA_SLANG_SUPPORT
 }

@@ -343,6 +343,11 @@ namespace kemena
         glUniform3fv(glGetUniformLocation(progId, name.c_str()), 1, glm::value_ptr(v));
     }
 
+    void kOpenGLDriver::setUniformVec4(uint32_t progId, const kString &name, const kVec4 &v)
+    {
+        glUniform4fv(glGetUniformLocation(progId, name.c_str()), 1, glm::value_ptr(v));
+    }
+
     void kOpenGLDriver::setUniformMat4(uint32_t progId, const kString &name, const kMat4 &v)
     {
         glUniformMatrix4fv(glGetUniformLocation(progId, name.c_str()), 1, GL_FALSE, glm::value_ptr(v));

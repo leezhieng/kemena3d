@@ -115,6 +115,109 @@ namespace kemena
         driver->unbindFramebuffer();
     }
 
+    // ---------------------------------------------------------------------------
+    // Debug / render-mode visualization
+    // ---------------------------------------------------------------------------
+
+    // Shared vertex shader for all debug modes.
+    // Outputs: vTexCoord, vNormal (world-space), vFragPos.
+    static const char *kDebugVS = R"(
+#version 330 core
+layout(location = 0) in vec3 vertexPosition;
+layout(location = 2) in vec2 vertexTexCoord;
+layout(location = 3) in vec3 vertexNormal;
+layout(location = 6) in ivec4 boneIDs;
+layout(location = 7) in vec4  weights;
+
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+
+const int MAX_BONES         = 128;
+const int MAX_BONE_INFLUENCE = 4;
+uniform mat4 finalBonesMatrices[MAX_BONES];
+
+out vec2 vTexCoord;
+out vec3 vNormal;
+
+void main()
+{
+    vec4  pos = vec4(vertexPosition, 1.0);
+    vec3  n   = vertexNormal;
+    float tw  = 0.0;
+
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+    {
+        int  id = boneIDs[i];
+        float w = weights[i];
+        if (id < 0 || w <= 0.0) continue;
+        if (id >= MAX_BONES) { pos = vec4(vertexPosition, 1.0); n = vertexNormal; break; }
+        pos += finalBonesMatrices[id] * vec4(vertexPosition, 1.0) * w;
+        n   += mat3(transpose(inverse(finalBonesMatrices[id]))) * vertexNormal * w;
+        tw  += w;
+    }
+    if (tw == 0.0) { pos = vec4(vertexPosition, 1.0); n = vertexNormal; }
+
+    vTexCoord = vertexTexCoord;
+    vNormal   = normalize(mat3(transpose(inverse(modelMatrix))) * n);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * pos;
+}
+)";
+
+    // Albedo mode — sample first texture or fall back to diffuse color.
+    static const char *kDebugAlbedoFS = R"(
+#version 330 core
+in vec2 vTexCoord;
+out vec4 fragColor;
+
+uniform sampler2D debugTex;
+uniform bool      hasDebugTex;
+uniform vec3      diffuseColor;
+
+void main()
+{
+    if (hasDebugTex)
+        fragColor = texture(debugTex, vTexCoord);
+    else
+        fragColor = vec4(diffuseColor, 1.0);
+}
+)";
+
+    // Normals mode — world-space normal as RGB.
+    static const char *kDebugNormalsFS = R"(
+#version 330 core
+in vec3 vNormal;
+out vec4 fragColor;
+
+void main()
+{
+    fragColor = vec4(vNormal * 0.5 + 0.5, 1.0);
+}
+)";
+
+    // Wireframe mode — flat light-grey fill (used with GL_LINE polygon mode).
+    static const char *kDebugWireFS = R"(
+#version 330 core
+out vec4 fragColor;
+void main() { fragColor = vec4(0.85, 0.85, 0.85, 1.0); }
+)";
+
+    // Depth mode — linearized depth as greyscale.
+    static const char *kDebugDepthFS = R"(
+#version 330 core
+out vec4 fragColor;
+uniform float near;
+uniform float far;
+
+void main()
+{
+    float z = gl_FragCoord.z * 2.0 - 1.0;
+    float d = (2.0 * near * far) / (far + near - z * (far - near));
+    float lin = clamp(d / far, 0.0, 1.0);
+    fragColor = vec4(vec3(lin), 1.0);
+}
+)";
+
     void kRenderer::render(kWorld *world, kScene *scene, int x, int y, int width, int height, float deltaTime, bool autoClearSwapWindow)
     {
         if (frameId > 999999999999)
@@ -316,13 +419,14 @@ namespace kemena
                                  + 0.0722f * averageLuminanceColor[2];
                 float targetExposure = exposureKey / (averageLuminance + 0.001f);
                 exposure = glm::mix(exposure, targetExposure, deltaTime * exposureAdaptationRate);
-                if (screenShader != nullptr)
-                {
-                    screenShader->setValue("enable_autoExposure", enableAutoExposure);
-                    screenShader->setValue("exposure", exposure * 3.0f);
-                    screenShader->setValue("contrast", 1.01f);
-                    screenShader->setValue("gamma", 2.2f);
-                }
+            }
+
+            if (screenShader != nullptr)
+            {
+                screenShader->setValue("enable_autoExposure", enableAutoExposure);
+                screenShader->setValue("exposure", exposure * 3.0f);
+                screenShader->setValue("contrast", 1.01f);
+                screenShader->setValue("gamma", 2.2f);
             }
 
             driver->drawIndexed(quadVao, 6);
@@ -694,19 +798,19 @@ namespace kemena
             if (useDefaultShader)
             {
                 kString vertexShader = R"(#version 330 core
-layout(location = 0) in kVec2 aPos;
-layout(location = 1) in kVec2 aTexCoord;
-out kVec2 TexCoord;
+layout(location = 0) in vec2 aPos;
+layout(location = 1) in vec2 aTexCoord;
+out vec2 TexCoord;
 
 void main()
 {
     TexCoord = aTexCoord;
-    gl_Position = kVec4(aPos, 0.0, 1.0);
+    gl_Position = vec4(aPos, 0.0, 1.0);
 })";
 
                 kString fragmentShader = R"(#version 330 core
-in kVec2 TexCoord;
-out kVec4 FragColor;
+in vec2 TexCoord;
+out vec4 FragColor;
 
 uniform sampler2D screenTexture;
 uniform int enable_autoExposure;
@@ -716,11 +820,11 @@ uniform float gamma;
 
 void main()
 {
-    kVec3 color = texture(screenTexture, TexCoord).rgb;
-    kVec3 mapped = color * exposure;
+    vec3 color = texture(screenTexture, TexCoord).rgb;
+    vec3 mapped = color * exposure;
     mapped = (mapped - 0.5) * contrast + 0.5;
-    mapped = pow(mapped, kVec3(1.0 / gamma));
-    FragColor = kVec4(mapped, 1.0);
+    mapped = pow(max(mapped, vec3(0.0)), vec3(1.0 / gamma));
+    FragColor = vec4(mapped, 1.0);
 })";
 
                 kShader *newScreenShader = new kShader();
@@ -767,25 +871,25 @@ void main()
             if (useDefaultShader)
             {
                 kString vertexShader = R"(#version 330 core
-layout (location = 0) in kVec3 vertexPosition;
-layout (location = 6) in kIvec4 boneIDs;
-layout (location = 7) in kVec4 weights;
+layout (location = 0) in vec3 vertexPosition;
+layout (location = 6) in ivec4 boneIDs;
+layout (location = 7) in vec4 weights;
 
-uniform kMat4 lightSpaceMatrix;
-uniform kMat4 modelMatrix;
-uniform kMat4 viewMatrix;
-uniform kMat4 projectionMatrix;
+uniform mat4 lightSpaceMatrix;
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
 
 const int MAX_BONES = 128;
 const int MAX_BONE_INFLUENCE = 4;
 
-uniform kMat4 finalBonesMatrices[MAX_BONES];
+uniform mat4 finalBonesMatrices[MAX_BONES];
 
-out kVec3 vertexPositionFrag;
+out vec3 vertexPositionFrag;
 
 void main()
 {
-    kVec4 totalPosition = kVec4(vertexPosition, 1.0f);
+    vec4 totalPosition = vec4(vertexPosition, 1.0);
     float totalWeight = 0.0;
 
     for(int i = 0; i < MAX_BONE_INFLUENCE; i++)
@@ -798,26 +902,25 @@ void main()
 
         if(boneID >= MAX_BONES)
         {
-            totalPosition = kVec4(vertexPosition, 1.0f);
+            totalPosition = vec4(vertexPosition, 1.0);
             break;
         }
 
-        totalPosition += (finalBonesMatrices[boneID] * kVec4(vertexPosition, 1.0f)) * weight;
-        kMat3 normalMatrixBone = transpose(inverse(kMat3(finalBonesMatrices[boneID])));
+        totalPosition += (finalBonesMatrices[boneID] * vec4(vertexPosition, 1.0)) * weight;
         totalWeight += weight;
     }
 
     if (totalWeight == 0.0)
-        totalPosition = kVec4(vertexPosition, 1.0f);
+        totalPosition = vec4(vertexPosition, 1.0);
 
-    kVec4 worldPosition = modelMatrix * totalPosition;
+    vec4 worldPosition = modelMatrix * totalPosition;
     vertexPositionFrag = (lightSpaceMatrix * worldPosition).xyz;
     gl_Position = lightSpaceMatrix * worldPosition;
 })";
 
                 kString fragmentShader = R"(#version 330 core
-in kVec3 vertexPositionFrag;
-out kVec4 fragColor;
+in vec3 vertexPositionFrag;
+out vec4 fragColor;
 
 void main()
 {
@@ -1126,109 +1229,6 @@ void main()
     {
         return renderMode;
     }
-
-    // ---------------------------------------------------------------------------
-    // Debug / render-mode visualization
-    // ---------------------------------------------------------------------------
-
-    // Shared vertex shader for all debug modes.
-    // Outputs: vTexCoord, vNormal (world-space), vFragPos.
-    static const char *kDebugVS = R"(
-#version 330 core
-layout(location = 0) in vec3 vertexPosition;
-layout(location = 2) in vec2 vertexTexCoord;
-layout(location = 3) in vec3 vertexNormal;
-layout(location = 6) in ivec4 boneIDs;
-layout(location = 7) in vec4  weights;
-
-uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
-
-const int MAX_BONES         = 128;
-const int MAX_BONE_INFLUENCE = 4;
-uniform mat4 finalBonesMatrices[MAX_BONES];
-
-out vec2 vTexCoord;
-out vec3 vNormal;
-
-void main()
-{
-    vec4  pos = vec4(vertexPosition, 1.0);
-    vec3  n   = vertexNormal;
-    float tw  = 0.0;
-
-    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-    {
-        int  id = boneIDs[i];
-        float w = weights[i];
-        if (id < 0 || w <= 0.0) continue;
-        if (id >= MAX_BONES) { pos = vec4(vertexPosition, 1.0); n = vertexNormal; break; }
-        pos += finalBonesMatrices[id] * vec4(vertexPosition, 1.0) * w;
-        n   += mat3(transpose(inverse(finalBonesMatrices[id]))) * vertexNormal * w;
-        tw  += w;
-    }
-    if (tw == 0.0) { pos = vec4(vertexPosition, 1.0); n = vertexNormal; }
-
-    vTexCoord = vertexTexCoord;
-    vNormal   = normalize(mat3(transpose(inverse(modelMatrix))) * n);
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * pos;
-}
-)";
-
-    // Albedo mode — sample first texture or fall back to diffuse color.
-    static const char *kDebugAlbedoFS = R"(
-#version 330 core
-in vec2 vTexCoord;
-out vec4 fragColor;
-
-uniform sampler2D debugTex;
-uniform bool      hasDebugTex;
-uniform vec3      diffuseColor;
-
-void main()
-{
-    if (hasDebugTex)
-        fragColor = texture(debugTex, vTexCoord);
-    else
-        fragColor = vec4(diffuseColor, 1.0);
-}
-)";
-
-    // Normals mode — world-space normal as RGB.
-    static const char *kDebugNormalsFS = R"(
-#version 330 core
-in vec3 vNormal;
-out vec4 fragColor;
-
-void main()
-{
-    fragColor = vec4(vNormal * 0.5 + 0.5, 1.0);
-}
-)";
-
-    // Wireframe mode — flat light-grey fill (used with GL_LINE polygon mode).
-    static const char *kDebugWireFS = R"(
-#version 330 core
-out vec4 fragColor;
-void main() { fragColor = vec4(0.85, 0.85, 0.85, 1.0); }
-)";
-
-    // Depth mode — linearized depth as greyscale.
-    static const char *kDebugDepthFS = R"(
-#version 330 core
-out vec4 fragColor;
-uniform float near;
-uniform float far;
-
-void main()
-{
-    float z = gl_FragCoord.z * 2.0 - 1.0;
-    float d = (2.0 * near * far) / (far + near - z * (far - near));
-    float lin = clamp(d / far, 0.0, 1.0);
-    fragColor = vec4(vec3(lin), 1.0);
-}
-)";
 
     void kRenderer::renderSceneGraphDebug(kWorld *world, kScene *scene, kObject *currentNode,
                                           kShader *shader, bool wireframe)

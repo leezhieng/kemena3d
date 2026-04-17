@@ -17,6 +17,7 @@
 
 namespace kemena
 {
+#ifdef KEMENA_SLANG_SUPPORT
     /**
      * @brief Specifies the output language/format produced by the Slang compiler.
      *
@@ -31,6 +32,7 @@ namespace kemena
         DXIL,  ///< Cross-compile to DXIL binary (Direct3D 12, requires DXC).
         DXBC,  ///< Cross-compile to DXBC binary (Direct3D 11, requires FXC).
     };
+#endif
 
 
     /**
@@ -91,23 +93,17 @@ namespace kemena
          * @param fragEntry  Name of the fragment entry-point function (default: "fragmentMain").
          * @param target     Output shading language / binary format (default: GLSL).
          */
+#ifdef KEMENA_SLANG_SUPPORT
         void loadSlangFile(const kString& filePath,
                            const kString& vertEntry = "vertexMain",
                            const kString& fragEntry = "fragmentMain",
                            kSlangTarget target = kSlangTarget::GLSL);
 
-        /**
-         * @brief Compiles an inline Slang source string and loads it into the active driver.
-         *
-         * @param source    Null-terminated Slang source code.
-         * @param vertEntry Name of the vertex entry-point function (default: "vertexMain").
-         * @param fragEntry Name of the fragment entry-point function (default: "fragmentMain").
-         * @param target    Output shading language / binary format (default: GLSL).
-         */
         void loadSlangCode(const kString& source,
                            const kString& vertEntry = "vertexMain",
                            const kString& fragEntry = "fragmentMain",
                            kSlangTarget target = kSlangTarget::GLSL);
+#endif
 
         /** @brief Binds this shader program for subsequent draw calls. */
         void use();
@@ -133,6 +129,8 @@ namespace kemena
         void setValue(kString name, std::vector<kMat4> value);
         /** @brief Sets a kMat4 uniform. */
         void setValue(kString name, kMat4 value);
+        /** @brief Sets a kVec4 uniform. */
+        void setValue(kString name, kVec4 value);
         /** @brief Sets a kVec3 uniform. */
         void setValue(kString name, kVec3 value);
         /** @brief Sets a kVec2 uniform. */

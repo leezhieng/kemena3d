@@ -119,6 +119,16 @@ def main():
          "2": "Dynamic linking (DLL / shared library)"}
     )
 
+    # Build configuration selection
+    config = choose(
+        "\nPlease choose a build configuration:",
+        {
+            "1": "Debug",
+            "2": "Release",
+            "3": "Both (Debug and Release)"
+        }
+    )
+
     # CMake generator setup
     make_program = None
     if system == "Windows":
@@ -156,9 +166,16 @@ def main():
     else:
         raise RuntimeError(f"No build args defined for {system}")
 
-    # Debug + Release builds
-    build_with_cmake(generator, "Debug", args, make_program)
-    build_with_cmake(generator, "Release", args, make_program)
+    configs = []
+    if config == "1":
+        configs = ["Debug"]
+    elif config == "2":
+        configs = ["Release"]
+    else:
+        configs = ["Debug", "Release"]
+
+    for cfg in configs:
+        build_with_cmake(generator, cfg, args, make_program)
 
     print("\n------------------------------------------------------------------------")
     print("Kemena3D SDK has been compiled successfully.")

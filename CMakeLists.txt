@@ -111,6 +111,9 @@ target_compile_definitions(kemena3d PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLEW)
 # use the same GetSubmergedVolume signature (7-param) that Jolt.lib exports.
 target_compile_definitions(kemena3d PUBLIC JPH_DEBUG_RENDERER)
 
+# Slang shader compilation is Release-only (no Debug DLL available)
+target_compile_definitions(kemena3d PUBLIC $<$<CONFIG:Release>:KEMENA_SLANG_SUPPORT>)
+
 # Platform specific
 if (WIN32)
 	target_link_libraries(kemena3d PUBLIC opengl32)
@@ -149,8 +152,8 @@ target_link_libraries(kemena3d
             ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_Debug/libassimp.dll.a,
             ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_Release/libassimp.dll.a
         >
-        # Slang is Release-only (no Debug build available)
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/dist/lib/slang.lib
+        # Slang: Release-only (no Debug build; excluded from Debug to avoid slang.dll dependency)
+        $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/dist/lib/slang.lib>
 )
 
 # GLEW (built from source via build/cmake/)

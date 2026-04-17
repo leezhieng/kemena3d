@@ -261,6 +261,8 @@ namespace kemena
         virtual void setUniformVec2(uint32_t progId, const kString &name, const kVec2 &v) = 0;
         /** @brief Sets a kVec3 uniform on the given program. */
         virtual void setUniformVec3(uint32_t progId, const kString &name, const kVec3 &v) = 0;
+        /** @brief Sets a kVec4 uniform on the given program. */
+        virtual void setUniformVec4(uint32_t progId, const kString &name, const kVec4 &v) = 0;
         /** @brief Sets a kMat4 uniform on the given program. */
         virtual void setUniformMat4(uint32_t progId, const kString &name, const kMat4 &v) = 0;
         /**

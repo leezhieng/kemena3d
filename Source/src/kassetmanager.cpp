@@ -599,6 +599,8 @@ namespace kemena
 		}
 
 		rootMesh = processNode(scene->mRootNode, scene, nullptr);
+		if (rootMesh)
+			rootMesh->setLoaded(true);
 		return rootMesh;
 	}
 
