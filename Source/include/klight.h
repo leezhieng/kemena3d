@@ -20,8 +20,9 @@ namespace kemena
      * - @c LIGHT_TYPE_SUN        — parallel rays (directional), no attenuation.
      * - @c LIGHT_TYPE_SPOTLIGHT  — cone-shaped, inner/outer cut-off angles.
      *
-     * Phong colour components (ambient, diffuse, specular) apply to all types.
+     * Phong colour components (diffuse, specular) apply to all types.
      * Attenuation coefficients apply to point and spot lights only.
+     * Ambient lighting is handled at the scene level via kScene::setAmbientLightColor().
      */
     class KEMENA3D_API kLight : public kObject
     {
@@ -31,18 +32,6 @@ namespace kemena
          * @param parentNode Parent scene-graph node, or nullptr.
          */
         kLight(kObject *parentNode = nullptr);
-
-        /**
-         * @brief Returns the ambient colour component.
-         * @return RGB ambient colour (0..1 per channel).
-         */
-        kVec3 getAmbientColor();
-
-        /**
-         * @brief Sets the ambient colour component.
-         * @param newColor RGB ambient colour.
-         */
-        void setAmbientColor(kVec3 newColor);
 
         /**
          * @brief Returns the diffuse colour component.
@@ -166,7 +155,6 @@ namespace kemena
 
     protected:
     private:
-        kVec3 ambientColor  = kVec3(1.0f, 1.0f, 1.0f); ///< Ambient colour.
         kVec3 diffuseColor  = kVec3(1.0f, 1.0f, 1.0f); ///< Diffuse colour.
         kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f); ///< Specular colour.
 

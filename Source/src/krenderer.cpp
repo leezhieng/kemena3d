@@ -77,6 +77,7 @@ namespace kemena
         if (debugNormalsShader) { delete debugNormalsShader; debugNormalsShader = nullptr; }
         if (debugWireShader)    { delete debugWireShader;    debugWireShader    = nullptr; }
         if (debugDepthShader)   { delete debugDepthShader;   debugDepthShader   = nullptr; }
+        if (debugPickShader)    { delete debugPickShader;    debugPickShader    = nullptr; }
 
         if (debugLineShader) { delete debugLineShader; debugLineShader = nullptr; }
         if (debugLineVao)    { driver->deleteVertexArray(debugLineVao); debugLineVao = 0; }
@@ -218,6 +219,94 @@ void main()
 }
 )";
 
+    // Full-screen quad VS (layout 0=pos, 1=UV) — shared by outline and pick-display passes.
+    static const char *kOutlineVS = R"(
+#version 330 core
+layout(location = 0) in vec2 aPos;
+layout(location = 1) in vec2 aTexCoord;
+out vec2 texCoord;
+void main()
+{
+    texCoord    = aTexCoord;
+    gl_Position = vec4(aPos, 0.0, 1.0);
+}
+)";
+
+    // Object IDs display FS — hashes each object's integer ID to a bright,
+    // hue-varied color so every object is visually distinct in the viewport.
+    static const char *kPickDisplayFS = R"(
+#version 330 core
+in vec2 texCoord;
+out vec4 fragColor;
+uniform sampler2D pickTex;
+
+vec3 idToColor(int id)
+{
+    if (id == 0) return vec3(0.0);
+    // Golden-ratio hash → uniform hue distribution across all IDs
+    float h = fract(float(id) * 0.618033988749895);
+    // HSV (h, 0.75, 1.0) → RGB
+    vec3 p = abs(fract(vec3(h) + vec3(1.0, 2.0/3.0, 1.0/3.0)) * 6.0 - 3.0);
+    return mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), 0.75);
+}
+
+void main()
+{
+    vec3 rgb = texture(pickTex, texCoord).rgb;
+    int id = int(rgb.r * 255.0 + 0.5)
+           + int(rgb.g * 255.0 + 0.5) * 256
+           + int(rgb.b * 255.0 + 0.5) * 65536;
+    fragColor = vec4(idToColor(id), 1.0);
+}
+)";
+
+    // ID-boundary outline FS — draws outline where selected pixels border non-selected.
+    static const char *kOutlineFS = R"(
+#version 330 core
+in vec2 texCoord;
+out vec4 fragColor;
+
+uniform sampler2D pickTex;
+uniform vec2      viewportSize;
+uniform int       selectedIds[256];
+uniform int       numSelected;
+uniform vec4      outlineColor;
+uniform int       outlinePixels;
+
+bool isSelected(vec3 rgb)
+{
+    int id = int(rgb.r * 255.0 + 0.5)
+           + int(rgb.g * 255.0 + 0.5) * 256
+           + int(rgb.b * 255.0 + 0.5) * 65536;
+    if (id == 0) return false;
+    for (int i = 0; i < numSelected; i++)
+        if (selectedIds[i] == id) return true;
+    return false;
+}
+
+void main()
+{
+    vec2 texel     = 1.0 / viewportSize;
+    bool centerSel = isSelected(texture(pickTex, texCoord).rgb);
+
+    if (centerSel) { fragColor = vec4(0.0); return; }
+
+    bool nearSelected = false;
+    for (int dx = -outlinePixels; dx <= outlinePixels && !nearSelected; dx++)
+    {
+        for (int dy = -outlinePixels; dy <= outlinePixels && !nearSelected; dy++)
+        {
+            float dist = length(vec2(float(dx), float(dy)));
+            if (dist < 0.5 || dist > float(outlinePixels) + 0.5) continue;
+            if (isSelected(texture(pickTex, texCoord + vec2(float(dx), float(dy)) * texel).rgb))
+                nearSelected = true;
+        }
+    }
+
+    fragColor = nearSelected ? outlineColor : vec4(0.0);
+}
+)";
+
     void kRenderer::render(kWorld *world, kScene *scene, int x, int y, int width, int height, float deltaTime, bool autoClearSwapWindow)
     {
         if (frameId > 999999999999)
@@ -278,10 +367,12 @@ void main()
             driver->setViewport(x, y, width, height);
             world->getMainCamera()->setAspectRatio((float)width / (float)height);
 
-            // Render skybox
+            // Render skybox (skip in non-full render modes)
             kMaterial *skyboxMaterial = scene->getSkyboxMaterial();
             kMesh *skyboxMesh = scene->getSkyboxMesh();
-            if (skyboxMaterial != nullptr && skyboxMesh != nullptr)
+            bool skyboxAllowed = (renderMode == kRenderMode::RENDER_MODE_FULL ||
+                                  renderMode == kRenderMode::RENDER_MODE_FULL_WIREFRAME);
+            if (skyboxAllowed && skyboxMaterial != nullptr && skyboxMesh != nullptr)
             {
                 if (skyboxMesh->getLoaded() && skyboxMaterial->getShader() != nullptr)
                 {
@@ -514,7 +605,6 @@ void main()
                             kString idx = std::to_string(countSun);
                             shader->setValue("sunLights[" + idx + "].power",     light->getPower());
                             shader->setValue("sunLights[" + idx + "].direction", glm::normalize(light->getRotation() * kVec3(0.0f, -1.0f, 0.0f)));
-                            shader->setValue("sunLights[" + idx + "].ambient",   light->getAmbientColor());
                             shader->setValue("sunLights[" + idx + "].diffuse",   light->getDiffuseColor());
                             shader->setValue("sunLights[" + idx + "].specular",  light->getSpecularColor());
                             countSun++;
@@ -527,7 +617,6 @@ void main()
                             shader->setValue("pointLights[" + idx + "].constant",  light->getConstant());
                             shader->setValue("pointLights[" + idx + "].linear",    light->getLinear());
                             shader->setValue("pointLights[" + idx + "].quadratic", light->getQuadratic());
-                            shader->setValue("pointLights[" + idx + "].ambient",   light->getAmbientColor());
                             shader->setValue("pointLights[" + idx + "].diffuse",   light->getDiffuseColor());
                             shader->setValue("pointLights[" + idx + "].specular",  light->getSpecularColor());
                             countPoint++;
@@ -537,13 +626,12 @@ void main()
                             kString idx = std::to_string(countSpot);
                             shader->setValue("spotLights[" + idx + "].power",       light->getPower());
                             shader->setValue("spotLights[" + idx + "].position",    light->getPosition());
-                            shader->setValue("spotLights[" + idx + "].direction",   light->getDirection());
+                            shader->setValue("spotLights[" + idx + "].direction",   glm::normalize(light->getRotation() * kVec3(0.0f, -1.0f, 0.0f)));
                             shader->setValue("spotLights[" + idx + "].cutOff",      light->getCutOff());
                             shader->setValue("spotLights[" + idx + "].outerCutOff", light->getOuterCutOff());
                             shader->setValue("spotLights[" + idx + "].constant",    light->getConstant());
                             shader->setValue("spotLights[" + idx + "].linear",      light->getLinear());
                             shader->setValue("spotLights[" + idx + "].quadratic",   light->getQuadratic());
-                            shader->setValue("spotLights[" + idx + "].ambient",     light->getAmbientColor());
                             shader->setValue("spotLights[" + idx + "].diffuse",     light->getDiffuseColor());
                             shader->setValue("spotLights[" + idx + "].specular",    light->getSpecularColor());
                             countSpot++;
@@ -553,9 +641,24 @@ void main()
                     shader->setValue("pointLightNum", countPoint);
                     shader->setValue("spotLightNum",  countSpot);
 
+                    // Scene ambient
+                    shader->setValue("sceneAmbient", scene->getAmbientLightColor());
+                    shader->setValue("skyboxAmbientEnabled",  scene->getSkyboxAmbientEnabled());
+                    shader->setValue("skyboxAmbientStrength", scene->getSkyboxAmbientStrength());
+
+                    // Bind skybox cubemap for IBL ambient (unit after material textures + shadow)
+                    unsigned int shadowUnit = (unsigned int)currentMesh->getMaterial()->getTextures().size();
+                    unsigned int skyboxUnit = shadowUnit + 1;
+                    kMaterial *skyboxMaterial = scene->getSkyboxMaterial();
+                    if (skyboxMaterial != nullptr && skyboxMaterial->getTextures().size() > 0 &&
+                        skyboxMaterial->getTexture(0)->getType() == kTextureType::TEX_TYPE_CUBE)
+                    {
+                        driver->bindTextureCube((int)skyboxUnit, skyboxMaterial->getTexture(0)->getTextureID());
+                        shader->setValue("skyboxMap", (int)skyboxUnit);
+                    }
+
                     // Shadow map
                     shader->setValue("lightSpaceMatrix", lightSpaceMatrix);
-                    unsigned int shadowUnit = (unsigned int)currentMesh->getMaterial()->getTextures().size();
                     driver->bindTexture2D((int)shadowUnit, shadowFboTex);
                     shader->setValue("shadowMap", shadowUnit);
 
@@ -1269,6 +1372,40 @@ void main()
         driver->unbindFramebuffer();
         if (!enableScreenBuffer)
             driver->setSRGBEncoding(true);
+
+        // In Object IDs mode, blit the pick texture into the display FBO so the
+        // world panel shows the raw color-coded ID buffer instead of the scene.
+        if (renderMode == kRenderMode::RENDER_MODE_OBJECT_IDS && enableScreenBuffer && quadVao)
+        {
+            if (!debugPickShader)
+            {
+                debugPickShader = new kShader();
+                debugPickShader->loadShadersCode(kOutlineVS, kPickDisplayFS);
+            }
+
+            driver->bindFramebuffer(fboMsaa);
+            driver->setViewport(0, 0, fboWidth, fboHeight);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
+
+            debugPickShader->use();
+            driver->bindTexture2D(0, pickFboTex);
+            debugPickShader->setValue("pickTex", 0);
+            driver->drawIndexed(quadVao, 6);
+            debugPickShader->unuse();
+            driver->unbindTexture2D(0);
+
+            glEnable(GL_DEPTH_TEST);
+            glDepthMask(GL_TRUE);
+            driver->unbindFramebuffer();
+
+            driver->bindReadFramebuffer(fboMsaa);
+            driver->bindDrawFramebuffer(fbo);
+            driver->blitFramebufferColor(0, 0, fboWidth, fboHeight, 0, 0, fboWidth, fboHeight);
+            driver->unbindFramebuffer();
+        }
     }
 
     kObject *kRenderer::pickObject(kWorld *world, kScene *scene,
@@ -1279,12 +1416,12 @@ void main()
         if (!world || !scene || !world->getMainCamera()) return nullptr;
         if (viewWidth <= 0 || viewHeight <= 0) return nullptr;
 
-        // If the pick FBO has never been sized, render once now.
-        if (pickFboWidth <= 0 || pickFboHeight <= 0)
+        // Re-render if FBO size doesn't match — handles first call and panel resize.
+        if (viewWidth != pickFboWidth || viewHeight != pickFboHeight)
             renderPickingPass(world, scene, viewWidth, viewHeight);
 
         // Read back pixel. OpenGL origin is bottom-left; flip Y for screen coords.
-        int glX = std::max(0, std::min(mouseX,                    pickFboWidth  - 1));
+        int glX = std::max(0, std::min(mouseX,                     pickFboWidth  - 1));
         int glY = std::max(0, std::min(pickFboHeight - 1 - mouseY, pickFboHeight - 1));
 
         driver->setSRGBEncoding(false);
@@ -1386,70 +1523,8 @@ void main()
     // ---------------------------------------------------------------------------
     // Outline rendering — screen-space ID buffer approach
     // ---------------------------------------------------------------------------
-    // After renderPickingPass() writes each object's integer ID as an RGB color
-    // into pickFboTex, this full-screen quad shader detects pixels that are NOT
-    // part of a selected object but are adjacent to pixels that ARE — exactly the
-    // silhouette boundary — and composites the outline color with alpha blending.
-    // Gives perfectly uniform pixel-width outlines on any mesh shape.
-
-    static const char *kOutlineVS = R"(
-#version 330 core
-layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec2 aTexCoord;
-out vec2 texCoord;
-void main()
-{
-    texCoord    = aTexCoord;
-    gl_Position = vec4(aPos, 0.0, 1.0);
-}
-)";
-
-    static const char *kOutlineFS = R"(
-#version 330 core
-in vec2 texCoord;
-out vec4 fragColor;
-
-uniform sampler2D pickTex;
-uniform vec2      viewportSize;
-uniform int       selectedIds[256];
-uniform int       numSelected;
-uniform vec4      outlineColor;
-uniform int       outlinePixels;
-
-bool isSelected(vec3 rgb)
-{
-    int id = int(rgb.r * 255.0 + 0.5)
-           + int(rgb.g * 255.0 + 0.5) * 256
-           + int(rgb.b * 255.0 + 0.5) * 65536;
-    if (id == 0) return false;
-    for (int i = 0; i < numSelected; i++)
-        if (selectedIds[i] == id) return true;
-    return false;
-}
-
-void main()
-{
-    vec2 texel   = 1.0 / viewportSize;
-    bool centerSel = isSelected(texture(pickTex, texCoord).rgb);
-
-    // Only pixels outside the selection can show the outline.
-    if (centerSel) { fragColor = vec4(0.0); return; }
-
-    bool nearSelected = false;
-    for (int dx = -outlinePixels; dx <= outlinePixels && !nearSelected; dx++)
-    {
-        for (int dy = -outlinePixels; dy <= outlinePixels && !nearSelected; dy++)
-        {
-            float dist = length(vec2(float(dx), float(dy)));
-            if (dist < 0.5 || dist > float(outlinePixels) + 0.5) continue;
-            if (isSelected(texture(pickTex, texCoord + vec2(float(dx), float(dy)) * texel).rgb))
-                nearSelected = true;
-        }
-    }
-
-    fragColor = nearSelected ? outlineColor : vec4(0.0);
-}
-)";
+    // Shaders (kOutlineVS, kOutlineFS, kPickDisplayFS) are defined at file scope
+    // above kRenderer::render() so they are visible to all methods.
 
     static const char *kDebugLineVS = R"(
 #version 330 core
@@ -1648,9 +1723,14 @@ void main() { outColor = vec4(lineColor, 1.0); }
                 float radius = 3.0f;
                 if (Q > 0.0001f)
                 {
-                    float target = 256.0f * P - C;
+                    // Find d where P/(C+L*d+Q*d²) = 5% (reasonable visual range)
+                    float target = P / 0.05f - C;
                     float disc   = L * L + 4.0f * Q * target;
-                    if (disc > 0.0f) radius = (-L + sqrtf(disc)) / (2.0f * Q);
+                    if (disc > 0.0f)
+                    {
+                        float r = (-L + sqrtf(disc)) / (2.0f * Q);
+                        if (r > 0.0f) radius = r;
+                    }
                 }
                 appendCircle(verts, pos, kVec3(1, 0, 0), kVec3(0, 1, 0), radius);
                 appendCircle(verts, pos, kVec3(1, 0, 0), kVec3(0, 0, 1), radius);
@@ -1665,10 +1745,11 @@ void main() { outColor = vec4(lineColor, 1.0); }
                 float innerR  = tanf(innerAngle) * coneLen;
                 float outerR  = tanf(outerAngle) * coneLen;
 
-                kVec3 dir   = glm::normalize(light->getDirection());
-                kVec3 right = glm::normalize(glm::cross(dir, kVec3(0, 1, 0)));
-                if (glm::length(right) < 0.01f)
-                    right = glm::normalize(glm::cross(dir, kVec3(1, 0, 0)));
+                kVec3 dir = glm::normalize(light->getRotation() * kVec3(0.0f, -1.0f, 0.0f));
+                kVec3 crossY = glm::cross(dir, kVec3(0, 1, 0));
+                kVec3 right = (glm::length(crossY) > 0.001f)
+                    ? glm::normalize(crossY)
+                    : glm::normalize(glm::cross(dir, kVec3(1, 0, 0)));
                 kVec3 up = glm::normalize(glm::cross(right, dir));
 
                 kVec3 endCenter = pos + dir * coneLen;

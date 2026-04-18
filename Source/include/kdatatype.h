@@ -68,7 +68,8 @@ namespace kemena
         RENDER_MODE_NORMALS        = 2, ///< World normals visualized as RGB.
         RENDER_MODE_WIREFRAME      = 3, ///< Flat-color wireframe only.
         RENDER_MODE_DEPTH          = 4, ///< Linearized depth as greyscale.
-        RENDER_MODE_FULL_WIREFRAME = 5, ///< Full lit render with wireframe overlay.
+        RENDER_MODE_OBJECT_IDS     = 5, ///< Color-coded object ID picking buffer.
+        RENDER_MODE_FULL_WIREFRAME = 6, ///< Full lit render with wireframe overlay.
     };
 
     /**

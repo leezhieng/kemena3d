@@ -172,36 +172,32 @@ namespace kemena
          * @brief Creates and adds a directional (sun) light.
          * @param position      World-space position of the light node.
          * @param direction     Normalised light direction.
-         * @param ambientColor  Ambient colour component.
          * @param diffuseColor  Diffuse colour component.
          * @param specularColor Specular colour component.
          * @param objectUuid    Optional UUID for the new node.
          * @return Pointer to the created kLight.
          */
-        kLight *addSunLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 direction = kVec3(0.0f, -1.0f, 0.0f), kVec3 ambientColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
+        kLight *addSunLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 direction = kVec3(0.0f, -1.0f, 0.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
 
         /**
          * @brief Creates and adds an omnidirectional point light.
          * @param position      World-space position.
-         * @param ambientColor  Ambient colour component.
          * @param diffuseColor  Diffuse colour component.
          * @param specularColor Specular colour component.
          * @param objectUuid    Optional UUID for the new node.
          * @return Pointer to the created kLight.
          */
-        kLight *addPointLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 ambientColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
+        kLight *addPointLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
 
         /**
          * @brief Creates and adds a cone spotlight.
          * @param position      World-space position.
-         * @param direction     Normalised spotlight direction.
-         * @param ambientColor  Ambient colour component.
          * @param diffuseColor  Diffuse colour component.
          * @param specularColor Specular colour component.
          * @param objectUuid    Optional UUID for the new node.
          * @return Pointer to the created kLight.
          */
-        kLight *addSpotLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 direction = kVec3(0.0f, 1.0f, 0.0f), kVec3 ambientColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
+        kLight *addSpotLight(kVec3 position = kVec3(0.0f, 0.0f, 0.0f), kVec3 diffuseColor = kVec3(1.0f, 1.0f, 1.0f), kVec3 specularColor = kVec3(1.0f, 1.0f, 1.0f), kString objectUuid = "");
 
         /**
          * @brief Removes a generic object from the scene graph.
@@ -226,6 +222,26 @@ namespace kemena
          * @param light Light to re-add; must already have its UUID set.
          */
         void addLight(kLight *light);
+
+        /**
+         * @brief Returns whether skybox image-based ambient is enabled.
+         */
+        bool getSkyboxAmbientEnabled();
+
+        /**
+         * @brief Enables or disables skybox image-based ambient lighting.
+         */
+        void setSkyboxAmbientEnabled(bool enabled);
+
+        /**
+         * @brief Returns the skybox ambient strength multiplier.
+         */
+        float getSkyboxAmbientStrength();
+
+        /**
+         * @brief Sets the skybox ambient strength multiplier.
+         */
+        void setSkyboxAmbientStrength(float strength);
 
         /**
          * @brief Sets the skybox material and mesh.
@@ -274,7 +290,10 @@ namespace kemena
 
         kObject *rootNode = nullptr; ///< Scene-graph root.
 
-        kVec3 ambientLightColor = kVec3(0.0f, 0.0f, 0.0f); ///< Scene ambient colour.
+        kVec3 ambientLightColor = kVec3(0.1f, 0.1f, 0.1f); ///< Scene ambient colour.
+
+        bool  skyboxAmbientEnabled  = false; ///< Enable skybox IBL ambient.
+        float skyboxAmbientStrength = 1.0f;  ///< Skybox ambient multiplier.
 
         kMaterial *skyMaterial = nullptr; ///< Skybox material.
         kMesh     *skyMesh     = nullptr; ///< Skybox geometry.

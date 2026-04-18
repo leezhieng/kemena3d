@@ -420,6 +420,9 @@ namespace kemena
         // Outline shader (compiled on first renderOutline call)
         kShader *outlineShader = nullptr;
 
+        // Passthrough shader for Object IDs display mode
+        kShader *debugPickShader = nullptr;
+
         // Debug / render-mode shaders (compiled on first use)
         kShader *debugAlbedoShader  = nullptr;
         kShader *debugNormalsShader = nullptr;

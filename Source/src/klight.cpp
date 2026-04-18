@@ -9,16 +9,6 @@ namespace kemena
         setType(kNodeType::NODE_TYPE_LIGHT);
     }
 
-    kVec3 kLight::getAmbientColor()
-    {
-        return ambientColor;
-    }
-
-    void kLight::setAmbientColor(kVec3 newColor)
-    {
-        ambientColor = newColor;
-    }
-
     kVec3 kLight::getDiffuseColor()
     {
         return diffuseColor;
@@ -96,7 +86,7 @@ namespace kemena
 
     void kLight::setCutOff(float newValue)
     {
-        cutOff = glm::cos(glm::radians(newValue));
+        cutOff = newValue;
     }
 
     float kLight::getOuterCutOff()
@@ -106,7 +96,7 @@ namespace kemena
 
     void kLight::setOuterCutOff(float newValue)
     {
-        outerCutOff = glm::cos(glm::radians(newValue));
+        outerCutOff = newValue;
     }
 
     kLightType kLight::getLightType()

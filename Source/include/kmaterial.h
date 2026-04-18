@@ -183,12 +183,12 @@ namespace kemena
 
         kVec2 uvTiling = kVec2(1, 1); ///< UV tiling multiplier.
 
-        kVec3  ambientColor;  ///< Ambient surface colour.
-        kVec3  diffuseColor;  ///< Diffuse surface colour.
-        kVec3  specularColor; ///< Specular surface colour.
-        float shininess;     ///< Phong shininess exponent.
-        float metallic;      ///< PBR metallic factor.
-        float roughness;     ///< PBR roughness factor.
+        kVec3  ambientColor  = kVec3(1.0f, 1.0f, 1.0f); ///< Ambient surface colour.
+        kVec3  diffuseColor  = kVec3(1.0f, 1.0f, 1.0f); ///< Diffuse surface colour.
+        kVec3  specularColor = kVec3(1.0f, 1.0f, 1.0f); ///< Specular surface colour.
+        float shininess  = 32.0f; ///< Phong shininess exponent.
+        float metallic   = 0.0f;  ///< PBR metallic factor.
+        float roughness  = 0.5f;  ///< PBR roughness factor.
 
         bool isSingleSided = true; ///< Face culling enabled.
         bool isCullBack    = true; ///< Cull back (true) or front (false) faces.

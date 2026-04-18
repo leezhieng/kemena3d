@@ -128,13 +128,32 @@ namespace kemena
         ambientLightColor = newColor;
     }
 
-    kLight *kScene::addSunLight(kVec3 position, kVec3 direction, kVec3 ambientColor, kVec3 diffuseColor, kVec3 specularColor, kString objectUuid)
+    bool kScene::getSkyboxAmbientEnabled()
+    {
+        return skyboxAmbientEnabled;
+    }
+
+    void kScene::setSkyboxAmbientEnabled(bool enabled)
+    {
+        skyboxAmbientEnabled = enabled;
+    }
+
+    float kScene::getSkyboxAmbientStrength()
+    {
+        return skyboxAmbientStrength;
+    }
+
+    void kScene::setSkyboxAmbientStrength(float strength)
+    {
+        skyboxAmbientStrength = strength;
+    }
+
+    kLight *kScene::addSunLight(kVec3 position, kVec3 direction, kVec3 diffuseColor, kVec3 specularColor, kString objectUuid)
     {
         kLight *light = new kLight();
         light->setLightType(kLightType::LIGHT_TYPE_SUN);
         light->setPosition(position);
         light->setDirection(direction);
-        light->setAmbientColor(ambientColor);
         light->setDiffuseColor(diffuseColor);
         light->setSpecularColor(specularColor);
         light->setParent(rootNode);
@@ -149,12 +168,11 @@ namespace kemena
         return light;
     }
 
-    kLight *kScene::addPointLight(kVec3 position, kVec3 ambientColor, kVec3 diffuseColor, kVec3 specularColor, kString objectUuid)
+    kLight *kScene::addPointLight(kVec3 position, kVec3 diffuseColor, kVec3 specularColor, kString objectUuid)
     {
         kLight *light = new kLight();
         light->setLightType(kLightType::LIGHT_TYPE_POINT);
         light->setPosition(position);
-        light->setAmbientColor(ambientColor);
         light->setDiffuseColor(diffuseColor);
         light->setSpecularColor(specularColor);
         light->setParent(rootNode);
@@ -169,13 +187,11 @@ namespace kemena
         return light;
     }
 
-    kLight *kScene::addSpotLight(kVec3 position, kVec3 direction, kVec3 ambientColor, kVec3 diffuseColor, kVec3 specularColor, kString objectUuid)
+    kLight *kScene::addSpotLight(kVec3 position, kVec3 diffuseColor, kVec3 specularColor, kString objectUuid)
     {
         kLight *light = new kLight();
         light->setLightType(kLightType::LIGHT_TYPE_SPOT);
         light->setPosition(position);
-        light->setDirection(direction);
-        light->setAmbientColor(ambientColor);
         light->setDiffuseColor(diffuseColor);
         light->setSpecularColor(specularColor);
         light->setParent(rootNode);
