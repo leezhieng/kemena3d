@@ -286,6 +286,19 @@ namespace kemena
                             int viewWidth, int viewHeight);
 
         /**
+         * @brief Renders the color-ID picking pass into the picking FBO.
+         *
+         * Should be called once per frame so the picking texture is always fresh.
+         * pickObject() will read from this texture instead of re-rendering.
+         *
+         * @param world      World containing the active camera.
+         * @param scene      Scene to render.
+         * @param viewWidth  Viewport width in physical pixels.
+         * @param viewHeight Viewport height in physical pixels.
+         */
+        void renderPickingPass(kWorld *world, kScene *scene, int viewWidth, int viewHeight);
+
+        /**
          * @brief Sets the debug visualization mode for subsequent render() calls.
          * @param mode One of the kRenderMode values.
          */
@@ -295,22 +308,23 @@ namespace kemena
         kRenderMode getRenderMode();
 
         /**
-         * @brief Renders a stencil-based outline around selected objects.
+         * @brief Renders a color-ID-based outline around selected objects.
          *
-         * Uses a two-pass approach: pass 1 writes stencil where the mesh pixels are;
-         * pass 2 draws the expanded outline only where the stencil was NOT written.
-         * The outline is always visible (X-ray) regardless of occlusion.
+         * Requires renderPickingPass() to have been called this frame.
+         * Uses the picking texture to detect selection boundaries in screen space,
+         * then composites an outline with alpha blending — gives uniform pixel-width
+         * outlines on any mesh shape.
          *
          * @param world         World containing the active camera.
          * @param scene         Scene owning the selected objects.
          * @param selectedUuids UUIDs of selected objects to outline.
          * @param color         Outline RGBA colour (default: orange).
-         * @param thickness     Outline width in clip-space units (default: 0.03).
+         * @param thickness     Outline radius in pixels (default: 3).
          */
         void renderOutline(kWorld *world, kScene *scene,
                            const std::vector<kString> &selectedUuids,
                            kVec4 color     = kVec4(1.0f, 0.6f, 0.0f, 1.0f),
-                           float thickness = 0.03f);
+                           float thickness = 3.0f);
 
         /**
          * @brief Draws editor debug shapes for selected lights and cameras.

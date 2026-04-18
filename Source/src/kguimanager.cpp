@@ -446,6 +446,11 @@ namespace kemena
 		ImGui::TextDisabled(text.c_str());
 	}
 
+	void kGuiManager::alignTextToFramePadding()
+	{
+		ImGui::AlignTextToFramePadding();
+	}
+
 	void kGuiManager::textWrapped(kString text)
 	{
 		ImGui::TextWrapped(text.c_str());
@@ -523,7 +528,7 @@ namespace kemena
 	bool kGuiManager::inputText(kString label, kString &value, size_t maxLength, ImGuiInputTextFlags flags)
 	{
 		std::vector<char> buf(maxLength + 1, 0);
-		strncpy(buf.data(), value.c_str(), maxLength);
+		strncpy_s(buf.data(), maxLength + 1, value.c_str(), _TRUNCATE);
 		if (ImGui::InputText(label.c_str(), buf.data(), maxLength + 1, flags))
 		{
 			value = buf.data();
@@ -535,7 +540,7 @@ namespace kemena
 	bool kGuiManager::inputTextMultiline(kString label, kString &value, size_t maxLength, kVec2 size, ImGuiInputTextFlags flags)
 	{
 		std::vector<char> buf(maxLength + 1, 0);
-		strncpy(buf.data(), value.c_str(), maxLength);
+		strncpy_s(buf.data(), maxLength + 1, value.c_str(), _TRUNCATE);
 		if (ImGui::InputTextMultiline(label.c_str(), buf.data(), maxLength + 1, ImVec2(size.x, size.y), flags))
 		{
 			value = buf.data();
@@ -547,7 +552,7 @@ namespace kemena
 	bool kGuiManager::inputTextWithHint(kString label, kString hint, kString &value, size_t maxLength, ImGuiInputTextFlags flags)
 	{
 		std::vector<char> buf(maxLength + 1, 0);
-		strncpy(buf.data(), value.c_str(), maxLength);
+		strncpy_s(buf.data(), maxLength + 1, value.c_str(), _TRUNCATE);
 		if (ImGui::InputTextWithHint(label.c_str(), hint.c_str(), buf.data(), maxLength + 1, flags))
 		{
 			value = buf.data();
@@ -1239,6 +1244,16 @@ namespace kemena
 		return ImGui::GetIO().KeyCtrl;
 	}
 
+	bool kGuiManager::getWantTextInput()
+	{
+		return ImGui::GetIO().WantTextInput;
+	}
+
+	float kGuiManager::getDeltaTime()
+	{
+		return ImGui::GetIO().DeltaTime;
+	}
+
 	// ---- Draw ----
 
 	void kGuiManager::drawListAddImage(GLuint textureId, kVec2 pMin, kVec2 pMax, kVec2 uvMin, kVec2 uvMax, kVec4 tint)
@@ -1249,6 +1264,16 @@ namespace kemena
 			ImVec2(pMin.x, pMin.y), ImVec2(pMax.x, pMax.y),
 			ImVec2(uvMin.x, uvMin.y), ImVec2(uvMax.x, uvMax.y),
 			col);
+	}
+
+	float kGuiManager::getTextLineHeight()
+	{
+		return ImGui::GetTextLineHeight();
+	}
+
+	void kGuiManager::textUnformatted(kString text)
+	{
+		ImGui::TextUnformatted(text.c_str());
 	}
 
 	// ---- Utility ----
@@ -1266,6 +1291,11 @@ namespace kemena
 	void kGuiManager::loadIniSettingsFromDisk(kString filename)
 	{
 		ImGui::LoadIniSettingsFromDisk(filename.c_str());
+	}
+
+	void kGuiManager::loadIniSettingsFromMemory(const char *data, size_t size)
+	{
+		ImGui::LoadIniSettingsFromMemory(data, size);
 	}
 
 	void kGuiManager::addSettingsHandler(ImGuiSettingsHandler handler)

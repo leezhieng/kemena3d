@@ -296,10 +296,54 @@ namespace kemena
         return normalMatrix;
     }
 
+    void kMesh::generateTangents()
+    {
+        if (vertices.empty() || uvs.empty() || indices.empty()) return;
+
+        tangents.assign(vertices.size(), kVec3(0.0f));
+        bitangents.assign(vertices.size(), kVec3(0.0f));
+
+        for (size_t i = 0; i + 2 < indices.size(); i += 3)
+        {
+            uint32_t i0 = indices[i], i1 = indices[i + 1], i2 = indices[i + 2];
+            kVec3 edge1  = vertices[i1] - vertices[i0];
+            kVec3 edge2  = vertices[i2] - vertices[i0];
+            kVec2 dUV1   = uvs[i1] - uvs[i0];
+            kVec2 dUV2   = uvs[i2] - uvs[i0];
+
+            float denom = dUV1.x * dUV2.y - dUV2.x * dUV1.y;
+            if (std::abs(denom) < 1e-6f) continue;
+            float f = 1.0f / denom;
+
+            kVec3 t = f * (dUV2.y * edge1 - dUV1.y * edge2);
+            kVec3 b = f * (-dUV2.x * edge1 + dUV1.x * edge2);
+
+            tangents[i0]   += t; tangents[i1]   += t; tangents[i2]   += t;
+            bitangents[i0] += b; bitangents[i1] += b; bitangents[i2] += b;
+        }
+
+        for (size_t i = 0; i < tangents.size(); ++i)
+        {
+            float tlen = glm::length(tangents[i]);
+            float blen = glm::length(bitangents[i]);
+            if (tlen > 1e-6f) tangents[i]   = tangents[i] / tlen;
+            if (blen > 1e-6f) bitangents[i] = bitangents[i] / blen;
+        }
+    }
+
     void kMesh::generateVbo()
     {
         assert(vertices.size() == normals.size());
         assert(vertices.size() == uvs.size());
+
+        // Auto-fill default bone data so non-skinned meshes don't pick up
+        // OpenGL's generic attribute defaults (weights[3] = 1.0 would cause
+        // a spurious bone-0 transform to be applied).
+        if (boneIDs.empty() && !vertices.empty())
+            boneIDs.assign(vertices.size(), kIvec4(-1, -1, -1, -1));
+        if (weights.empty() && !vertices.empty())
+            weights.assign(vertices.size(), kVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
         assert(vertices.size() == boneIDs.size());
         assert(vertices.size() == weights.size());
 

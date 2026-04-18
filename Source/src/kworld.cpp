@@ -1,4 +1,5 @@
 #include "kworld.h"
+#include <algorithm>
 
 namespace kemena
 {
@@ -101,6 +102,18 @@ namespace kemena
     kAssetManager *kWorld::getAssetManager()
     {
         return assetManager;
+    }
+
+    void kWorld::removeCamera(kCamera *camera)
+    {
+        cameras.erase(std::remove(cameras.begin(), cameras.end(), camera), cameras.end());
+        if (mainCamera == camera)
+            mainCamera = cameras.empty() ? nullptr : cameras[0];
+    }
+
+    void kWorld::removeScene(kScene *scene)
+    {
+        scenes.erase(std::remove(scenes.begin(), scenes.end(), scene), scenes.end());
     }
 
     std::vector<kScene *> kWorld::getScenes()

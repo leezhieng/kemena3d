@@ -123,6 +123,18 @@ namespace kemena
         kAssetManager *getAssetManager();
 
         /**
+         * @brief Removes a camera from this world's camera list.
+         * @param camera Camera to remove.
+         */
+        void removeCamera(kCamera *camera);
+
+        /**
+         * @brief Removes a scene from this world's scene list.
+         * @param scene Scene to remove.
+         */
+        void removeScene(kScene *scene);
+
+        /**
          * @brief Returns all scenes registered in this world.
          * @return Copy of the internal scene vector.
          */

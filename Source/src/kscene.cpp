@@ -1,4 +1,5 @@
 #include "kscene.h"
+#include <algorithm>
 
 namespace kemena
 {
@@ -89,6 +90,9 @@ namespace kemena
             object->setUuid(generateUuid());
         else
             object->setUuid(objectUuid);
+
+        if (std::find(objects.begin(), objects.end(), object) == objects.end())
+            objects.push_back(object);
     }
 
     kMesh *kScene::addMesh(kString fileName, kString objectUuid)
@@ -189,6 +193,7 @@ namespace kemena
     void kScene::removeObject(kObject *object)
     {
         object->detachFromParent();
+        objects.erase(std::remove(objects.begin(), objects.end(), object), objects.end());
     }
 
     void kScene::removeMesh(kMesh *mesh)

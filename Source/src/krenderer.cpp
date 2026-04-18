@@ -1233,15 +1233,12 @@ void main()
         return nullptr;
     }
 
-    kObject *kRenderer::pickObject(kWorld *world, kScene *scene,
-                                   int mouseX, int mouseY,
-                                   int viewWidth, int viewHeight)
+    void kRenderer::renderPickingPass(kWorld *world, kScene *scene, int viewWidth, int viewHeight)
     {
-        if (!enablePicking || pickingShader == nullptr) return nullptr;
-        if (world->getMainCamera() == nullptr) return nullptr;
-        if (viewWidth <= 0 || viewHeight <= 0) return nullptr;
+        if (!enablePicking || pickingShader == nullptr) return;
+        if (!world || !scene || !world->getMainCamera()) return;
+        if (viewWidth <= 0 || viewHeight <= 0) return;
 
-        // Resize picking FBO if the viewport dimensions changed.
         if (viewWidth != pickFboWidth || viewHeight != pickFboHeight)
         {
             driver->resizeFBOColorTexture(pickFboTex, viewWidth, viewHeight);
@@ -1252,12 +1249,10 @@ void main()
             pickFboHeight = viewHeight;
         }
 
-        // Disable sRGB encoding so ID colors are stored and read back exactly.
         driver->setSRGBEncoding(false);
-
         driver->bindFramebuffer(pickFbo);
         driver->setViewport(0, 0, viewWidth, viewHeight);
-        driver->setClearColor(0.0f, 0.0f, 0.0f, 1.0f); // ID 0 = no object
+        driver->setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         driver->clear(true, true, false);
         driver->setDepthTest(true);
         driver->setDepthWrite(true);
@@ -1265,30 +1260,43 @@ void main()
         driver->setCullFace(false);
 
         world->getMainCamera()->setAspectRatio((float)viewWidth / (float)viewHeight);
-
         pickingShader->use();
         pickingShader->setValue("viewMatrix",       world->getMainCamera()->getViewMatrix());
         pickingShader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
-
         renderSceneGraphPicking(world, scene, scene->getRootNode());
-
         pickingShader->unuse();
 
-        // Read the pixel — OpenGL origin is bottom-left, screen Y is top-down, so flip Y.
-        int glX = mouseX;
-        int glY = viewHeight - 1 - mouseY;
+        driver->unbindFramebuffer();
+        if (!enableScreenBuffer)
+            driver->setSRGBEncoding(true);
+    }
+
+    kObject *kRenderer::pickObject(kWorld *world, kScene *scene,
+                                   int mouseX, int mouseY,
+                                   int viewWidth, int viewHeight)
+    {
+        if (!enablePicking || pickingShader == nullptr) return nullptr;
+        if (!world || !scene || !world->getMainCamera()) return nullptr;
+        if (viewWidth <= 0 || viewHeight <= 0) return nullptr;
+
+        // If the pick FBO has never been sized, render once now.
+        if (pickFboWidth <= 0 || pickFboHeight <= 0)
+            renderPickingPass(world, scene, viewWidth, viewHeight);
+
+        // Read back pixel. OpenGL origin is bottom-left; flip Y for screen coords.
+        int glX = std::max(0, std::min(mouseX,                    pickFboWidth  - 1));
+        int glY = std::max(0, std::min(pickFboHeight - 1 - mouseY, pickFboHeight - 1));
+
+        driver->setSRGBEncoding(false);
+        driver->bindFramebuffer(pickFbo);
         uint8_t r = 0, g = 0, b = 0, a = 0;
         driver->readPixelsRGBA(glX, glY, r, g, b, a);
-
         driver->unbindFramebuffer();
-
-        // Restore sRGB state for the main render pipeline.
         if (!enableScreenBuffer)
             driver->setSRGBEncoding(true);
 
         unsigned int pickedId = rgbToId(r, g, b);
         if (pickedId == 0) return nullptr;
-
         return findObjectById(scene->getRootNode(), pickedId);
     }
 
@@ -1376,77 +1384,71 @@ void main()
     }
 
     // ---------------------------------------------------------------------------
-    // Outline rendering (stencil-based, two-pass)
+    // Outline rendering — screen-space ID buffer approach
     // ---------------------------------------------------------------------------
+    // After renderPickingPass() writes each object's integer ID as an RGB color
+    // into pickFboTex, this full-screen quad shader detects pixels that are NOT
+    // part of a selected object but are adjacent to pixels that ARE — exactly the
+    // silhouette boundary — and composites the outline color with alpha blending.
+    // Gives perfectly uniform pixel-width outlines on any mesh shape.
 
-    // Inline GLSL — vertex shader shared by both passes.
-    // outlineThickness == 0  →  stencil mark pass (no expansion)
-    // outlineThickness  > 0  →  outline shell pass (screen-space normal expansion)
     static const char *kOutlineVS = R"(
 #version 330 core
-layout(location = 0) in vec3 vertexPosition;
-layout(location = 3) in vec3 vertexNormal;
-layout(location = 6) in ivec4 boneIDs;
-layout(location = 7) in vec4  weights;
-
-uniform mat4  modelMatrix;
-uniform mat4  viewMatrix;
-uniform mat4  projectionMatrix;
-uniform float outlineThickness;
-
-const int MAX_BONES          = 128;
-const int MAX_BONE_INFLUENCE  = 4;
-uniform mat4 finalBonesMatrices[MAX_BONES];
-
+layout(location = 0) in vec2 aPos;
+layout(location = 1) in vec2 aTexCoord;
+out vec2 texCoord;
 void main()
 {
-    vec4  totalPosition = vec4(vertexPosition, 1.0);
-    vec3  totalNormal   = vertexNormal;
-    float totalWeight   = 0.0;
-
-    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-    {
-        int   id = boneIDs[i];
-        float w  = weights[i];
-        if (id < 0 || w <= 0.0) continue;
-        if (id >= MAX_BONES)
-        {
-            totalPosition = vec4(vertexPosition, 1.0);
-            totalNormal   = vertexNormal;
-            break;
-        }
-        totalPosition += finalBonesMatrices[id] * vec4(vertexPosition, 1.0) * w;
-        totalNormal   += mat3(transpose(inverse(finalBonesMatrices[id]))) * vertexNormal * w;
-        totalWeight   += w;
-    }
-    if (totalWeight == 0.0)
-    {
-        totalPosition = vec4(vertexPosition, 1.0);
-        totalNormal   = vertexNormal;
-    }
-
-    vec4 clipPos = projectionMatrix * viewMatrix * modelMatrix * totalPosition;
-
-    if (outlineThickness > 0.0)
-    {
-        // Screen-space normal expansion: shift by the projected normal direction
-        // so the outline has uniform pixel thickness regardless of distance.
-        vec3 worldNormal = normalize(mat3(modelMatrix) * normalize(totalNormal));
-        vec4 clipNorm    = projectionMatrix * viewMatrix * vec4(worldNormal, 0.0);
-        float len        = length(clipNorm.xy);
-        vec2  dir        = (len > 1e-4) ? (clipNorm.xy / len) : vec2(0.0, 1.0);
-        clipPos.xy      += dir * outlineThickness;
-    }
-
-    gl_Position = clipPos;
+    texCoord    = aTexCoord;
+    gl_Position = vec4(aPos, 0.0, 1.0);
 }
 )";
 
     static const char *kOutlineFS = R"(
 #version 330 core
+in vec2 texCoord;
 out vec4 fragColor;
-uniform vec4 outlineColor;
-void main() { fragColor = outlineColor; }
+
+uniform sampler2D pickTex;
+uniform vec2      viewportSize;
+uniform int       selectedIds[256];
+uniform int       numSelected;
+uniform vec4      outlineColor;
+uniform int       outlinePixels;
+
+bool isSelected(vec3 rgb)
+{
+    int id = int(rgb.r * 255.0 + 0.5)
+           + int(rgb.g * 255.0 + 0.5) * 256
+           + int(rgb.b * 255.0 + 0.5) * 65536;
+    if (id == 0) return false;
+    for (int i = 0; i < numSelected; i++)
+        if (selectedIds[i] == id) return true;
+    return false;
+}
+
+void main()
+{
+    vec2 texel   = 1.0 / viewportSize;
+    bool centerSel = isSelected(texture(pickTex, texCoord).rgb);
+
+    // Only pixels outside the selection can show the outline.
+    if (centerSel) { fragColor = vec4(0.0); return; }
+
+    bool nearSelected = false;
+    for (int dx = -outlinePixels; dx <= outlinePixels && !nearSelected; dx++)
+    {
+        for (int dy = -outlinePixels; dy <= outlinePixels && !nearSelected; dy++)
+        {
+            float dist = length(vec2(float(dx), float(dy)));
+            if (dist < 0.5 || dist > float(outlinePixels) + 0.5) continue;
+            if (isSelected(texture(pickTex, texCoord + vec2(float(dx), float(dy)) * texel).rgb))
+                nearSelected = true;
+        }
+    }
+
+    fragColor = nearSelected ? outlineColor : vec4(0.0);
+}
 )";
 
     static const char *kDebugLineVS = R"(
@@ -1503,96 +1505,67 @@ void main() { outColor = vec4(lineColor, 1.0); }
     {
         if (!enableScreenBuffer || selectedUuids.empty() || !world || !scene) return;
         if (!world->getMainCamera()) return;
+        if (!enablePicking || pickFboWidth <= 0 || pickFboHeight <= 0) return;
 
-        // Lazy-compile outline shader
+        // Lazy-compile the post-process outline shader.
         if (!outlineShader)
         {
-            kShader *newShader = new kShader();
-            newShader->loadShadersCode(kOutlineVS, kOutlineFS);
-            outlineShader = newShader;
+            kShader *s = new kShader();
+            s->loadShadersCode(kOutlineVS, kOutlineFS);
+            outlineShader = s;
         }
 
-        // Gather valid selected meshes
-        std::vector<kMesh *> meshes;
+        // Collect integer IDs of selected objects and all their descendants.
+        // OBJ-loaded meshes have an empty root; geometry lives in child nodes.
+        std::function<void(kObject *, std::vector<int> &)> collectIds;
+        collectIds = [&](kObject *node, std::vector<int> &ids)
+        {
+            if (!node || !node->getActive()) return;
+            ids.push_back((int)node->getId());
+            for (kObject *child : node->getChildren())
+                collectIds(child, ids);
+        };
+
+        std::vector<int> selectedIds;
         for (const auto &uuid : selectedUuids)
         {
             kObject *obj = findNodeByUuid(scene->getRootNode(), uuid);
-            if (!obj || !obj->getActive()) continue;
-            if (obj->getType() != kNodeType::NODE_TYPE_MESH) continue;
-            kMesh *mesh = static_cast<kMesh *>(obj);
-            if (mesh->getLoaded()) meshes.push_back(mesh);
+            if (obj) collectIds(obj, selectedIds);
         }
-        if (meshes.empty()) return;
+        if (selectedIds.empty()) return;
+        if ((int)selectedIds.size() > 256) selectedIds.resize(256);
 
-        // Bind the MSAA FBO (scene has already been rendered into it)
+        // Draw the outline into the MSAA FBO on top of the rendered scene.
         driver->bindFramebuffer(fboMsaa);
         driver->setViewport(0, 0, fboWidth, fboHeight);
 
-        // Clear only the stencil channel (preserve existing color and depth)
-        glClearStencil(0);
-        glClear(GL_STENCIL_BUFFER_BIT);
-
         outlineShader->use();
-        outlineShader->setValue("viewMatrix",       world->getMainCamera()->getViewMatrix());
-        outlineShader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
-        outlineShader->setValue("outlineColor",     color);
+        driver->bindTexture2D(0, pickFboTex);
+        outlineShader->setValue("pickTex",       0);
+        outlineShader->setValue("viewportSize",  kVec2((float)fboWidth, (float)fboHeight));
+        outlineShader->setValue("numSelected",   (int)selectedIds.size());
+        outlineShader->setValue("outlineColor",  color);
+        outlineShader->setValue("outlinePixels", (int)std::max(1.0f, thickness));
 
-        // ------------------------------------------------------------------
-        // Pass 1 — stamp stencil=1 where selected mesh pixels land
-        // ------------------------------------------------------------------
-        glEnable(GL_STENCIL_TEST);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-        glStencilMask(0xFF);
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        GLint idLoc = glGetUniformLocation(static_cast<GLuint>(outlineShader->getShaderProgram()), "selectedIds");
+        if (idLoc >= 0)
+            glUniform1iv(idLoc, (GLsizei)selectedIds.size(), selectedIds.data());
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
-        glEnable(GL_DEPTH_TEST);
-        outlineShader->setValue("outlineThickness", 0.0f);
 
-        for (kMesh *mesh : meshes)
-        {
-            mesh->calculateModelMatrix();
-            outlineShader->setValue("modelMatrix", mesh->getModelMatrixWorld());
-            std::vector<kMat4> bones(128, kMat4(1.0f));
-            if (mesh->getSkinned() && mesh->getAnimator())
-                bones = mesh->getAnimator()->getFinalBoneMatrices();
-            outlineShader->setValue("finalBonesMatrices", bones);
-            mesh->draw();
-        }
+        driver->drawIndexed(quadVao, 6);
 
-        // ------------------------------------------------------------------
-        // Pass 2 — draw outline ring only where stencil is NOT 1 (the border)
-        // ------------------------------------------------------------------
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glDepthMask(GL_FALSE);
-        glDisable(GL_DEPTH_TEST);          // X-ray: always visible
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-        outlineShader->setValue("outlineThickness", thickness);
-
-        for (kMesh *mesh : meshes)
-        {
-            outlineShader->setValue("modelMatrix", mesh->getModelMatrixWorld());
-            std::vector<kMat4> bones(128, kMat4(1.0f));
-            if (mesh->getSkinned() && mesh->getAnimator())
-                bones = mesh->getAnimator()->getFinalBoneMatrices();
-            outlineShader->setValue("finalBonesMatrices", bones);
-            mesh->draw();
-        }
-
-        // ------------------------------------------------------------------
-        // Restore GL state
-        // ------------------------------------------------------------------
-        glDisable(GL_STENCIL_TEST);
+        glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(GL_TRUE);
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glStencilMask(0xFF);
-        glClear(GL_STENCIL_BUFFER_BIT);
 
         outlineShader->unuse();
+        driver->unbindTexture2D(0);
 
-        // Blit updated MSAA buffer to the resolve FBO (display texture)
+        // Blit updated MSAA buffer to the resolve FBO (display texture).
         driver->bindReadFramebuffer(fboMsaa);
         driver->bindDrawFramebuffer(fbo);
         driver->blitFramebufferColor(0, 0, fboWidth, fboHeight, 0, 0, fboWidth, fboHeight);

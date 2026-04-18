@@ -172,27 +172,27 @@ void main()
 	vec4 specularTexture = has_specularMap ? texture(specularMap, texCoordFrag * material.tiling) : vec4(0.0);
 	vec4 emissiveTexture = has_emissiveMap ? texture(emissiveMap, texCoordFrag * material.tiling) : vec4(0.0);
 	
-	// Construct TBN matrix
-	vec3 Tn = normalize(T);
-	vec3 Nn = normalize(N);
-	vec3 Bn = normalize(B);  // Recalculate bitangent from normal and tangent
-	mat3 TBN = mat3(Tn, Bn, Nn);
-	
-	// Sample normal from texture (in tangent space)
-    vec3 tangentNormal = normalTexture.rgb;
-	
-	// Flip green channel (Y)
-	tangentNormal.g = 1.0 - tangentNormal.g;
-	
-	// Transform from [0,1] to [-1,1]
-    tangentNormal = normalize(tangentNormal * 2.0 - 1.0); 
-	
-	// Transform to object/local space normal
-    vec3 localNormal = normalize(TBN * tangentNormal);
-	
-	// Optionally apply normalMatrix to get world-space normal
-	mat3 normalMatrix = mat3(transpose(inverse(modelMatrix)));
-	vec3 norm = normalize(normalMatrix * localNormal);
+	vec3 norm;
+	if (has_normalMap)
+	{
+		// Construct TBN matrix (T, B, N are already world-space from vertex shader)
+		vec3 Tn = normalize(T);
+		vec3 Bn = normalize(B);
+		vec3 Nn = normalize(N);
+		mat3 TBN = mat3(Tn, Bn, Nn);
+
+		// Sample tangent-space normal, flip G for OpenGL convention
+		vec3 tangentNormal = normalize(normalTexture.rgb * 2.0 - 1.0);
+		tangentNormal.g = -tangentNormal.g;
+
+		// Transform to world space
+		norm = normalize(TBN * tangentNormal);
+	}
+	else
+	{
+		// No normal map — use interpolated vertex normal (already world-space)
+		norm = normalize(N);
+	}
 
     vec3 viewDir = normalize(viewPos - vertexPositionFrag);
 	

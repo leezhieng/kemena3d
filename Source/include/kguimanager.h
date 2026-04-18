@@ -410,6 +410,9 @@ namespace kemena
 
         /** @brief Renders greyed-out (disabled) text. @param text Text to display. */
         void textDisabled(kString text);
+
+        /** @brief Vertically aligns the next widget so its baseline lines up with text. */
+        void alignTextToFramePadding();
         /** @brief Renders text that wraps at the wrap position. @param text Text. */
         void textWrapped(kString text);
 
@@ -1052,6 +1055,12 @@ namespace kemena
         /** @brief Returns true if the Ctrl modifier key is currently held. */
         bool isKeyCtrl();
 
+        /** @brief Returns true if any ImGui widget currently wants text input. */
+        bool getWantTextInput();
+
+        /** @brief Returns the time in seconds elapsed since the last frame. */
+        float getDeltaTime();
+
         // ---- Draw ----
 
         /**
@@ -1064,6 +1073,12 @@ namespace kemena
          * @param tint      Tint color (default white = no tint).
          */
         void drawListAddImage(GLuint textureId, kVec2 pMin, kVec2 pMax, kVec2 uvMin = kVec2(0, 0), kVec2 uvMax = kVec2(1, 1), kVec4 tint = kVec4(1, 1, 1, 1));
+
+        /** @brief Returns the height of a single text line in pixels. */
+        float getTextLineHeight();
+
+        /** @brief Renders a raw string without label formatting. */
+        void textUnformatted(kString text);
 
         // ---- Utility ----
 
@@ -1084,6 +1099,13 @@ namespace kemena
          * @param filename Path to the .ini file.
          */
         void loadIniSettingsFromDisk(kString filename);
+
+        /**
+         * @brief Loads ImGui layout state from an in-memory .ini blob.
+         * @param data Pointer to the ini text data.
+         * @param size Number of bytes to read.
+         */
+        void loadIniSettingsFromMemory(const char *data, size_t size);
 
         /**
          * @brief Registers a custom .ini settings handler.

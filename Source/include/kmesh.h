@@ -313,6 +313,13 @@ namespace kemena
         void generateVbo();
 
         /**
+         * @brief Computes per-vertex tangents and bitangents from positions, UVs, and indices.
+         * Must be called after all vertices, UVs, normals, and indices have been added and
+         * before generateVbo().
+         */
+        void generateTangents();
+
+        /**
          * @brief Recomputes the normal matrix from the current world transform.
          */
         void calculateNormalMatrix();
