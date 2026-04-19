@@ -414,6 +414,25 @@ void main()
             driver->setDepthWrite(true);
             driver->setCullFace(true);
 
+            // Build octree and populate visible mesh set for frustum culling
+            visibleMeshSet.clear();
+            currentFrustumValid = false;
+            kCamera *frustumCam = cullingCamera ? cullingCamera : world->getMainCamera();
+            if (octreeCullingEnabled && frustumCam != nullptr)
+            {
+                currentFrustum.extractFromMatrix(frustumCam->getProjectionMatrix() *
+                                                 frustumCam->getViewMatrix());
+                currentFrustumValid = true;
+
+                if (octreeDirty)
+                {
+                    sceneOctree->build(scene);
+                    octreeDirty = false;
+                }
+                auto visible = sceneOctree->queryVisible(currentFrustum);
+                visibleMeshSet.insert(visible.begin(), visible.end());
+            }
+
             if (renderMode == kRenderMode::RENDER_MODE_FULL ||
                 renderMode == kRenderMode::RENDER_MODE_FULL_WIREFRAME)
             {
@@ -542,6 +561,24 @@ void main()
 
             if (currentMesh->getLoaded() && currentMesh->getMaterial() != nullptr)
             {
+                // Frustum cull
+                if (octreeCullingEnabled && currentFrustumValid)
+                {
+                    if (currentMesh->getStatic())
+                    {
+                        // Static: use octree result
+                        if (!visibleMeshSet.empty() &&
+                            visibleMeshSet.find(currentMesh) == visibleMeshSet.end())
+                            goto renderChildren;
+                    }
+                    else
+                    {
+                        // Dynamic: direct per-mesh AABB test
+                        if (!currentFrustum.intersectsAABB(currentMesh->getWorldAABB()))
+                            goto renderChildren;
+                    }
+                }
+
                 // Blend
                 if (currentMesh->getMaterial()->getTransparent() == kTransparentType::TRANSP_TYPE_BLEND)
                 {
@@ -587,8 +624,9 @@ void main()
                     std::vector<kMat4> boneTransforms(128, kMat4(1.0f));
                     if (currentMesh->getSkinned() && currentMesh->getAnimator() != nullptr)
                     {
-                        currentMesh->getAnimator()->updateAnimation(
-                            deltaTime * currentMesh->getAnimator()->getCurrentAnimation()->getSpeed(), frameId);
+                        if (!currentMesh->getStatic())
+                            currentMesh->getAnimator()->updateAnimation(
+                                deltaTime * currentMesh->getAnimator()->getCurrentAnimation()->getSpeed(), frameId);
                         boneTransforms = currentMesh->getAnimator()->getFinalBoneMatrices();
                     }
                     shader->setValue("finalBonesMatrices", boneTransforms);
@@ -777,6 +815,7 @@ void main()
             }
         }
 
+        renderChildren:
         // Recurse children
         for (size_t i = 0; i < currentNode->getChildren().size(); ++i)
         {
@@ -805,8 +844,9 @@ void main()
                 std::vector<kMat4> boneTransforms(128, kMat4(1.0f));
                 if (currentMesh->getSkinned() && currentMesh->getAnimator() != nullptr)
                 {
-                    currentMesh->getAnimator()->updateAnimation(
-                        deltaTime * currentMesh->getAnimator()->getCurrentAnimation()->getSpeed(), frameId);
+                    if (!currentMesh->getStatic())
+                        currentMesh->getAnimator()->updateAnimation(
+                            deltaTime * currentMesh->getAnimator()->getCurrentAnimation()->getSpeed(), frameId);
                     boneTransforms = currentMesh->getAnimator()->getFinalBoneMatrices();
                 }
                 shadowShader->setValue("finalBonesMatrices", boneTransforms);
@@ -1844,6 +1884,93 @@ void main() { outColor = vec4(lineColor, 1.0); }
         debugLineShader->unuse();
 
         // Blit updated MSAA buffer to the resolve FBO
+        driver->bindReadFramebuffer(fboMsaa);
+        driver->bindDrawFramebuffer(fbo);
+        driver->blitFramebufferColor(0, 0, fboWidth, fboHeight, 0, 0, fboWidth, fboHeight);
+        driver->unbindFramebuffer();
+    }
+
+    void kRenderer::renderOctreeDebug(kWorld *world)
+    {
+        if (!octreeDebugEnabled || !enableScreenBuffer || !world) return;
+        if (!world->getMainCamera()) return;
+        if (!sceneOctree || sceneOctree->getNodeCount() == 0) return;
+
+        // Lazy-compile line shader
+        if (!debugLineShader)
+        {
+            debugLineShader = new kShader();
+            debugLineShader->loadShadersCode(kDebugLineVS, kDebugLineFS);
+        }
+        if (!debugLineVao)
+        {
+            debugLineVao = driver->createVertexArray();
+            debugLineVbo = driver->createBuffer();
+            glBindVertexArray(static_cast<GLuint>(debugLineVao));
+            glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(debugLineVbo));
+            glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+            glEnableVertexAttribArray(0);
+            glBindVertexArray(0);
+        }
+
+        auto appendLine = [](std::vector<float> &v, kVec3 a, kVec3 b) {
+            v.insert(v.end(), {a.x, a.y, a.z, b.x, b.y, b.z});
+        };
+
+        auto drawLines = [&](const std::vector<float> &verts, kVec3 color) {
+            if (verts.empty()) return;
+            glBindBuffer(GL_ARRAY_BUFFER, static_cast<GLuint>(debugLineVbo));
+            glBufferData(GL_ARRAY_BUFFER,
+                         static_cast<GLsizeiptr>(verts.size() * sizeof(float)),
+                         verts.data(), GL_DYNAMIC_DRAW);
+            debugLineShader->setValue("lineColor", color);
+            driver->drawArrays(debugLineVao, kPrimitiveType::LINES,
+                               static_cast<int>(verts.size() / 3));
+        };
+
+        driver->bindFramebuffer(fboMsaa);
+        driver->setViewport(0, 0, fboWidth, fboHeight);
+
+        debugLineShader->use();
+        debugLineShader->setValue("viewMatrix",       world->getMainCamera()->getViewMatrix());
+        debugLineShader->setValue("projectionMatrix", world->getMainCamera()->getProjectionMatrix());
+
+        driver->setDepthTest(false);
+        driver->setDepthWrite(false);
+
+        // Leaf nodes: green  |  Internal nodes: grey
+        const kVec3 colorLeaf(0.2f, 0.85f, 0.2f);
+        const kVec3 colorInternal(0.5f, 0.5f, 0.5f);
+
+        std::vector<float> leafVerts, internalVerts;
+
+        sceneOctree->traverse([&](const kAABB &b, int /*depth*/, bool isLeaf) {
+            std::vector<float> &v = isLeaf ? leafVerts : internalVerts;
+            kVec3 mn = b.min, mx = b.max;
+            // Bottom face
+            appendLine(v, {mn.x,mn.y,mn.z}, {mx.x,mn.y,mn.z});
+            appendLine(v, {mx.x,mn.y,mn.z}, {mx.x,mn.y,mx.z});
+            appendLine(v, {mx.x,mn.y,mx.z}, {mn.x,mn.y,mx.z});
+            appendLine(v, {mn.x,mn.y,mx.z}, {mn.x,mn.y,mn.z});
+            // Top face
+            appendLine(v, {mn.x,mx.y,mn.z}, {mx.x,mx.y,mn.z});
+            appendLine(v, {mx.x,mx.y,mn.z}, {mx.x,mx.y,mx.z});
+            appendLine(v, {mx.x,mx.y,mx.z}, {mn.x,mx.y,mx.z});
+            appendLine(v, {mn.x,mx.y,mx.z}, {mn.x,mx.y,mn.z});
+            // Vertical edges
+            appendLine(v, {mn.x,mn.y,mn.z}, {mn.x,mx.y,mn.z});
+            appendLine(v, {mx.x,mn.y,mn.z}, {mx.x,mx.y,mn.z});
+            appendLine(v, {mx.x,mn.y,mx.z}, {mx.x,mx.y,mx.z});
+            appendLine(v, {mn.x,mn.y,mx.z}, {mn.x,mx.y,mx.z});
+        });
+
+        drawLines(internalVerts, colorInternal);
+        drawLines(leafVerts,     colorLeaf);
+
+        driver->setDepthWrite(true);
+        debugLineShader->unuse();
+
         driver->bindReadFramebuffer(fboMsaa);
         driver->bindDrawFramebuffer(fbo);
         driver->blitFramebufferColor(0, 0, fboWidth, fboHeight, 0, 0, fboWidth, fboHeight);

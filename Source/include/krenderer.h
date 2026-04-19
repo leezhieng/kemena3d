@@ -32,6 +32,10 @@
 #include "kworld.h"
 #include "kscene.h"
 #include "kobject.h"
+#include "koctree.h"
+
+#include <unordered_set>
+#include <memory>
 
 #include <glm/gtx/string_cast.hpp>
 
@@ -265,6 +269,44 @@ namespace kemena
         bool getEnableObjectPicking();
 
         /**
+         * @brief Enable or disable octree-based frustum culling (default: enabled).
+         *
+         * When enabled, an octree is rebuilt each frame from all scene meshes and
+         * only meshes whose world AABB intersects the camera frustum are rendered.
+         */
+        void setOctreeCullingEnabled(bool enable) { octreeCullingEnabled = enable; }
+
+        /**
+         * @brief Marks the static-mesh octree as needing a rebuild.
+         *
+         * Call this whenever a static mesh is added, removed, or moved.
+         * The octree rebuilds once on the next rendered frame, then stays
+         * valid until marked dirty again.
+         */
+        void setOctreeDirty() { octreeDirty = true; }
+
+        /** @brief Returns whether octree frustum culling is active. */
+        bool getOctreeCullingEnabled() const { return octreeCullingEnabled; }
+
+        /**
+         * @brief Override the camera used to compute the culling frustum.
+         *
+         * By default (nullptr) the world's main camera is used.  Set a different
+         * camera here to freeze or redirect the frustum — useful for debugging
+         * culling without changing the render viewpoint.
+         *
+         * @param camera Camera to use for frustum extraction, or nullptr to revert
+         *               to the main camera.
+         */
+        void setCullingCamera(kCamera *camera) { cullingCamera = camera; }
+
+        /** @brief Returns the override culling camera, or nullptr if using main camera. */
+        kCamera *getCullingCamera() const { return cullingCamera; }
+
+        /** @brief Returns a reference to the scene octree (read-only). */
+        const kOctree &getOctree() const { return *sceneOctree; }
+
+        /**
          * @brief Returns the scene object under the given viewport-relative
          *        pixel coordinate using a color-ID render pass.
          *
@@ -342,10 +384,34 @@ namespace kemena
         void renderDebugShapes(kWorld *world, kScene *scene,
                                const std::vector<kString> &selectedUuids);
 
+        /** @brief Enable or disable octree AABB wireframe debug visualization. */
+        void setOctreeDebugEnabled(bool enable) { octreeDebugEnabled = enable; }
+
+        /** @brief Returns whether octree debug visualization is active. */
+        bool getOctreeDebugEnabled() const { return octreeDebugEnabled; }
+
+        /**
+         * @brief Draws octree node AABBs as wireframe boxes into the screen buffer.
+         *
+         * Leaf nodes are drawn in green, internal nodes in grey.
+         * Call after renderDebugShapes each frame.
+         */
+        void renderOctreeDebug(kWorld *world);
+
     protected:
     private:
         kString engineName;           ///< Optional application name for diagnostics.
         uint32_t engineVersion = 0;  ///< Optional application version for diagnostics.
+
+        // Octree frustum culling
+        std::unique_ptr<kOctree> sceneOctree = std::make_unique<kOctree>();
+        bool octreeCullingEnabled = true;
+        bool octreeDirty = true;         ///< Rebuild static-mesh octree on next frame when true.
+        bool octreeDebugEnabled = false; ///< Draw octree node AABBs as wireframes.
+        kCamera *cullingCamera = nullptr; ///< Override camera for frustum; nullptr = main camera.
+        std::unordered_set<kMesh*> visibleMeshSet; ///< Populated per frame from octree query.
+        kFrustum currentFrustum; ///< Frustum for the current frame, used for dynamic mesh culling.
+        bool currentFrustumValid = false; ///< True when currentFrustum has been extracted this frame.
         kWindow *appWindow = nullptr;
 
         kRendererType renderType;

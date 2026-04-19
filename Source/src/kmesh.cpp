@@ -425,8 +425,46 @@ namespace kemena
 
         driver->unbindVertexArray();
 
+        computeLocalAABB();
         calculateModelMatrix();
         calculateNormalMatrix();
+    }
+
+    void kMesh::computeLocalAABB()
+    {
+        localAABB = kAABB(); // reset to invalid state
+        for (const kVec3 &v : vertices)
+            localAABB.expandBy(v);
+    }
+
+    kAABB kMesh::getLocalAABB() const
+    {
+        return localAABB;
+    }
+
+    kAABB kMesh::getWorldAABB() const
+    {
+        if (!localAABB.isValid())
+            return kAABB(getPosition(), getPosition());
+
+        kMat4 world = getModelMatrixWorld();
+
+        // Transform all 8 corners and compute enclosing AABB
+        kVec3 corners[8] = {
+            {localAABB.min.x, localAABB.min.y, localAABB.min.z},
+            {localAABB.max.x, localAABB.min.y, localAABB.min.z},
+            {localAABB.min.x, localAABB.max.y, localAABB.min.z},
+            {localAABB.max.x, localAABB.max.y, localAABB.min.z},
+            {localAABB.min.x, localAABB.min.y, localAABB.max.z},
+            {localAABB.max.x, localAABB.min.y, localAABB.max.z},
+            {localAABB.min.x, localAABB.max.y, localAABB.max.z},
+            {localAABB.max.x, localAABB.max.y, localAABB.max.z},
+        };
+
+        kAABB result;
+        for (const kVec3 &c : corners)
+            result.expandBy(kVec3(world * kVec4(c, 1.0f)));
+        return result;
     }
 
     void kMesh::calculateNormalMatrix()
@@ -498,16 +536,6 @@ namespace kemena
 
     void kMesh::deserialize(json data)
     {
-    }
-
-    void kMesh::setStatic(bool newStatic)
-    {
-        isStatic = newStatic;
-    }
-
-    bool kMesh::getStatic()
-    {
-        return isStatic;
     }
 
     void kMesh::setVisible(bool newVisible)

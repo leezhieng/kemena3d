@@ -569,6 +569,49 @@ namespace kemena
     };
 
     /**
+     * @brief Axis-aligned bounding box (min/max in the same space).
+     */
+    struct kAABB
+    {
+        kVec3 min = kVec3( 1e30f);
+        kVec3 max = kVec3(-1e30f);
+
+        kAABB() = default;
+        kAABB(kVec3 min, kVec3 max) : min(min), max(max) {}
+
+        kVec3 center()      const { return (min + max) * 0.5f; }
+        kVec3 halfExtents() const { return (max - min) * 0.5f; }
+
+        bool isValid() const { return min.x <= max.x && min.y <= max.y && min.z <= max.z; }
+
+        void expandBy(const kVec3 &point) {
+            min = glm::min(min, point);
+            max = glm::max(max, point);
+        }
+
+        void merge(const kAABB &other) {
+            min = glm::min(min, other.min);
+            max = glm::max(max, other.max);
+        }
+
+        kAABB expanded(float amount) const {
+            return { min - kVec3(amount), max + kVec3(amount) };
+        }
+
+        bool contains(const kAABB &other) const {
+            return other.min.x >= min.x && other.max.x <= max.x
+                && other.min.y >= min.y && other.max.y <= max.y
+                && other.min.z >= min.z && other.max.z <= max.z;
+        }
+
+        bool overlaps(const kAABB &other) const {
+            return min.x <= other.max.x && max.x >= other.min.x
+                && min.y <= other.max.y && max.y >= other.min.y
+                && min.z <= other.max.z && max.z >= other.min.z;
+        }
+    };
+
+    /**
      * @brief Full per-vertex data layout used internally by the asset manager.
      */
     struct kVertexInfo

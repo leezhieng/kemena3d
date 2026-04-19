@@ -304,6 +304,28 @@ namespace kemena
         kMat4 getNormalMatrix();
 
         /**
+         * @brief Computes the local-space AABB from the vertex position buffer.
+         *
+         * Called automatically by generateVbo(); safe to call manually if vertices
+         * are modified after VBO generation.
+         */
+        void computeLocalAABB();
+
+        /**
+         * @brief Returns the axis-aligned bounding box in local (object) space.
+         */
+        kAABB getLocalAABB() const;
+
+        /**
+         * @brief Returns the AABB transformed into world space.
+         *
+         * Transforms all 8 corners of the local AABB by the current world matrix
+         * and returns the enclosing axis-aligned box.  Call calculateModelMatrix()
+         * first to ensure the world transform is up to date.
+         */
+        kAABB getWorldAABB() const;
+
+        /**
          * @brief Uploads all vertex attribute data to the GPU.
          *
          * Creates a VAO, one VBO per attribute, and an EBO, then describes
@@ -340,18 +362,6 @@ namespace kemena
          * @param data JSON produced by serialize().
          */
         void deserialize(json data);
-
-        /**
-         * @brief Marks the mesh as static (immutable geometry).
-         * @param newStatic true for static meshes; false for dynamic.
-         */
-        void setStatic(bool newStatic);
-
-        /**
-         * @brief Returns whether the mesh is marked as static.
-         * @return true if static.
-         */
-        bool getStatic();
 
         /**
          * @brief Controls the mesh's render visibility.
@@ -440,7 +450,8 @@ namespace kemena
 
         kMat3 normalMatrix; ///< Inverse-transpose of the model matrix (upper 3x3).
 
-        bool isStatic     = false; ///< Static geometry flag.
+        kAABB localAABB; ///< Bounding box in object (local) space.
+
         bool isVisible    = true;  ///< Render visibility flag.
         bool isCastShadow = true;  ///< Shadow-cast flag.
 

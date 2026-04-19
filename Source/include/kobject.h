@@ -99,6 +99,18 @@ namespace kemena
         void setActive(bool newActive);
 
         /**
+         * @brief Returns whether this object is marked as static (immobile geometry).
+         * @return true if the object will be indexed in the static octree.
+         */
+        bool getStatic();
+
+        /**
+         * @brief Marks the object as static or dynamic.
+         * @param newStatic true for immobile objects; false for moving/animated ones.
+         */
+        void setStatic(bool newStatic);
+
+        /**
          * @brief Returns whether editor debug visualization is enabled.
          * @return true if debug shapes (frustum, light range, etc.) are drawn.
          */
@@ -323,6 +335,7 @@ namespace kemena
         std::vector<kObject *> children;
 
         bool isActive   = true;
+        bool isStatic   = false;
         bool debugMode  = false;
 
         kNodeType type = NODE_TYPE_OBJECT;

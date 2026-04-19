@@ -70,6 +70,16 @@ namespace kemena
         isActive = newActive;
     }
 
+    bool kObject::getStatic()
+    {
+        return isStatic;
+    }
+
+    void kObject::setStatic(bool newStatic)
+    {
+        isStatic = newStatic;
+    }
+
     bool kObject::getDebugMode()
     {
         return debugMode;
