@@ -128,12 +128,17 @@ namespace kemena
         int height;
         kVec4 bgColor = kVec4(0.15f, 0.15f, 0.15f, 1.0f);
 
+        kShader *builtinShader = nullptr; ///< Lazy-compiled fallback for meshes with no material.
+
         void createFBO();
         void destroyFBO();
+        void ensureBuiltinShader();
 
         void renderNodeFull(kObject *node, kScene *scene, kCamera *camera);
         void drawMeshWithMaterial(kMesh *mesh, kScene *scene, kCamera *camera,
                                   int sunCount, int pointCount, int spotCount);
+        void drawMeshBuiltin(kMesh *mesh, kCamera *camera);
+        void drawMeshHierarchy(kMesh *mesh, kCamera *camera);
 
         void setupLightsFromScene(kShader *shader, kScene *scene,
                                   int &outSun, int &outPoint, int &outSpot);

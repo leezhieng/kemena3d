@@ -391,12 +391,13 @@ namespace kemena
         bool getOctreeDebugEnabled() const { return octreeDebugEnabled; }
 
         /**
-         * @brief Draws octree node AABBs as wireframe boxes into the screen buffer.
+         * @brief Draws octree node AABBs and mesh world AABBs as wireframe boxes.
          *
-         * Leaf nodes are drawn in green, internal nodes in grey.
+         * Octree leaf nodes: green, internal nodes: grey.
+         * Static mesh AABBs: yellow, dynamic mesh AABBs: cyan.
          * Call after renderDebugShapes each frame.
          */
-        void renderOctreeDebug(kWorld *world);
+        void renderOctreeDebug(kWorld *world, kScene *scene);
 
     protected:
     private:

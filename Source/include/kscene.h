@@ -74,6 +74,12 @@ namespace kemena
          */
         void setActive(bool newActive);
 
+        /** @brief Enable or disable frustum culling for this scene (default: enabled). */
+        void setFrustumCullingEnabled(bool enable) { frustumCullingEnabled = enable; }
+
+        /** @brief Returns whether frustum culling is enabled for this scene. */
+        bool getFrustumCullingEnabled() const { return frustumCullingEnabled; }
+
         /**
          * @brief Returns the UUID of this scene.
          * @return UUID v4 kString.
@@ -279,7 +285,8 @@ namespace kemena
         kAssetManager *assetManager = nullptr; ///< Asset loader reference.
         kWorld        *world        = nullptr; ///< Owning world reference.
 
-        bool isActive = true; ///< Scene active flag.
+        bool isActive = true;              ///< Scene active flag.
+        bool frustumCullingEnabled = true; ///< Whether frustum culling applies to this scene.
 
         kString uuid; ///< Scene UUID.
         kString name; ///< Human-readable scene name.

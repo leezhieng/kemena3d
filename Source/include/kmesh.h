@@ -323,7 +323,7 @@ namespace kemena
          * and returns the enclosing axis-aligned box.  Call calculateModelMatrix()
          * first to ensure the world transform is up to date.
          */
-        kAABB getWorldAABB() const;
+        kAABB getWorldAABB();
 
         /**
          * @brief Uploads all vertex attribute data to the GPU.

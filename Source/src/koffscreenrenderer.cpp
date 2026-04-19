@@ -14,9 +14,54 @@
 
 #include <algorithm>
 #include <cstring>
+#include <functional>
 
 namespace kemena
 {
+    // -----------------------------------------------------------------------
+    // Built-in Lambert preview shader — used when mesh has no material
+    // -----------------------------------------------------------------------
+
+    static const char *kPreviewVS = R"(
+        #version 330 core
+        layout(location = 0) in vec3 aPosition;
+        layout(location = 3) in vec3 aNormal;
+        layout(location = 5) in vec3 aBitangent;
+        uniform mat4 modelMatrix;
+        uniform mat4 viewMatrix;
+        uniform mat4 projectionMatrix;
+        out vec3 vNormal;
+        out vec3 vBitangent;
+        out vec3 vFragPos;
+        void main() {
+            mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
+            vFragPos    = vec3(modelMatrix * vec4(aPosition, 1.0));
+            vNormal     = normalize(normalMatrix * aNormal);
+            vBitangent  = normalize(normalMatrix * aBitangent);
+            gl_Position = projectionMatrix * viewMatrix * vec4(vFragPos, 1.0);
+        }
+    )";
+
+    static const char *kPreviewFS = R"(
+        #version 330 core
+        in vec3 vNormal;
+        in vec3 vBitangent;
+        in vec3 vFragPos;
+        uniform vec3 viewPos;
+        out vec4 fragColor;
+        void main() {
+            vec3  n      = normalize(vNormal);
+            vec3  b      = normalize(vBitangent);
+            vec3  V      = normalize(viewPos - vFragPos);
+            float dN     = dot(n, V) * 0.5 + 0.5;
+            float dB     = dot(b, V) * 0.5 + 0.5;
+            float top    = n.y * 0.5 + 0.5;
+            float shade  = dN * 0.50 + dB * 0.25 + top * 0.25;
+            vec3  albedo = vec3(0.75, 0.75, 0.75);
+            fragColor    = vec4(albedo * (0.10 + shade * 0.90), 1.0);
+        }
+    )";
+
     // -----------------------------------------------------------------------
     // Construction / destruction
     // -----------------------------------------------------------------------
@@ -31,6 +76,14 @@ namespace kemena
     kOffscreenRenderer::~kOffscreenRenderer()
     {
         destroyFBO();
+        if (builtinShader) { delete builtinShader; builtinShader = nullptr; }
+    }
+
+    void kOffscreenRenderer::ensureBuiltinShader()
+    {
+        if (builtinShader) return;
+        builtinShader = new kShader();
+        builtinShader->loadShadersCode(kPreviewVS, kPreviewFS);
     }
 
     // -----------------------------------------------------------------------
@@ -150,25 +203,37 @@ namespace kemena
     void kOffscreenRenderer::renderMesh(kMesh *mesh, kCamera *camera)
     {
         if (!driver || !mesh || !fbo) return;
-        if (!mesh->getLoaded() || mesh->getMaterial() == nullptr) return;
-        if (!mesh->getMaterial()->getShader()) return;
 
-        // Auto-frame camera if none provided
+        // Auto-frame camera using the bounding box of the entire hierarchy
         kCamera autoCamera;
         kCamera *cam = camera;
         if (!cam)
         {
-            mesh->calculateModelMatrix();
-            kAABB aabb = mesh->getWorldAABB();
-            kVec3 center = aabb.center();
-            kVec3 he     = aabb.halfExtents();
+            // Compute combined AABB of root + all children recursively
+            kAABB combined;
+            std::function<void(kMesh*)> expandAABB = [&](kMesh *m) {
+                m->calculateModelMatrix();
+                kAABB b = m->getWorldAABB();
+                if (b.isValid())
+                {
+                    combined.expandBy(b.min);
+                    combined.expandBy(b.max);
+                }
+                for (kObject *child : m->getChildren())
+                    if (child->getType() == kNodeType::NODE_TYPE_MESH)
+                        expandAABB(static_cast<kMesh*>(child));
+            };
+            expandAABB(mesh);
+
+            kVec3 center = combined.isValid() ? combined.center() : kVec3(0.0f);
+            kVec3 he     = combined.isValid() ? combined.halfExtents() : kVec3(1.0f);
             float radius = glm::length(he);
             if (radius < 0.001f) radius = 1.0f;
 
-            float fov     = 45.0f;
-            float dist    = (radius / glm::tan(glm::radians(fov * 0.5f))) * 1.5f;
-            kVec3 dir     = glm::normalize(kVec3(1.0f, 0.8f, 1.0f));
-            kVec3 eye     = center + dir * dist;
+            float fov  = 45.0f;
+            float dist = (radius / glm::tan(glm::radians(fov * 0.5f))) * 1.0f;
+            kVec3 dir  = glm::normalize(kVec3(0.5f, 0.5f, 1.0f));
+            kVec3 eye  = center + dir * dist;
 
             autoCamera.setPosition(eye);
             autoCamera.setLookAt(center);
@@ -188,21 +253,36 @@ namespace kemena
         driver->setCullFace(false);
         driver->setBlend(false);
 
-        kShader *shader = mesh->getMaterial()->getShader();
-        shader->use();
+        drawMeshHierarchy(mesh, cam);
 
-        // Simple 3-point lighting: key, fill, back
-        setupSingleSunLight(shader, glm::normalize(kVec3( 1.0f, -1.5f,  1.0f)), kVec3(1.0f), 1.2f);
-        shader->setValue("sunLightNum",   1);
-        shader->setValue("pointLightNum", 0);
-        shader->setValue("spotLightNum",  0);
-        shader->setValue("sceneAmbient",  kVec3(0.25f, 0.25f, 0.25f));
-        shader->setValue("skyboxAmbientEnabled", false);
-
-        drawMeshWithMaterial(mesh, nullptr, cam, 1, 0, 0);
-
-        shader->unuse();
         driver->unbindFramebuffer();
+    }
+
+    void kOffscreenRenderer::drawMeshHierarchy(kMesh *mesh, kCamera *camera)
+    {
+        if (!mesh) return;
+        mesh->calculateModelMatrix();
+
+        if (mesh->getLoaded())
+            drawMeshBuiltin(mesh, camera);
+
+        for (kObject *child : mesh->getChildren())
+            if (child->getType() == kNodeType::NODE_TYPE_MESH)
+                drawMeshHierarchy(static_cast<kMesh*>(child), camera);
+    }
+
+    void kOffscreenRenderer::drawMeshBuiltin(kMesh *mesh, kCamera *camera)
+    {
+        ensureBuiltinShader();
+        builtinShader->use();
+        mesh->calculateModelMatrix();
+        mesh->calculateNormalMatrix();
+        builtinShader->setValue("modelMatrix",      mesh->getModelMatrixWorld());
+        builtinShader->setValue("viewMatrix",       camera->getViewMatrix());
+        builtinShader->setValue("projectionMatrix", camera->getProjectionMatrix());
+        builtinShader->setValue("viewPos",          camera->getPosition());
+        mesh->draw();
+        builtinShader->unuse();
     }
 
     // -----------------------------------------------------------------------

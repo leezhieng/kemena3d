@@ -1,5 +1,6 @@
 #include "krenderer.h"
 #include "kopengldriver.h"
+#include <functional>
 
 namespace kemena
 {
@@ -561,8 +562,8 @@ void main()
 
             if (currentMesh->getLoaded() && currentMesh->getMaterial() != nullptr)
             {
-                // Frustum cull
-                if (octreeCullingEnabled && currentFrustumValid)
+                // Frustum cull (skip if the scene has culling disabled)
+                if (octreeCullingEnabled && currentFrustumValid && scene->getFrustumCullingEnabled())
                 {
                     if (currentMesh->getStatic())
                     {
@@ -1890,11 +1891,10 @@ void main() { outColor = vec4(lineColor, 1.0); }
         driver->unbindFramebuffer();
     }
 
-    void kRenderer::renderOctreeDebug(kWorld *world)
+    void kRenderer::renderOctreeDebug(kWorld *world, kScene *scene)
     {
         if (!octreeDebugEnabled || !enableScreenBuffer || !world) return;
         if (!world->getMainCamera()) return;
-        if (!sceneOctree || sceneOctree->getNodeCount() == 0) return;
 
         // Lazy-compile line shader
         if (!debugLineShader)
@@ -1967,6 +1967,51 @@ void main() { outColor = vec4(lineColor, 1.0); }
 
         drawLines(internalVerts, colorInternal);
         drawLines(leafVerts,     colorLeaf);
+
+        // Draw individual mesh world AABBs: yellow = static, cyan = dynamic
+        if (scene)
+        {
+            const kVec3 colorStatic (1.0f, 0.9f, 0.0f);
+            const kVec3 colorDynamic(0.0f, 0.85f, 0.9f);
+
+            std::vector<float> staticVerts, dynamicVerts;
+
+            std::function<void(kObject*)> collectMeshAABBs = [&](kObject *node) {
+                if (!node) return;
+                if (node->getType() == kNodeType::NODE_TYPE_MESH)
+                {
+                    kMesh *m = static_cast<kMesh*>(node);
+                    if (m->getLoaded())
+                    {
+                        m->calculateModelMatrix();
+                        kAABB b = m->getWorldAABB();
+                        if (b.isValid())
+                        {
+                            std::vector<float> &v = m->getStatic() ? staticVerts : dynamicVerts;
+                            kVec3 mn = b.min, mx = b.max;
+                            appendLine(v, {mn.x,mn.y,mn.z}, {mx.x,mn.y,mn.z});
+                            appendLine(v, {mx.x,mn.y,mn.z}, {mx.x,mn.y,mx.z});
+                            appendLine(v, {mx.x,mn.y,mx.z}, {mn.x,mn.y,mx.z});
+                            appendLine(v, {mn.x,mn.y,mx.z}, {mn.x,mn.y,mn.z});
+                            appendLine(v, {mn.x,mx.y,mn.z}, {mx.x,mx.y,mn.z});
+                            appendLine(v, {mx.x,mx.y,mn.z}, {mx.x,mx.y,mx.z});
+                            appendLine(v, {mx.x,mx.y,mx.z}, {mn.x,mx.y,mx.z});
+                            appendLine(v, {mn.x,mx.y,mx.z}, {mn.x,mx.y,mn.z});
+                            appendLine(v, {mn.x,mn.y,mn.z}, {mn.x,mx.y,mn.z});
+                            appendLine(v, {mx.x,mn.y,mn.z}, {mx.x,mx.y,mn.z});
+                            appendLine(v, {mx.x,mn.y,mx.z}, {mx.x,mx.y,mx.z});
+                            appendLine(v, {mn.x,mn.y,mx.z}, {mn.x,mx.y,mx.z});
+                        }
+                    }
+                }
+                for (kObject *child : node->getChildren())
+                    collectMeshAABBs(child);
+            };
+            collectMeshAABBs(scene->getRootNode());
+
+            drawLines(staticVerts,  colorStatic);
+            drawLines(dynamicVerts, colorDynamic);
+        }
 
         driver->setDepthWrite(true);
         debugLineShader->unuse();

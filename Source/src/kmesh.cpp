@@ -442,7 +442,7 @@ namespace kemena
         return localAABB;
     }
 
-    kAABB kMesh::getWorldAABB() const
+    kAABB kMesh::getWorldAABB()
     {
         if (!localAABB.isValid())
             return kAABB(getPosition(), getPosition());
