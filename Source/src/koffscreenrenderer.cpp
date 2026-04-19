@@ -94,12 +94,15 @@ namespace kemena
     {
         if (!driver) return;
 
+        int rw = width  * ssaaScale;
+        int rh = height * ssaaScale;
+
         fbo      = driver->createFramebuffer();
-        colorTex = driver->createFBOColorTexture(width, height);
+        colorTex = driver->createFBOColorTexture(rw, rh);
         driver->attachFBOColorTexture(fbo, colorTex);
 
         depthRbo = driver->createRenderbuffer();
-        driver->setupRenderbuffer(depthRbo, width, height);
+        driver->setupRenderbuffer(depthRbo, rw, rh);
         driver->attachRenderbufferDepthStencil(fbo, depthRbo);
 
         driver->bindFramebuffer(fbo);
@@ -131,8 +134,11 @@ namespace kemena
     {
         if (!driver || !scene || !camera || !fbo) return;
 
+        GLint savedVP[4];
+        glGetIntegerv(GL_VIEWPORT, savedVP);
+
         driver->bindFramebuffer(fbo);
-        driver->setViewport(0, 0, width, height);
+        driver->setViewport(0, 0, width * ssaaScale, height * ssaaScale);
         driver->setClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
         driver->clear(true, true, false);
         driver->setDepthTest(true);
@@ -143,6 +149,7 @@ namespace kemena
         renderNodeFull(scene->getRootNode(), scene, camera);
 
         driver->unbindFramebuffer();
+        glViewport(savedVP[0], savedVP[1], savedVP[2], savedVP[3]);
     }
 
     void kOffscreenRenderer::renderNodeFull(kObject *node, kScene *scene, kCamera *camera)
@@ -244,8 +251,11 @@ namespace kemena
             cam = &autoCamera;
         }
 
+        GLint savedVP[4];
+        glGetIntegerv(GL_VIEWPORT, savedVP);
+
         driver->bindFramebuffer(fbo);
-        driver->setViewport(0, 0, width, height);
+        driver->setViewport(0, 0, width * ssaaScale, height * ssaaScale);
         driver->setClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
         driver->clear(true, true, false);
         driver->setDepthTest(true);
@@ -256,6 +266,7 @@ namespace kemena
         drawMeshHierarchy(mesh, cam);
 
         driver->unbindFramebuffer();
+        glViewport(savedVP[0], savedVP[1], savedVP[2], savedVP[3]);
     }
 
     void kOffscreenRenderer::drawMeshHierarchy(kMesh *mesh, kCamera *camera)
@@ -432,36 +443,59 @@ namespace kemena
     {
         if (!fbo || !colorTex || filePath.empty()) return false;
 
-        std::vector<uint8_t> pixels(width * height * 4);
+        int rw = width  * ssaaScale;
+        int rh = height * ssaaScale;
+
+        std::vector<uint8_t> pixels(rw * rh * 4);
 
         driver->bindFramebuffer(fbo);
-        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+        glReadPixels(0, 0, rw, rh, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
         driver->unbindFramebuffer();
 
-        // OpenGL origin is bottom-left; image files expect top-left — flip vertically
-        std::vector<uint8_t> flipped(pixels.size());
-        int rowBytes = width * 4;
-        for (int y = 0; y < height; ++y)
-            std::memcpy(flipped.data() + y * rowBytes,
-                        pixels.data() + (height - 1 - y) * rowBytes,
-                        rowBytes);
+        // Box-filter downsample from rw×rh → width×height, and flip vertically (GL bottom-left → top-left)
+        std::vector<uint8_t> out(width * height * 4);
+        for (int oy = 0; oy < height; ++oy)
+        {
+            int srcY = (height - 1 - oy) * ssaaScale; // flip while sampling
+            for (int ox = 0; ox < width; ++ox)
+            {
+                int srcX = ox * ssaaScale;
+                int r = 0, g = 0, b = 0, a = 0;
+                for (int dy = 0; dy < ssaaScale; ++dy)
+                    for (int dx = 0; dx < ssaaScale; ++dx)
+                    {
+                        int idx = ((srcY + dy) * rw + (srcX + dx)) * 4;
+                        r += pixels[idx + 0];
+                        g += pixels[idx + 1];
+                        b += pixels[idx + 2];
+                        a += pixels[idx + 3];
+                    }
+                int s = ssaaScale * ssaaScale;
+                int idx = (oy * width + ox) * 4;
+                out[idx + 0] = static_cast<uint8_t>(r / s);
+                out[idx + 1] = static_cast<uint8_t>(g / s);
+                out[idx + 2] = static_cast<uint8_t>(b / s);
+                out[idx + 3] = static_cast<uint8_t>(a / s);
+            }
+        }
 
         // Determine format from extension
         kString ext = filePath;
         std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
+        int rowBytes = width * 4;
         if (ext.size() >= 4 && ext.substr(ext.size() - 4) == ".png")
             return stbi_write_png(filePath.c_str(), width, height, 4,
-                                  flipped.data(), rowBytes) != 0;
+                                  out.data(), rowBytes) != 0;
         if (ext.size() >= 4 && ext.substr(ext.size() - 4) == ".jpg")
             return stbi_write_jpg(filePath.c_str(), width, height, 4,
-                                  flipped.data(), 90) != 0;
+                                  out.data(), 90) != 0;
         if (ext.size() >= 4 && ext.substr(ext.size() - 4) == ".bmp")
             return stbi_write_bmp(filePath.c_str(), width, height, 4,
-                                  flipped.data()) != 0;
+                                  out.data()) != 0;
         if (ext.size() >= 4 && ext.substr(ext.size() - 4) == ".tga")
             return stbi_write_tga(filePath.c_str(), width, height, 4,
-                                  flipped.data()) != 0;
+                                  out.data()) != 0;
 
         return false;
     }

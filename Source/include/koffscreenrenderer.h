@@ -126,6 +126,7 @@ namespace kemena
 
         int width;
         int height;
+        int ssaaScale = 2; // render at Nx resolution, box-filter downsample on save
         kVec4 bgColor = kVec4(0.15f, 0.15f, 0.15f, 1.0f);
 
         kShader *builtinShader = nullptr; ///< Lazy-compiled fallback for meshes with no material.
