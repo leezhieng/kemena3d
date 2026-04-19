@@ -238,12 +238,12 @@ namespace kemena
             if (radius < 0.001f) radius = 1.0f;
 
             float fov  = 45.0f;
-            float dist = (radius / glm::tan(glm::radians(fov * 0.5f))) * 1.0f;
+            float dist = (radius / glm::tan(glm::radians(fov * 0.5f))) * 0.9f;
             kVec3 dir  = glm::normalize(kVec3(0.5f, 0.5f, 1.0f));
             kVec3 eye  = center + dir * dist;
 
             autoCamera.setPosition(eye);
-            autoCamera.setLookAt(center);
+            autoCamera.setLookAt(center + kVec3(radius * 0.05f, radius * 0.1f, 0.0f));
             autoCamera.setFOV(fov);
             autoCamera.setAspectRatio((float)width / (float)height);
             autoCamera.setNearClip(dist * 0.01f);
