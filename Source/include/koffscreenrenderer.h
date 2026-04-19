@@ -1,0 +1,147 @@
+/**
+ * @file koffscreenrenderer.h
+ * @brief Offscreen FBO renderer for thumbnails, previews, and image export.
+ */
+
+#ifndef KOFFSCREENRENDERER_H
+#define KOFFSCREENRENDERER_H
+
+#include "kexport.h"
+#include "kdatatype.h"
+#include "kcamera.h"
+
+#include <string>
+
+namespace kemena
+{
+    class kMesh;
+    class kScene;
+    class kWorld;
+    class kObject;
+    class kShader;
+    class kDriver;
+
+    /**
+     * @brief Renders to an offscreen FBO for thumbnails, previews, and image export.
+     *
+     * Usage:
+     * @code
+     *   kOffscreenRenderer offscreen(256, 256);
+     *
+     *   // Full scene render from a custom camera
+     *   offscreen.render(world, scene, &myCamera);
+     *
+     *   // Single mesh with auto-framed camera
+     *   offscreen.renderMesh(mesh);
+     *
+     *   // Use as ImGui thumbnail
+     *   ImGui::Image((ImTextureID)(uintptr_t)offscreen.getTexture(), {256, 256});
+     *
+     *   // Save to file
+     *   offscreen.saveToFile("thumbnail.png");
+     * @endcode
+     */
+    class KEMENA3D_API kOffscreenRenderer
+    {
+    public:
+        /**
+         * @param width  Output texture width in pixels.
+         * @param height Output texture height in pixels.
+         */
+        kOffscreenRenderer(int width = 256, int height = 256);
+        ~kOffscreenRenderer();
+
+        /**
+         * @brief Resize the offscreen buffer.
+         *
+         * Destroys and recreates the FBO.  Any previous render result is lost.
+         */
+        void resize(int newWidth, int newHeight);
+
+        /**
+         * @brief Background clear color and alpha (default: opaque dark grey).
+         *
+         * Set alpha to 0 for a fully transparent background — useful when
+         * compositing the thumbnail over other UI elements.
+         */
+        void setBackgroundColor(kVec4 color) { bgColor = color; }
+        kVec4 getBackgroundColor() const     { return bgColor; }
+
+        /**
+         * @brief Render the full scene to the offscreen buffer.
+         *
+         * Uses the provided camera for view/projection.  All scene lights,
+         * materials, and textures are applied.  Shadows are not included.
+         *
+         * @param world  World (used only for skinning state, may be nullptr).
+         * @param scene  Scene to render.
+         * @param camera Camera defining the viewpoint.
+         */
+        void render(kWorld *world, kScene *scene, kCamera *camera);
+
+        /**
+         * @brief Render a single mesh to the offscreen buffer.
+         *
+         * If @p camera is nullptr, a camera is auto-positioned to frame the
+         * mesh's world AABB from a 3/4 view angle.
+         *
+         * A simple three-point directional light setup is used.  The mesh's
+         * own material and shader are applied if present.
+         *
+         * @param mesh   Mesh to render (must be loaded and have a material).
+         * @param camera Override camera, or nullptr for auto-framing.
+         */
+        void renderMesh(kMesh *mesh, kCamera *camera = nullptr);
+
+        /**
+         * @brief GPU texture ID of the current render result.
+         *
+         * Pass directly to ImGui::Image as @c (ImTextureID)(uintptr_t)getTexture().
+         * Valid until the next resize() call.
+         */
+        uint32_t getTexture() const { return colorTex; }
+
+        int getWidth()  const { return width;  }
+        int getHeight() const { return height; }
+
+        /**
+         * @brief Save the current render result to an image file.
+         *
+         * The format is determined by the file extension:
+         *   .png  — lossless, recommended
+         *   .jpg  — lossy, smaller
+         *   .bmp  — uncompressed
+         *   .tga  — uncompressed with alpha
+         *
+         * @param filePath Destination path including extension.
+         * @return true on success.
+         */
+        bool saveToFile(const kString &filePath) const;
+
+    private:
+        kDriver *driver  = nullptr;
+        uint32_t fbo      = 0;
+        uint32_t colorTex = 0;
+        uint32_t depthRbo = 0;
+
+        int width;
+        int height;
+        kVec4 bgColor = kVec4(0.15f, 0.15f, 0.15f, 1.0f);
+
+        void createFBO();
+        void destroyFBO();
+
+        void renderNodeFull(kObject *node, kScene *scene, kCamera *camera);
+        void drawMeshWithMaterial(kMesh *mesh, kScene *scene, kCamera *camera,
+                                  int sunCount, int pointCount, int spotCount);
+
+        void setupLightsFromScene(kShader *shader, kScene *scene,
+                                  int &outSun, int &outPoint, int &outSpot);
+        void setupSingleSunLight(kShader *shader,
+                                 kVec3 direction, kVec3 diffuse, float power);
+        void bindMaterialTextures(kMesh *mesh, kShader *shader);
+        void unbindMaterialTextures(kMesh *mesh);
+    };
+}
+
+#endif // KOFFSCREENRENDERER_H
