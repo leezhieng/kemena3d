@@ -94,6 +94,22 @@ namespace kemena
         void renderMesh(kMesh *mesh, kCamera *camera = nullptr);
 
         /**
+         * @brief Render a mesh using its assigned material shader and uniforms.
+         *
+         * Unlike renderMesh(), which uses the built-in preview shader, this
+         * method binds the mesh's own kMaterial and kShader so that material
+         * properties (diffuse, metallic, textures, etc.) are visible in the
+         * result.  A simple sun light is injected so the result is shaded.
+         *
+         * The mesh must have a material with a compiled shader; if not, nothing
+         * is drawn.
+         *
+         * @param mesh   Mesh to render.
+         * @param camera Override camera, or nullptr for auto-framing.
+         */
+        void renderMeshWithMaterial(kMesh *mesh, kCamera *camera = nullptr);
+
+        /**
          * @brief GPU texture ID of the current render result.
          *
          * Pass directly to ImGui::Image as @c (ImTextureID)(uintptr_t)getTexture().

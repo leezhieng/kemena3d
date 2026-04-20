@@ -238,16 +238,19 @@ namespace kemena
             if (radius < 0.001f) radius = 1.0f;
 
             float fov  = 45.0f;
-            float dist = (radius / glm::tan(glm::radians(fov * 0.5f))) * 0.9f;
+            float dist = (radius / glm::tan(glm::radians(fov * 0.5f))) * 1.1f;
             kVec3 dir  = glm::normalize(kVec3(0.5f, 0.5f, 1.0f));
             kVec3 eye  = center + dir * dist;
 
+            // AABB extent along the view direction for tight near/far clips
+            float heAlongDir = std::abs(dir.x) * he.x + std::abs(dir.y) * he.y + std::abs(dir.z) * he.z;
+
             autoCamera.setPosition(eye);
-            autoCamera.setLookAt(center + kVec3(radius * 0.05f, radius * 0.1f, 0.0f));
+            autoCamera.setLookAt(center);
             autoCamera.setFOV(fov);
             autoCamera.setAspectRatio((float)width / (float)height);
-            autoCamera.setNearClip(dist * 0.01f);
-            autoCamera.setFarClip(dist * 10.0f);
+            autoCamera.setNearClip(std::max(0.001f, dist - heAlongDir - radius * 0.05f));
+            autoCamera.setFarClip(dist + heAlongDir + radius * 0.05f);
             cam = &autoCamera;
         }
 
@@ -264,6 +267,94 @@ namespace kemena
         driver->setBlend(false);
 
         drawMeshHierarchy(mesh, cam);
+
+        driver->unbindFramebuffer();
+        glViewport(savedVP[0], savedVP[1], savedVP[2], savedVP[3]);
+    }
+
+    // -----------------------------------------------------------------------
+    // renderMeshWithMaterial — single mesh, uses its own material shader
+    // -----------------------------------------------------------------------
+
+    void kOffscreenRenderer::renderMeshWithMaterial(kMesh *mesh, kCamera *camera)
+    {
+        if (!driver || !mesh || !fbo) return;
+        if (!mesh->getMaterial() || !mesh->getMaterial()->getShader()) return;
+        if (mesh->getMaterial()->getShader()->getShaderProgram() == 0) return;
+
+        // Auto-frame camera (same logic as renderMesh)
+        kCamera autoCamera;
+        kCamera *cam = camera;
+        if (!cam)
+        {
+            kAABB combined;
+            std::function<void(kMesh*)> expandAABB = [&](kMesh *m) {
+                m->calculateModelMatrix();
+                kAABB b = m->getWorldAABB();
+                if (b.isValid())
+                {
+                    combined.expandBy(b.min);
+                    combined.expandBy(b.max);
+                }
+                for (kObject *child : m->getChildren())
+                    if (child->getType() == kNodeType::NODE_TYPE_MESH)
+                        expandAABB(static_cast<kMesh*>(child));
+            };
+            expandAABB(mesh);
+
+            kVec3 center = combined.isValid() ? combined.center()      : kVec3(0.0f);
+            kVec3 he     = combined.isValid() ? combined.halfExtents() : kVec3(1.0f);
+            float radius = glm::length(he);
+            if (radius < 0.001f) radius = 1.0f;
+
+            float fov  = 45.0f;
+            float dist = (radius / glm::tan(glm::radians(fov * 0.5f))) * 1.1f;
+            kVec3 dir  = glm::normalize(kVec3(0.5f, 0.5f, 1.0f));
+            kVec3 eye  = center + dir * dist;
+
+            // AABB extent along the view direction for tight near/far clips
+            float heAlongDir = std::abs(dir.x) * he.x + std::abs(dir.y) * he.y + std::abs(dir.z) * he.z;
+
+            autoCamera.setPosition(eye);
+            autoCamera.setLookAt(center);
+            autoCamera.setFOV(fov);
+            autoCamera.setAspectRatio((float)width / (float)height);
+            autoCamera.setNearClip(std::max(0.001f, dist - heAlongDir - radius * 0.05f));
+            autoCamera.setFarClip(dist + heAlongDir + radius * 0.05f);
+            cam = &autoCamera;
+        }
+
+        GLint savedVP[4];
+        glGetIntegerv(GL_VIEWPORT, savedVP);
+
+        driver->bindFramebuffer(fbo);
+        driver->setViewport(0, 0, width * ssaaScale, height * ssaaScale);
+        driver->setClearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+        driver->clear(true, true, false);
+        driver->setDepthTest(true);
+        driver->setDepthWrite(true);
+        driver->setCullFace(false);
+        driver->setBlend(false);
+
+        mesh->calculateModelMatrix();
+
+        kShader *shader = mesh->getMaterial()->getShader();
+        shader->use();
+
+        // Inject a simple sun light (no scene object needed)
+        setupSingleSunLight(shader,
+                            glm::normalize(kVec3(-0.5f, -1.0f, -0.8f)),
+                            kVec3(1.0f, 1.0f, 1.0f), 1.0f);
+        shader->setValue("sunLightNum",           1);
+        shader->setValue("pointLightNum",         0);
+        shader->setValue("spotLightNum",          0);
+        shader->setValue("sceneAmbient",          kVec3(0.15f, 0.15f, 0.15f));
+        shader->setValue("skyboxAmbientEnabled",  false);
+        shader->setValue("skyboxAmbientStrength", 0.0f);
+
+        drawMeshWithMaterial(mesh, nullptr, cam, 1, 0, 0);
+
+        shader->unuse();
 
         driver->unbindFramebuffer();
         glViewport(savedVP[0], savedVP[1], savedVP[2], savedVP[3]);
