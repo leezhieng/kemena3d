@@ -380,6 +380,7 @@ void main()
                     kShader *skyboxShader = skyboxMaterial->getShader();
                     skyboxShader->use();
 
+                    driver->setDepthTest(false);
                     driver->setDepthWrite(false);
                     driver->setCullFace(false);
 

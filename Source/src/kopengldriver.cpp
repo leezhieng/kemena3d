@@ -16,8 +16,13 @@ namespace kemena
         if (window == nullptr)
             return false;
 
+#ifdef KEMENA_OPENGL_46
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+#else
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+#endif
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 
@@ -83,10 +88,14 @@ namespace kemena
     void kOpenGLDriver::clear(bool color, bool depth, bool stencil)
     {
         GLbitfield mask = 0;
-        if (color)   mask |= GL_COLOR_BUFFER_BIT;
-        if (depth)   mask |= GL_DEPTH_BUFFER_BIT;
-        if (stencil) mask |= GL_STENCIL_BUFFER_BIT;
-        if (mask) glClear(mask);
+        if (color)
+            mask |= GL_COLOR_BUFFER_BIT;
+        if (depth)
+            mask |= GL_DEPTH_BUFFER_BIT;
+        if (stencil)
+            mask |= GL_STENCIL_BUFFER_BIT;
+        if (mask)
+            glClear(mask);
     }
 
     void kOpenGLDriver::setViewport(int x, int y, int width, int height)
@@ -127,9 +136,15 @@ namespace kemena
     {
         switch (mode)
         {
-            case kCullMode::BACK:          glCullFace(GL_BACK); break;
-            case kCullMode::FRONT:         glCullFace(GL_FRONT); break;
-            case kCullMode::FRONT_AND_BACK: glCullFace(GL_FRONT_AND_BACK); break;
+        case kCullMode::BACK:
+            glCullFace(GL_BACK);
+            break;
+        case kCullMode::FRONT:
+            glCullFace(GL_FRONT);
+            break;
+        case kCullMode::FRONT_AND_BACK:
+            glCullFace(GL_FRONT_AND_BACK);
+            break;
         }
     }
 
@@ -193,8 +208,10 @@ namespace kemena
         }
 
         GLuint program = glCreateProgram();
-        if (vertSrc && strlen(vertSrc) > 0) glAttachShader(program, vertShader);
-        if (fragSrc && strlen(fragSrc) > 0) glAttachShader(program, fragShader);
+        if (vertSrc && strlen(vertSrc) > 0)
+            glAttachShader(program, vertShader);
+        if (fragSrc && strlen(fragSrc) > 0)
+            glAttachShader(program, fragShader);
         glLinkProgram(program);
 
         glGetProgramiv(program, GL_LINK_STATUS, &result);
@@ -212,9 +229,9 @@ namespace kemena
     }
 
     uint32_t kOpenGLDriver::compileShaderProgramSpirv(const std::vector<uint8_t> &vertSpirv,
-                                                       const kString &vertEntry,
-                                                       const std::vector<uint8_t> &fragSpirv,
-                                                       const kString &fragEntry)
+                                                      const kString &vertEntry,
+                                                      const std::vector<uint8_t> &fragSpirv,
+                                                      const kString &fragEntry)
     {
         // GL_ARB_gl_spirv / OpenGL 4.6 required
         if (!GLEW_ARB_gl_spirv && !GLEW_VERSION_4_6)
@@ -271,8 +288,10 @@ namespace kemena
         }
 
         GLuint program = glCreateProgram();
-        if (vertShader) glAttachShader(program, vertShader);
-        if (fragShader) glAttachShader(program, fragShader);
+        if (vertShader)
+            glAttachShader(program, vertShader);
+        if (fragShader)
+            glAttachShader(program, fragShader);
         glLinkProgram(program);
 
         GLint result = GL_FALSE;
@@ -300,7 +319,8 @@ namespace kemena
 
     void kOpenGLDriver::deleteShaderProgram(uint32_t id)
     {
-        if (id) glDeleteProgram(static_cast<GLuint>(id));
+        if (id)
+            glDeleteProgram(static_cast<GLuint>(id));
     }
 
     void kOpenGLDriver::bindShaderProgram(uint32_t id)
@@ -373,7 +393,8 @@ namespace kemena
     void kOpenGLDriver::deleteVertexArray(uint32_t id)
     {
         GLuint glId = static_cast<GLuint>(id);
-        if (glId) glDeleteVertexArrays(1, &glId);
+        if (glId)
+            glDeleteVertexArrays(1, &glId);
     }
 
     void kOpenGLDriver::bindVertexArray(uint32_t id)
@@ -400,7 +421,8 @@ namespace kemena
     void kOpenGLDriver::deleteBuffer(uint32_t id)
     {
         GLuint glId = static_cast<GLuint>(id);
-        if (glId) glDeleteBuffers(1, &glId);
+        if (glId)
+            glDeleteBuffers(1, &glId);
     }
 
     void kOpenGLDriver::uploadIndexBuffer(uint32_t bufferId, const void *data, size_t size)
@@ -511,7 +533,8 @@ namespace kemena
     void kOpenGLDriver::deleteFramebuffer(uint32_t id)
     {
         GLuint glId = static_cast<GLuint>(id);
-        if (glId) glDeleteFramebuffers(1, &glId);
+        if (glId)
+            glDeleteFramebuffers(1, &glId);
     }
 
     void kOpenGLDriver::bindFramebuffer(uint32_t id)
@@ -540,7 +563,7 @@ namespace kemena
     }
 
     void kOpenGLDriver::blitFramebufferColor(int srcX0, int srcY0, int srcX1, int srcY1,
-                                              int dstX0, int dstY0, int dstX1, int dstY1)
+                                             int dstX0, int dstY0, int dstX1, int dstY1)
     {
         glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1,
                           dstX0, dstY0, dstX1, dstY1,
@@ -567,7 +590,8 @@ namespace kemena
     void kOpenGLDriver::deleteRenderbuffer(uint32_t id)
     {
         GLuint glId = static_cast<GLuint>(id);
-        if (glId) glDeleteRenderbuffers(1, &glId);
+        if (glId)
+            glDeleteRenderbuffers(1, &glId);
     }
 
     void kOpenGLDriver::setupRenderbuffer(uint32_t rboId, int width, int height)
@@ -636,7 +660,8 @@ namespace kemena
     void kOpenGLDriver::deleteFBOTexture(uint32_t id)
     {
         GLuint glId = static_cast<GLuint>(id);
-        if (glId) glDeleteTextures(1, &glId);
+        if (glId)
+            glDeleteTextures(1, &glId);
     }
 
     void kOpenGLDriver::attachFBOColorTexture(uint32_t fboId, uint32_t texId)
@@ -684,15 +709,24 @@ namespace kemena
     {
         switch (factor)
         {
-            case kBlendFactor::ZERO:                return GL_ZERO;
-            case kBlendFactor::ONE:                 return GL_ONE;
-            case kBlendFactor::SRC_ALPHA:           return GL_SRC_ALPHA;
-            case kBlendFactor::ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
-            case kBlendFactor::SRC_COLOR:           return GL_SRC_COLOR;
-            case kBlendFactor::ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
-            case kBlendFactor::DST_ALPHA:           return GL_DST_ALPHA;
-            case kBlendFactor::ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
-            default:                                return GL_ONE;
+        case kBlendFactor::ZERO:
+            return GL_ZERO;
+        case kBlendFactor::ONE:
+            return GL_ONE;
+        case kBlendFactor::SRC_ALPHA:
+            return GL_SRC_ALPHA;
+        case kBlendFactor::ONE_MINUS_SRC_ALPHA:
+            return GL_ONE_MINUS_SRC_ALPHA;
+        case kBlendFactor::SRC_COLOR:
+            return GL_SRC_COLOR;
+        case kBlendFactor::ONE_MINUS_SRC_COLOR:
+            return GL_ONE_MINUS_SRC_COLOR;
+        case kBlendFactor::DST_ALPHA:
+            return GL_DST_ALPHA;
+        case kBlendFactor::ONE_MINUS_DST_ALPHA:
+            return GL_ONE_MINUS_DST_ALPHA;
+        default:
+            return GL_ONE;
         }
     }
 
@@ -700,13 +734,20 @@ namespace kemena
     {
         switch (type)
         {
-            case kPrimitiveType::TRIANGLES:      return GL_TRIANGLES;
-            case kPrimitiveType::TRIANGLE_STRIP: return GL_TRIANGLE_STRIP;
-            case kPrimitiveType::TRIANGLE_FAN:   return GL_TRIANGLE_FAN;
-            case kPrimitiveType::LINES:          return GL_LINES;
-            case kPrimitiveType::LINE_STRIP:     return GL_LINE_STRIP;
-            case kPrimitiveType::POINTS:         return GL_POINTS;
-            default:                             return GL_TRIANGLES;
+        case kPrimitiveType::TRIANGLES:
+            return GL_TRIANGLES;
+        case kPrimitiveType::TRIANGLE_STRIP:
+            return GL_TRIANGLE_STRIP;
+        case kPrimitiveType::TRIANGLE_FAN:
+            return GL_TRIANGLE_FAN;
+        case kPrimitiveType::LINES:
+            return GL_LINES;
+        case kPrimitiveType::LINE_STRIP:
+            return GL_LINE_STRIP;
+        case kPrimitiveType::POINTS:
+            return GL_POINTS;
+        default:
+            return GL_TRIANGLES;
         }
     }
 }

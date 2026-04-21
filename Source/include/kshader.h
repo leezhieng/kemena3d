@@ -17,22 +17,6 @@
 
 namespace kemena
 {
-#ifdef KEMENA_SLANG_SUPPORT
-    /**
-     * @brief Specifies the output language/format produced by the Slang compiler.
-     *
-     * Pass one of these to loadSlangFile() or loadSlangCode() to control what the
-     * Slang front-end emits before handing the result to the active kDriver.
-     */
-    enum class kSlangTarget
-    {
-        GLSL,  ///< Cross-compile to GLSL (OpenGL / Vulkan GLSL; most compatible with current backend).
-        SPIRV, ///< Cross-compile to SPIR-V binary (requires OpenGL 4.6 / ARB_gl_spirv or Vulkan).
-        HLSL,  ///< Cross-compile to HLSL source (Direct3D 11/12).
-        DXIL,  ///< Cross-compile to DXIL binary (Direct3D 12, requires DXC).
-        DXBC,  ///< Cross-compile to DXBC binary (Direct3D 11, requires FXC).
-    };
-#endif
 
 
     /**
@@ -52,58 +36,80 @@ namespace kemena
      *   shader.unuse();
      * @endcode
      */
+    /**
+     * @brief Holds the split stages of a combined shader source.
+     *
+     * Combined shader files use section markers to separate stages:
+     *   - vertex source appears before any marker (or after "// --- VERTEX ---")
+     *   - "// --- GEOMETRY ---" introduces an optional geometry stage
+     *   - "// --- FRAGMENT ---" introduces the fragment / pixel stage
+     */
+    struct KEMENA3D_API kShaderSource
+    {
+        kString vertex;
+        kString geometry;
+        kString fragment;
+    };
+
     class KEMENA3D_API kShader
     {
     public:
         kShader();
         virtual ~kShader();
 
-        /**
-         * @brief Reads a text file into a kString.
-         * @param filePath Path to the file.
-         * @return File contents, or empty kString if the file could not be opened.
-         */
         kString readFile(const kString filePath);
 
         /**
-         * @brief Compiles and links a shader program from source files on disk.
-         * @param vertexShaderPath   Path to the GLSL vertex shader source file.
-         * @param fragmentShaderPath Path to the GLSL fragment shader source file.
+         * @brief Splits a combined shader source string into per-stage strings.
+         *
+         * Recognised section markers (on their own line):
+         *   // --- VERTEX ---      (optional; top of file is implicitly vertex)
+         *   // --- GEOMETRY ---    (optional geometry stage)
+         *   // --- FRAGMENT ---    (fragment / pixel stage)
          */
-        void loadShadersFile(const kString vertexShaderPath, const kString fragmentShaderPath);
+        static kShaderSource splitSource(const kString& src);
 
-        /**
-         * @brief Compiles and links a shader program from inline source strings.
-         * @param vertexShaderCode   Null-terminated GLSL vertex shader source, or nullptr.
-         * @param fragmentShaderCode Null-terminated GLSL fragment shader source, or nullptr.
-         */
+        // --- OpenGL (GLSL) ---------------------------------------------------
+
+        /** Load a combined GLSL source file (vertex + optional geometry + fragment). */
+        void loadGlslFile(const kString& path);
+        /** Load a combined GLSL source string. */
+        void loadGlslCode(const kString& src);
+
+        /** Load separate GLSL source files (vertex, fragment). */
+        void loadShadersFile(const kString vertexShaderPath, const kString fragmentShaderPath);
+        /** Load separate GLSL source strings (vertex, fragment). */
         void loadShadersCode(const char *vertexShaderCode, const char *fragmentShaderCode);
 
-        // --- Slang shaders ---------------------------------------------------
+        // --- DirectX 11 (HLSL / DXBC) ----------------------------------------
 
-        /**
-         * @brief Compiles a Slang source file and loads it into the active driver.
-         *
-         * Slang is used as a universal shading language front-end.  The source is
-         * compiled to @p target (GLSL, SPIR-V, HLSL, …) and then handed to the
-         * current kDriver for linking into a GPU program.
-         *
-         * @param filePath   Path to the @c .slang source file on disk.
-         * @param vertEntry  Name of the vertex entry-point function (default: "vertexMain").
-         * @param fragEntry  Name of the fragment entry-point function (default: "fragmentMain").
-         * @param target     Output shading language / binary format (default: GLSL).
-         */
-#ifdef KEMENA_SLANG_SUPPORT
-        void loadSlangFile(const kString& filePath,
-                           const kString& vertEntry = "vertexMain",
-                           const kString& fragEntry = "fragmentMain",
-                           kSlangTarget target = kSlangTarget::GLSL);
+        /** Placeholder: load a combined HLSL source file for a DirectX 11 backend. */
+        void loadHlslFileDX11(const kString& path);
+        /** Placeholder: load a combined HLSL source string for a DirectX 11 backend. */
+        void loadHlslCodeDX11(const kString& src);
 
-        void loadSlangCode(const kString& source,
-                           const kString& vertEntry = "vertexMain",
-                           const kString& fragEntry = "fragmentMain",
-                           kSlangTarget target = kSlangTarget::GLSL);
-#endif
+        // --- DirectX 12 (HLSL / DXIL via DXC) --------------------------------
+
+        /** Placeholder: load a combined HLSL source file for a DirectX 12 backend. */
+        void loadHlslFileDX12(const kString& path);
+        /** Placeholder: load a combined HLSL source string for a DirectX 12 backend. */
+        void loadHlslCodeDX12(const kString& src);
+
+        // --- Vulkan 1.3 (SPIR-V) ---------------------------------------------
+
+        /** Placeholder: load a combined GLSL/HLSL source file for Vulkan 1.3 (compiled to SPIR-V). */
+        void loadSpirvFile(const kString& path);
+        /** Placeholder: load a combined GLSL/HLSL source string for Vulkan 1.3. */
+        void loadSpirvCode(const kString& src);
+        /** Placeholder: load pre-compiled SPIR-V binary blobs for Vulkan 1.3. */
+        void loadSpirvBinary(const std::vector<uint8_t>& vertSpv, const std::vector<uint8_t>& fragSpv);
+
+        // --- Metal (via MoltenVK / metal-cpp) --------------------------------
+
+        /** Placeholder: load a combined Metal Shading Language source file. */
+        void loadMetalFile(const kString& path);
+        /** Placeholder: load a combined Metal Shading Language source string. */
+        void loadMetalCode(const kString& src);
 
         /** @brief Binds this shader program for subsequent draw calls. */
         void use();

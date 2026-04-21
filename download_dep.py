@@ -58,8 +58,6 @@ IMGUIZMO_GIT = "https://github.com/CedricGuillemet/ImGuizmo.git"
 IMGUIZMO_TAG = "master"
 JOLT_ZIP = "https://github.com/jrouwe/JoltPhysics/archive/refs/tags/v5.3.0.zip"
 RECAST_ZIP = "https://github.com/recastnavigation/recastnavigation/archive/refs/tags/v1.6.0.zip"
-SLANG_GIT = "https://github.com/shader-slang/slang.git"
-SLANG_TAG = "v2026.5.2"
 MINIAUDIO_GIT = "https://github.com/mackron/miniaudio.git"
 MINIAUDIO_TAG = "0.11.25"
 
@@ -330,14 +328,17 @@ def main():
     # --------------------------------------------------------------------
     download_and_extract_zip("AngelScript", "v2.37.0", ANGELSCRIPT_ZIP, ROOT / "angelscript", flatten=True)
     as_src = ROOT / "angelscript" / "angelscript" / "projects" / "cmake"
+    # Force /MD for all configs so CRT is consistent across all static dependencies.
+    # CMP0091=NEW is required for CMAKE_MSVC_RUNTIME_LIBRARY to take effect on older cmake_minimum_required.
+    _md = "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL"
     if compiler == "1":
         # VS
         if linking == "1":
-            build_with_cmake("AngelScript", as_src, "Debug",  "-DBUILD_SHARED_LIBS=OFF", generator)
-            build_with_cmake("AngelScript", as_src, "Release","-DBUILD_SHARED_LIBS=OFF", generator)
+            build_with_cmake("AngelScript", as_src, "Debug",  f"-DBUILD_SHARED_LIBS=OFF {_md}", generator)
+            build_with_cmake("AngelScript", as_src, "Release",f"-DBUILD_SHARED_LIBS=OFF {_md}", generator)
         else:
-            build_with_cmake("AngelScript", as_src, "Debug",  "-DBUILD_SHARED_LIBS=ON", generator)
-            build_with_cmake("AngelScript", as_src, "Release","-DBUILD_SHARED_LIBS=ON", generator)
+            build_with_cmake("AngelScript", as_src, "Debug",  f"-DBUILD_SHARED_LIBS=ON {_md}", generator)
+            build_with_cmake("AngelScript", as_src, "Release",f"-DBUILD_SHARED_LIBS=ON {_md}", generator)
     else:
         # MinGW
         if linking == "1":
@@ -374,13 +375,14 @@ def main():
     write_imgui_cmakelists(ROOT / "imgui", linking)
     sdl_include = ROOT / "sdl" / "include"
     sdl_include_arg = f'-DSDL3_INCLUDE_DIR="{sdl_include}"'
+    _md_imgui = f"-DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL {sdl_include_arg}"
     if compiler == "1":
         if linking == "1":
-            build_with_cmake("imgui", ROOT / "imgui", "Debug",  f"-DBUILD_SHARED_LIBS=OFF {sdl_include_arg}", generator)
-            build_with_cmake("imgui", ROOT / "imgui", "Release",f"-DBUILD_SHARED_LIBS=OFF {sdl_include_arg}", generator)
+            build_with_cmake("imgui", ROOT / "imgui", "Debug",  f"-DBUILD_SHARED_LIBS=OFF {_md_imgui}", generator)
+            build_with_cmake("imgui", ROOT / "imgui", "Release",f"-DBUILD_SHARED_LIBS=OFF {_md_imgui}", generator)
         else:
-            build_with_cmake("imgui", ROOT / "imgui", "Debug",  f"-DBUILD_SHARED_LIBS=ON {sdl_include_arg}", generator)
-            build_with_cmake("imgui", ROOT / "imgui", "Release",f"-DBUILD_SHARED_LIBS=ON {sdl_include_arg}", generator)
+            build_with_cmake("imgui", ROOT / "imgui", "Debug",  f"-DBUILD_SHARED_LIBS=ON {_md_imgui}", generator)
+            build_with_cmake("imgui", ROOT / "imgui", "Release",f"-DBUILD_SHARED_LIBS=ON {_md_imgui}", generator)
     else:
         if linking == "1":
             build_with_cmake("imgui", ROOT / "imgui", "Debug",  f"-DBUILD_SHARED_LIBS=OFF {sdl_include_arg}", generator)
@@ -420,6 +422,18 @@ def main():
     # --------------------------------------------------------------------
     clone_git("Assimp", "v6.0.2", ASSIMP_GIT, ROOT / "assimp", revision=ASSIMP_TAG)
 
+    # Patch: remove /D_DEBUG from assimp debug flags so objects don't reference
+    # debug CRT imports (_CrtDbgReport) when building with /MD (MultiThreadedDLL).
+    _assimp_cmake = ROOT / "assimp" / "CMakeLists.txt"
+    _assimp_src = _assimp_cmake.read_text(encoding="utf-8")
+    _assimp_patched = _assimp_src.replace(
+        'SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_DEBUG /Zi /Od")',
+        'SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Od")',
+    )
+    if _assimp_patched != _assimp_src:
+        _assimp_cmake.write_text(_assimp_patched, encoding="utf-8")
+        print("[PATCH] Assimp: removed /D_DEBUG from CMAKE_CXX_FLAGS_DEBUG")
+
     if modelformat == "1":
         model_flags = "-DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=ON -DASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT=ON"
     else:
@@ -439,7 +453,8 @@ def main():
 
     if compiler == "1":
         if linking == "1":
-            flags = f"-DASSIMP_BUILD_ZLIB=ON -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF {model_flags}"
+            # Force /MD so CRT is consistent across all static dependencies.
+            flags = f"-DASSIMP_BUILD_ZLIB=ON -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_TESTS=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL {model_flags}"
             build_with_cmake("Assimp", ROOT / "assimp", "Debug",  flags, generator)
             build_with_cmake("Assimp", ROOT / "assimp", "Release",flags, generator)
         else:
@@ -483,13 +498,14 @@ def main():
     # --------------------------------------------------------------------
     clone_git("imGuizmo", "master", IMGUIZMO_GIT, ROOT / "imguizmo", revision=IMGUIZMO_TAG)
     write_imguizmo_cmakelists(ROOT / "imguizmo", ROOT / "imgui", linking)
+    _md_gizmo = "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL"
     if compiler == "1":
         if linking == "1":
-            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Debug",  f"-DBUILD_SHARED_LIBS=OFF", generator)
-            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Release",f"-DBUILD_SHARED_LIBS=OFF", generator)
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Debug",  f"-DBUILD_SHARED_LIBS=OFF {_md_gizmo}", generator)
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Release",f"-DBUILD_SHARED_LIBS=OFF {_md_gizmo}", generator)
         else:
-            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Debug",  f"-DBUILD_SHARED_LIBS=ON", generator)
-            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Release",f"-DBUILD_SHARED_LIBS=ON", generator)
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Debug",  f"-DBUILD_SHARED_LIBS=ON {_md_gizmo}", generator)
+            build_with_cmake("imGuizmo", ROOT / "imguizmo", "Release",f"-DBUILD_SHARED_LIBS=ON {_md_gizmo}", generator)
     else:
         if linking == "1":
             build_with_cmake("imGuizmo", ROOT / "imguizmo", "Debug",  f"-DBUILD_SHARED_LIBS=OFF", generator)
@@ -502,17 +518,38 @@ def main():
     # JoltPhysics (always static — no shared build option)
     # --------------------------------------------------------------------
     download_and_extract_zip("JoltPhysics", "v5.3.0", JOLT_ZIP, ROOT / "jolt", flatten=True)
+
+    # Patch: guard _DEBUG define so Jolt objects don't reference debug CRT imports
+    # (_CrtDbgReport) when building with /MD (MultiThreadedDLL).
+    _jolt_cmake = ROOT / "jolt" / "Jolt" / "Jolt.cmake"
+    _jolt_src = _jolt_cmake.read_text(encoding="utf-8")
+    _jolt_old = 'target_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")'
+    _jolt_new = (
+        'if (NOT MSVC OR USE_STATIC_MSVC_RUNTIME_LIBRARY)\n'
+        '\ttarget_compile_definitions(Jolt PUBLIC "$<$<CONFIG:Debug>:_DEBUG>")\n'
+        'endif()'
+    )
+    _jolt_patched = _jolt_src.replace(_jolt_old, _jolt_new, 1)
+    if _jolt_patched != _jolt_src:
+        _jolt_cmake.write_text(_jolt_patched, encoding="utf-8")
+        print("[PATCH] Jolt: guarded _DEBUG define behind USE_STATIC_MSVC_RUNTIME_LIBRARY")
+
     jolt_flags = (
         "-DTARGET_UNIT_TESTS=OFF "
         "-DTARGET_HELLO_WORLD=OFF "
         "-DTARGET_SAMPLES=OFF "
         "-DTARGET_VIEWER=OFF "
+        "-DTARGET_PERFORMANCE_TEST=OFF "
         "-DBUILD_SHARED_LIBS=OFF"
     )
     jolt_src = ROOT / "jolt" / "Build"
     if compiler == "1":
-        build_with_cmake("JoltPhysics", jolt_src, "Debug",   jolt_flags, generator)
-        build_with_cmake("JoltPhysics", jolt_src, "Release", jolt_flags, generator)
+        # Force /MD (MultiThreadedDLL) so CRT is consistent across all static dependencies.
+        # USE_STATIC_MSVC_RUNTIME_LIBRARY defaults ON in Jolt's CMakeLists and overrides to /MT;
+        # set it OFF so our CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL is respected.
+        jolt_flags_msvc = jolt_flags + " -DUSE_STATIC_MSVC_RUNTIME_LIBRARY=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL"
+        build_with_cmake("JoltPhysics", jolt_src, "Debug",   jolt_flags_msvc, generator)
+        build_with_cmake("JoltPhysics", jolt_src, "Release", jolt_flags_msvc, generator)
     else:
         cc = f'-DCMAKE_C_COMPILER="{GCC_PATH}" -DCMAKE_CXX_COMPILER="{GPP_PATH}"'
         build_with_cmake("JoltPhysics", jolt_src, "Debug",   f"{cc} {jolt_flags}", generator)
@@ -527,7 +564,10 @@ def main():
         "-DRECASTNAVIGATION_DEMO=OFF "
         "-DRECASTNAVIGATION_TESTS=OFF "
         "-DRECASTNAVIGATION_EXAMPLES=OFF "
-        "-DBUILD_SHARED_LIBS=OFF"
+        "-DBUILD_SHARED_LIBS=OFF "
+        # Force /MD for CRT consistency; CMP0091=NEW enables CMAKE_MSVC_RUNTIME_LIBRARY.
+        "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW "
+        "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL"
     )
     for cfg in ("Debug", "Release"):
         install_prefix = f'-DCMAKE_INSTALL_PREFIX="{recast_src / "dist"}"'
@@ -550,25 +590,6 @@ def main():
                 if f.is_file():
                     shutil.move(str(f), str(target_lib / f.name))
     print("[OK] Recast Navigation built and installed to 'dist/'.")
-
-    # --------------------------------------------------------------------
-    # Slang - Only build Release, there's an annoying memory leak error when building Debug
-    # --------------------------------------------------------------------
-    clone_git("Slang", "v2026.5.2", SLANG_GIT, ROOT / "slang", revision=SLANG_TAG)
-    slang_flags = "-DBUILD_SHARED_LIBS=OFF" if linking == "1" else "-DBUILD_SHARED_LIBS=ON"
-    build_with_cmake("Slang", ROOT / "slang", "Release", slang_flags, generator)
-
-    # Rename the versioned output dir (e.g. slang-2026.5.2-windows-x86_64) to 'dist'
-    # so CMakeLists.txt paths stay version- and platform-neutral.
-    slang_build = ROOT / "slang" / "build_Release"
-    for entry in slang_build.iterdir():
-        if entry.is_dir() and entry.name.startswith("slang-"):
-            dist = slang_build / "dist"
-            if dist.exists():
-                rmtree(dist)
-            shutil.move(str(entry), str(dist))
-            print(f"[OK] Slang: normalized '{entry.name}' → 'dist'")
-            break
 
     # --------------------------------------------------------------------
     # miniaudio

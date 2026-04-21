@@ -271,6 +271,15 @@ namespace kemena
         kShader *loadShaderFromResource(kString vertexShaderName, kString fragmentShaderName);
 
         /**
+         * @brief Compiles a combined GLSL shader from a Windows embedded resource.
+         *        The resource must contain the vertex shader source, then the literal
+         *        line "// --- FRAGMENT ---", then the fragment shader source.
+         * @param resourceName  RC resource name for the combined .glsl source.
+         * @return Heap-allocated kShader; caller takes ownership.
+         */
+        kShader *loadGlslFromResource(kString resourceName);
+
+        /**
          * @brief Creates a new material with a pre-assigned shader.
          * @param shader Compiled shader to attach to the material.
          * @return Heap-allocated kMaterial; caller takes ownership.

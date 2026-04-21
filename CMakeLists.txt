@@ -82,7 +82,6 @@ target_include_directories(kemena3d
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/nlohmann/include
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/portable-file-dialogs
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imguizmo
-        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/dist/include
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/jolt
         ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/recast/dist/include/recastnavigation
 )
@@ -111,8 +110,17 @@ target_compile_definitions(kemena3d PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLEW)
 # use the same GetSubmergedVolume signature (7-param) that Jolt.lib exports.
 target_compile_definitions(kemena3d PUBLIC JPH_DEBUG_RENDERER)
 
-# Slang shader compilation is Release-only (no Debug DLL available)
-target_compile_definitions(kemena3d PUBLIC $<$<CONFIG:Release>:KEMENA_SLANG_SUPPORT>)
+# All static dependencies (assimp, Jolt, angelscript, recast) are built with
+# /MD (MultiThreadedDLL).  Force /MD here so CRT records match at link time.
+if(MSVC AND NOT BUILD_SHARED_LIBS)
+    set_target_properties(kemena3d PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+endif()
+
+# OpenGL context version — default 3.3, opt-in to 4.5
+option(KEMENA_OPENGL_45 "Use an OpenGL 4.5 context instead of 3.3" OFF)
+if(KEMENA_OPENGL_45)
+    target_compile_definitions(kemena3d PUBLIC KEMENA_OPENGL_45)
+endif()
 
 # Platform specific
 if (WIN32)
@@ -152,8 +160,6 @@ target_link_libraries(kemena3d
             ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_Debug/libassimp.dll.a,
             ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/build_Release/libassimp.dll.a
         >
-        # Slang: Release-only (no Debug build; excluded from Debug to avoid slang.dll dependency)
-        $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/build_Release/dist/lib/slang.lib>
 )
 
 # GLEW (built from source via build/cmake/)

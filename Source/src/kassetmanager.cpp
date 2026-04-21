@@ -929,6 +929,27 @@ namespace kemena
 		return shader;
 	}
 
+    kShader *kAssetManager::loadGlslFromResource(kString resourceName)
+    {
+        HRSRC hRes = FindResource(NULL, resourceName.c_str(), RT_RCDATA);
+        if (!hRes) return nullptr;
+
+        HGLOBAL hData = LoadResource(NULL, hRes);
+        if (!hData) return nullptr;
+
+        DWORD  size = SizeofResource(NULL, hRes);
+        void  *data = LockResource(hData);
+        if (!data || size == 0) return nullptr;
+
+        kString src(reinterpret_cast<const char *>(data), static_cast<size_t>(size));
+
+        kShader *shader = new kShader();
+        shader->loadGlslCode(src);
+
+        shaders.push_back(shader);
+        return shader;
+    }
+
     kMaterial *kAssetManager::createMaterial(kShader *shader)
     {
         kMaterial *material = new kMaterial();
