@@ -180,6 +180,10 @@ namespace kemena
          */
         void deserialize(json data);
 
+        /** @brief UUID of the scene this camera renders (empty = auto/default). */
+        kString getSceneUuid() const { return sceneUuid; }
+        void setSceneUuid(const kString &uuid) { sceneUuid = uuid; }
+
     protected:
     private:
         kCameraType cameraType;
@@ -188,6 +192,7 @@ namespace kemena
         float nearClip    = 0.1f;                    ///< Near clipping distance.
         float farClip     = 100.0f;                  ///< Far clipping distance.
         float aspectRatio = 1.0f;                    ///< Viewport aspect ratio.
+        kString sceneUuid = "";                      ///< Scene UUID this camera renders (empty = default).
     };
 }
 

@@ -435,19 +435,16 @@ namespace kemena
                               bool transparent = false, float deltaTime = 0.0f);
 
         /**
-         * @brief Recursively renders the scene graph into the shadow-map FBO.
+         * @brief Recursively renders the scene graph into a cascade shadow-map FBO.
          * @param world            World containing the camera.
          * @param scene            Active scene.
          * @param rootNode         Current node to process.
-         * @param lightSpaceMatrix Combined light projection*view matrix.
-         * @param lightView        Light view matrix.
-         * @param lightProjection  Light projection matrix.
-         * @param transparent      Reserved for future transparent shadow support.
+         * @param lightSpaceMatrix Combined light projection*view matrix for this cascade.
          * @param deltaTime        Frame delta time in seconds.
          */
         void renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *rootNode,
-                                    kMat4 lightSpaceMatrix, kMat4 lightView, kMat4 lightProjection,
-                                    bool transparent = false, float deltaTime = 0.0f);
+                                    const kMat4 &lightSpaceMatrix,
+                                    float deltaTime = 0.0f);
 
         /**
          * @brief Recursively renders the scene graph into the picking FBO.
@@ -468,13 +465,15 @@ namespace kemena
 
         int fboWidth = 0, fboHeight = 0;
 
-        // Shadow FBO
+        // Shadow FBO (cascaded — 3 cascades)
+        static constexpr int kNumShadowCascades = 3;
         bool enableShadow = false;
         kShader *shadowShader = nullptr;
-        uint32_t shadowFbo = 0;
-        const unsigned int shadowWidth = 1024, shadowHeight = 1024;
-        uint32_t shadowFboTex = 0;
-        kMat4 lightSpaceMatrix;
+        const unsigned int shadowWidth = 2048, shadowHeight = 2048;
+        uint32_t shadowFbo[kNumShadowCascades]    = {};
+        uint32_t shadowFboTex[kNumShadowCascades] = {};
+        kMat4  lightSpaceMatrices[kNumShadowCascades];
+        float  cascadeSplits[kNumShadowCascades]  = {};
 
         // Picking FBO
         bool enablePicking = false;

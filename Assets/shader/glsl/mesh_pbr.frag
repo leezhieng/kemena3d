@@ -6,14 +6,12 @@ in vec2 texCoordFrag;
 in vec3 vertexNormalFrag;
 //in vec3 vertexTangentFrag;
 //in vec3 vertexBitangentFrag;
-in vec4 lightSpaceMatrixFrag;
 
 uniform mat4 normalMatrix;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec3 viewPos;
-//uniform mat4 lightSpaceMatrix;
 
 in vec3 T;
 in vec3 B;
@@ -26,14 +24,21 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicRoughnessMap;
 uniform sampler2D aoMap;
 uniform sampler2D emissiveMap;
-uniform sampler2D shadowMap;
 
 uniform bool has_albedoMap;
 uniform bool has_normalMap;
 uniform bool has_metallicRoughnessMap;
 uniform bool has_aoMap;
 uniform bool has_emissiveMap;
-uniform bool has_shadowMap;
+
+// Cascaded shadow maps
+uniform sampler2D shadowMap0;
+uniform sampler2D shadowMap1;
+uniform sampler2D shadowMap2;
+uniform mat4 lightSpaceMatrices[3];
+uniform vec3 cascadeSplits;
+uniform bool enableShadow;
+uniform bool receiveShadow;
 
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
@@ -317,22 +322,45 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec
     return ambient + Lo;
 }
 
-float ShadowCalculation(vec4 lightSpaceMatrixFrag)
+float sampleShadowPCF(int layer, vec2 uv, float currentDepth, float bias)
 {
-	// perform perspective divide
-    vec3 projCoords = lightSpaceMatrixFrag.xyz / lightSpaceMatrixFrag.w;
-    // transform to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
-    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(shadowMap, projCoords.xy).r; 
-    // get depth of current fragment from light's perspective
-    float currentDepth = projCoords.z;
-	// Add bias to prevent shadow acne
-    float bias = 0.005;
-	// Check whether current frag pos is in shadow
-    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    vec2 texelSize = 1.0 / vec2(textureSize(shadowMap0, 0));
+    float shadow = 0.0;
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            vec2 off = vec2(x, y) * texelSize;
+            float d;
+            if      (layer == 0) d = texture(shadowMap0, uv + off).r;
+            else if (layer == 1) d = texture(shadowMap1, uv + off).r;
+            else                 d = texture(shadowMap2, uv + off).r;
+            shadow += currentDepth - bias > d ? 1.0 : 0.0;
+        }
+    }
+    return shadow / 9.0;
+}
 
-    return shadow;
+float ShadowCalculation(vec3 worldPos)
+{
+    if (!enableShadow || !receiveShadow) return 0.0;
+
+    float fragDepth = abs((viewMatrix * vec4(worldPos, 1.0)).z);
+
+    int cascadeIndex = 2;
+    if      (fragDepth < cascadeSplits.x) cascadeIndex = 0;
+    else if (fragDepth < cascadeSplits.y) cascadeIndex = 1;
+
+    vec4 lsPos = lightSpaceMatrices[cascadeIndex] * vec4(worldPos, 1.0);
+    vec3 projCoords = lsPos.xyz / lsPos.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    if (projCoords.z > 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 ||
+        projCoords.y < 0.0 || projCoords.y > 1.0)
+        return 0.0;
+
+    float bias = max(0.005 * (1.0 - dot(normalize(N), normalize(vec3(0.0, 1.0, 0.0)))), 0.0005);
+    return sampleShadowPCF(cascadeIndex, projCoords.xy, projCoords.z, bias);
 }
 
 void main()
@@ -385,7 +413,7 @@ void main()
 		//discard;
 	
 	// Shadow
-	float shadow = ShadowCalculation(lightSpaceMatrixFrag); 
+	float shadow = ShadowCalculation(vertexPositionFrag);
 	
 	// Lighting
 	vec3 result = vec3(0.0f);

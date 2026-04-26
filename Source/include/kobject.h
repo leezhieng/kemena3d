@@ -22,6 +22,8 @@
 #include "kmaterial.h"
 #include "kscriptmanager.h"
 #include "kphysicsobject.h"
+#include "kparticle.h"
+#include "kaudiosource.h"
 
 using json = nlohmann::json;
 
@@ -71,8 +73,91 @@ namespace kemena
          */
         std::vector<kObject *> getChildren();
 
-        /** @brief Returns the list of attached scripts. */
-        std::vector<kScript> getScripts();
+        /** @brief Returns a mutable reference to the list of attached scripts. */
+        std::vector<kScript>& getScripts();
+
+        /**
+         * @brief Appends a script descriptor to this object.
+         * @param script Descriptor to add (uuid and fileName should be set by the caller).
+         */
+        void addScript(const kScript& script);
+
+        /**
+         * @brief Removes the script with the given UUID from this object.
+         * @param uuid UUID of the script to remove.
+         */
+        void removeScript(const kString& uuid);
+
+        // --- Particles -------------------------------------------------------
+
+        /** @brief Returns a mutable reference to the list of attached particle systems. */
+        std::vector<kParticle>& getParticles();
+
+        /**
+         * @brief Appends a particle system descriptor to this object.
+         * @param particle Descriptor to add.
+         */
+        void addParticle(const kParticle& particle);
+
+        /**
+         * @brief Removes the particle system with the given UUID from this object.
+         * @param uuid UUID of the particle system to remove.
+         */
+        void removeParticle(const kString& uuid);
+
+        // --- Audio sources ---------------------------------------------------
+
+        /** @brief Returns a mutable reference to the list of attached audio sources. */
+        std::vector<kAudioSource>& getAudioSources();
+
+        /**
+         * @brief Appends an audio source descriptor to this object.
+         * @param source Descriptor to add.
+         */
+        void addAudioSource(const kAudioSource& source);
+
+        /**
+         * @brief Removes the audio source with the given UUID from this object.
+         * @param uuid UUID of the audio source to remove.
+         */
+        void removeAudioSource(const kString& uuid);
+
+        // --- Audio listener --------------------------------------------------
+
+        /** @brief Returns a mutable reference to the list of audio listener components (0 or 1). */
+        std::vector<kAudioListener>& getAudioListeners();
+
+        /**
+         * @brief Attaches an audio listener descriptor to this object.
+         * @param listener Descriptor to add.
+         */
+        void addAudioListener(const kAudioListener& listener);
+
+        /**
+         * @brief Removes the audio listener with the given UUID from this object.
+         * @param uuid UUID of the listener to remove.
+         */
+        void removeAudioListener(const kString& uuid);
+
+        // --- Physics descriptor (editor-side config) -------------------------
+
+        /**
+         * @brief Returns true if this object has a physics body descriptor configured.
+         */
+        bool getHasPhysicsDesc() const;
+
+        /**
+         * @brief Sets whether this object has a physics body descriptor.
+         * @param val true = descriptor is active and should create a body at game-start.
+         */
+        void setHasPhysicsDesc(bool val);
+
+        /**
+         * @brief Returns a mutable reference to the physics body descriptor.
+         *
+         * Only meaningful when getHasPhysicsDesc() returns true.
+         */
+        kPhysicsObjectDesc& getPhysicsDesc();
 
         /**
          * @brief Returns the scene-graph node type tag.
@@ -363,7 +448,13 @@ namespace kemena
              0.5f,  0.5f, 0.0f,
         };
 
-        std::vector<kScript> scripts;
+        std::vector<kScript>       scripts;
+        std::vector<kParticle>     particles;
+        std::vector<kAudioSource>  audioSources;
+        std::vector<kAudioListener>audioListeners;
+
+        bool               hasPhysicsDesc = false;
+        kPhysicsObjectDesc physicsDesc;
     };
 }
 

@@ -16,7 +16,6 @@ uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform vec3 viewPos;
-uniform mat4 lightSpaceMatrix;
 
 const int MAX_BONES = 128;
 const int MAX_BONE_INFLUENCE = 4;
@@ -30,7 +29,6 @@ out vec2 texCoordFrag;
 out vec3 vertexNormalFrag;
 //out vec3 vertexTangentFrag;
 //out vec3 vertexBitangentFrag;
-out vec4 lightSpaceMatrixFrag;
 
 out vec3 T;
 out vec3 B;
@@ -106,8 +104,6 @@ void main()
 	N = mat3(transpose(inverse(modelMatrix))) * totalNormal;
     T = mat3(transpose(inverse(modelMatrix))) * totalTangent;
     B = mat3(transpose(inverse(modelMatrix))) * totalBitangent;
-	
-	lightSpaceMatrixFrag = lightSpaceMatrix * vec4(vertexPositionFrag, 1.0);
 	
 	//gl_Position = mvp * vec4(vertexPosition, 1.0);
 	gl_Position = mvp * totalPosition;

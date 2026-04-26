@@ -527,8 +527,10 @@ namespace kemena
                   {"z", getScale().z}}},
                 {"children", childrenData},
                 {"script", scriptsData},
-                {"file_name", getFileName()},
-                {"reference", getRefName()},
+                {"file_name",       getFileName()},
+                {"reference",       getRefName()},
+                {"cast_shadow",     getCastShadow()},
+                {"receive_shadow",  getReceiveShadow()},
             };
 
         return data;
@@ -556,6 +558,16 @@ namespace kemena
     bool kMesh::getCastShadow()
     {
         return isCastShadow;
+    }
+
+    void kMesh::setReceiveShadow(bool newReceiveShadow)
+    {
+        isReceiveShadow = newReceiveShadow;
+    }
+
+    bool kMesh::getReceiveShadow()
+    {
+        return isReceiveShadow;
     }
 
     void kMesh::setVertexBoneData(size_t vertexID, int boneID, float weight)

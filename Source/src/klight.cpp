@@ -108,4 +108,27 @@ namespace kemena
     {
         lightType = newType;
     }
+
+    json kLight::serialize()
+    {
+        json data = kObject::serialize();
+        data["type"] = "light";
+
+        std::string ltStr = "sun";
+        if (lightType == kLightType::LIGHT_TYPE_POINT) ltStr = "point";
+        else if (lightType == kLightType::LIGHT_TYPE_SPOT) ltStr = "spot";
+        data["light_type"] = ltStr;
+
+        data["diffuse"]  = {{"r", diffuseColor.r},  {"g", diffuseColor.g},  {"b", diffuseColor.b}};
+        data["specular"] = {{"r", specularColor.r}, {"g", specularColor.g}, {"b", specularColor.b}};
+        data["power"]    = power;
+        data["constant"] = constant;
+        data["linear"]   = linear;
+        data["quadratic"]= quadratic;
+        data["direction"]= {{"x", direction.x}, {"y", direction.y}, {"z", direction.z}};
+        data["cut_off"]       = cutOff;
+        data["outer_cut_off"] = outerCutOff;
+
+        return data;
+    }
 }

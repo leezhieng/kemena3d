@@ -1,4 +1,5 @@
 #include "kmesh.h"
+#include <algorithm>
 
 namespace kemena
 {
@@ -45,9 +46,99 @@ namespace kemena
         return children;
     }
 
-    std::vector<kScript> kObject::getScripts()
+    std::vector<kScript>& kObject::getScripts()
     {
         return scripts;
+    }
+
+    void kObject::addScript(const kScript& script)
+    {
+        scripts.push_back(script);
+    }
+
+    void kObject::removeScript(const kString& uuid)
+    {
+        scripts.erase(
+            std::remove_if(scripts.begin(), scripts.end(),
+                [&uuid](const kScript& s) { return s.uuid == uuid; }),
+            scripts.end());
+    }
+
+    // --- Particles -----------------------------------------------------------
+
+    std::vector<kParticle>& kObject::getParticles()
+    {
+        return particles;
+    }
+
+    void kObject::addParticle(const kParticle& particle)
+    {
+        particles.push_back(particle);
+    }
+
+    void kObject::removeParticle(const kString& uuid)
+    {
+        particles.erase(
+            std::remove_if(particles.begin(), particles.end(),
+                [&uuid](const kParticle& p) { return p.uuid == uuid; }),
+            particles.end());
+    }
+
+    // --- Audio sources -------------------------------------------------------
+
+    std::vector<kAudioSource>& kObject::getAudioSources()
+    {
+        return audioSources;
+    }
+
+    void kObject::addAudioSource(const kAudioSource& source)
+    {
+        audioSources.push_back(source);
+    }
+
+    void kObject::removeAudioSource(const kString& uuid)
+    {
+        audioSources.erase(
+            std::remove_if(audioSources.begin(), audioSources.end(),
+                [&uuid](const kAudioSource& s) { return s.uuid == uuid; }),
+            audioSources.end());
+    }
+
+    // --- Audio listener ------------------------------------------------------
+
+    std::vector<kAudioListener>& kObject::getAudioListeners()
+    {
+        return audioListeners;
+    }
+
+    void kObject::addAudioListener(const kAudioListener& listener)
+    {
+        audioListeners.push_back(listener);
+    }
+
+    void kObject::removeAudioListener(const kString& uuid)
+    {
+        audioListeners.erase(
+            std::remove_if(audioListeners.begin(), audioListeners.end(),
+                [&uuid](const kAudioListener& l) { return l.uuid == uuid; }),
+            audioListeners.end());
+    }
+
+    // --- Physics descriptor --------------------------------------------------
+
+    bool kObject::getHasPhysicsDesc() const
+    {
+        return hasPhysicsDesc;
+    }
+
+    void kObject::setHasPhysicsDesc(bool val)
+    {
+        hasPhysicsDesc = val;
+    }
+
+    kPhysicsObjectDesc& kObject::getPhysicsDesc()
+    {
+        return physicsDesc;
     }
 
     kNodeType kObject::getType()

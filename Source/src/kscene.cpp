@@ -259,6 +259,9 @@ namespace kemena
                 {"uuid", getUuid()},
                 {"name", getName()},
                 {"active", getActive()},
+                {"ambient_light", {{"r", ambientLightColor.r}, {"g", ambientLightColor.g}, {"b", ambientLightColor.b}}},
+                {"skybox_ambient_enabled", skyboxAmbientEnabled},
+                {"skybox_ambient_strength", skyboxAmbientStrength},
                 {"objects", objectsData},
             };
 

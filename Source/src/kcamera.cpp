@@ -234,6 +234,7 @@ namespace kemena
                 {"near_clip", getNearClip()},
                 {"far_clip", getFarClip()},
                 {"aspect_ratio", getAspectRatio()},
+                {"scene_uuid", sceneUuid},
             };
 
         return data;

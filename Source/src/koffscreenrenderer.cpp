@@ -146,6 +146,38 @@ namespace kemena
         driver->setCullFace(true);
         driver->setBlend(false);
 
+        // Skybox — drawn first (depth disabled) so it appears behind all geometry
+        kMaterial *skyboxMaterial = scene->getSkyboxMaterial();
+        kMesh     *skyboxMesh     = scene->getSkyboxMesh();
+        if (skyboxMaterial && skyboxMesh &&
+            skyboxMesh->getLoaded() && skyboxMaterial->getShader())
+        {
+            kShader *skyboxShader = skyboxMaterial->getShader();
+            skyboxShader->use();
+            driver->setDepthTest(false);
+            driver->setDepthWrite(false);
+            driver->setCullFace(false);
+
+            // Strip the translation from the view matrix so the skybox never moves
+            skyboxShader->setValue("viewMatrix",       kMat4(kMat3(camera->getViewMatrix())));
+            skyboxShader->setValue("projectionMatrix", camera->getProjectionMatrix());
+
+            if (!skyboxMaterial->getTextures().empty() &&
+                skyboxMaterial->getTexture(0)->getType() == kTextureType::TEX_TYPE_CUBE)
+            {
+                driver->bindTextureCube(0, skyboxMaterial->getTexture(0)->getTextureID());
+                skyboxShader->setValue(skyboxMaterial->getTexture(0)->getTextureName(), 0u);
+            }
+
+            skyboxMesh->calculateModelMatrix();
+            skyboxMesh->draw();
+            skyboxShader->unuse();
+
+            driver->setDepthTest(true);
+            driver->setDepthWrite(true);
+            driver->setCullFace(true);
+        }
+
         renderNodeFull(scene->getRootNode(), scene, camera);
 
         driver->unbindFramebuffer();

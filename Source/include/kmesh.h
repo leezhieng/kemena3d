@@ -388,6 +388,18 @@ namespace kemena
         bool getCastShadow();
 
         /**
+         * @brief Controls whether the mesh receives shadows.
+         * @param newReceiveShadow true to apply shadow on this mesh.
+         */
+        void setReceiveShadow(bool newReceiveShadow);
+
+        /**
+         * @brief Returns whether the mesh receives shadows.
+         * @return true if shadow is applied on this mesh.
+         */
+        bool getReceiveShadow();
+
+        /**
          * @brief Assigns a single bone influence to a vertex (used during loading).
          * @param vertexID Zero-based vertex index.
          * @param boneID   Index into the bone palette.
@@ -452,8 +464,9 @@ namespace kemena
 
         kAABB localAABB; ///< Bounding box in object (local) space.
 
-        bool isVisible    = true;  ///< Render visibility flag.
-        bool isCastShadow = true;  ///< Shadow-cast flag.
+        bool isVisible       = true;  ///< Render visibility flag.
+        bool isCastShadow    = true;  ///< Shadow-cast flag.
+        bool isReceiveShadow = true;  ///< Shadow-receive flag.
 
         std::map<kString, kBoneInfo> boneInfoMap; ///< Bone name → info lookup.
         int boneCount = 0;                       ///< Total number of bones.

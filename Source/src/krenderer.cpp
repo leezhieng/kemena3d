@@ -57,8 +57,11 @@ namespace kemena
 
         if (enableShadow)
         {
-            if (shadowFbo)    { driver->deleteFramebuffer(shadowFbo);  shadowFbo = 0; }
-            if (shadowFboTex) { driver->deleteFBOTexture(shadowFboTex); shadowFboTex = 0; }
+            for (int i = 0; i < kNumShadowCascades; ++i)
+            {
+                if (shadowFbo[i])    { driver->deleteFramebuffer(shadowFbo[i]);   shadowFbo[i] = 0; }
+                if (shadowFboTex[i]) { driver->deleteFBOTexture(shadowFboTex[i]); shadowFboTex[i] = 0; }
+            }
         }
 
         if (enablePicking)
@@ -315,33 +318,98 @@ void main()
         else
             frameId++;
 
-        // Render shadow scene
-        if (shadowShader != nullptr)
+        // Render shadow scene (cascaded shadow mapping)
+        if (shadowShader != nullptr && world->getMainCamera() != nullptr)
         {
+            kCamera *shadowCam = world->getMainCamera();
+            float camNear = shadowCam->getNearClip();
+            float camFar  = shadowCam->getFarClip();
+            kMat4 camView = shadowCam->getViewMatrix();
+
+            // Practical split scheme (75% log + 25% uniform)
+            float lambda = 0.75f;
+            for (int i = 0; i < kNumShadowCascades; ++i)
+            {
+                float ratio = (float)(i + 1) / (float)kNumShadowCascades;
+                float cLog  = camNear * std::pow(camFar / camNear, ratio);
+                float cUni  = camNear + (camFar - camNear) * ratio;
+                cascadeSplits[i] = lambda * cLog + (1.0f - lambda) * cUni;
+            }
+
+            // Find first active sun light
+            kVec3 lightDir(0.0f, -1.0f, 0.0f);
+            bool hasSun = false;
             for (size_t i = 0; i < scene->getLights().size(); ++i)
             {
-                kLight *currentLight = scene->getLights().at(i);
-
-                if (currentLight->getLightType() == kLightType::LIGHT_TYPE_SUN)
+                kLight *lt = scene->getLights().at(i);
+                if (lt && lt->getActive() && lt->getLightType() == kLightType::LIGHT_TYPE_SUN)
                 {
-                    driver->bindFramebuffer(shadowFbo);
+                    lightDir = glm::normalize(lt->getRotation() * kVec3(0.0f, -1.0f, 0.0f));
+                    hasSun = true;
+                    break;
+                }
+            }
+
+            if (hasSun)
+            {
+                for (int cascade = 0; cascade < kNumShadowCascades; ++cascade)
+                {
+                    float splitNear = (cascade == 0) ? camNear : cascadeSplits[cascade - 1];
+                    float splitFar  = cascadeSplits[cascade];
+
+                    // Build sub-frustum projection for this cascade
+                    kMat4 subProj = glm::perspective(
+                        glm::radians(shadowCam->getFOV()),
+                        shadowCam->getAspectRatio(),
+                        splitNear, splitFar);
+                    kMat4 invPV = glm::inverse(subProj * camView);
+
+                    // Extract 8 frustum corners in world space
+                    kVec3 center(0.0f);
+                    kVec4 corners[8];
+                    int idx = 0;
+                    for (int ix = 0; ix < 2; ++ix)
+                    for (int iy = 0; iy < 2; ++iy)
+                    for (int iz = 0; iz < 2; ++iz)
+                    {
+                        kVec4 pt = invPV * kVec4(ix * 2.0f - 1.0f, iy * 2.0f - 1.0f, iz * 2.0f - 1.0f, 1.0f);
+                        corners[idx] = pt / pt.w;
+                        center += kVec3(corners[idx]);
+                        ++idx;
+                    }
+                    center /= 8.0f;
+
+                    // Light view from frustum center looking in light direction
+                    kVec3 up = (std::abs(glm::dot(lightDir, kVec3(0, 1, 0))) > 0.99f)
+                                   ? kVec3(1, 0, 0) : kVec3(0, 1, 0);
+                    kMat4 lightView = glm::lookAt(center - lightDir, center, up);
+
+                    // Compute AABB of sub-frustum in light space
+                    float minX =  1e9f, maxX = -1e9f;
+                    float minY =  1e9f, maxY = -1e9f;
+                    float minZ =  1e9f, maxZ = -1e9f;
+                    for (int c = 0; c < 8; ++c)
+                    {
+                        kVec4 lc = lightView * corners[c];
+                        minX = std::min(minX, lc.x); maxX = std::max(maxX, lc.x);
+                        minY = std::min(minY, lc.y); maxY = std::max(maxY, lc.y);
+                        minZ = std::min(minZ, lc.z); maxZ = std::max(maxZ, lc.z);
+                    }
+
+                    // Extend Z to catch shadow casters outside the camera frustum
+                    const float zMult = 5.0f;
+                    if (minZ < 0.0f) minZ *= zMult; else minZ /= zMult;
+                    if (maxZ < 0.0f) maxZ /= zMult; else maxZ *= zMult;
+
+                    kMat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, -maxZ, -minZ);
+                    lightSpaceMatrices[cascade] = lightProjection * lightView;
+
+                    driver->bindFramebuffer(shadowFbo[cascade]);
                     driver->setDepthTest(true);
                     driver->setViewport(0, 0, shadowWidth, shadowHeight);
                     driver->clear(false, true, false);
-
                     shadowShader->use();
-
-                    kVec3 lightPos = currentLight->getPosition();
-                    kVec3 lightDir = glm::normalize(currentLight->getRotation() * kVec3(0.0f, -1.0f, 0.0f));
-
-                    float near_plane = 1.0f, far_plane = 20.0f;
-                    kMat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-                    kMat4 lightView = glm::lookAt(lightPos, lightPos + lightDir, kVec3(0.0f, 1.0f, 0.0f));
-
-                    lightSpaceMatrix = lightProjection * lightView;
-
-                    renderSceneGraphShadow(world, scene, scene->getRootNode(), lightSpaceMatrix, lightView, lightProjection, false, deltaTime);
-
+                    renderSceneGraphShadow(world, scene, scene->getRootNode(), lightSpaceMatrices[cascade], deltaTime);
                     shadowShader->unuse();
                 }
             }
@@ -686,9 +754,13 @@ void main()
                     shader->setValue("skyboxAmbientEnabled",  scene->getSkyboxAmbientEnabled());
                     shader->setValue("skyboxAmbientStrength", scene->getSkyboxAmbientStrength());
 
-                    // Bind skybox cubemap for IBL ambient (unit after material textures + shadow)
-                    unsigned int shadowUnit = (unsigned int)currentMesh->getMaterial()->getTextures().size();
-                    unsigned int skyboxUnit = shadowUnit + 1;
+                    // Texture unit layout: [0..N-1] material, [N] shadow0, [N+1] shadow1, [N+2] shadow2, [N+3] skybox
+                    unsigned int shadowUnit0 = (unsigned int)currentMesh->getMaterial()->getTextures().size();
+                    unsigned int shadowUnit1 = shadowUnit0 + 1;
+                    unsigned int shadowUnit2 = shadowUnit0 + 2;
+                    unsigned int skyboxUnit  = shadowUnit0 + 3;
+
+                    // Bind skybox cubemap for IBL ambient
                     kMaterial *skyboxMaterial = scene->getSkyboxMaterial();
                     if (skyboxMaterial != nullptr && skyboxMaterial->getTextures().size() > 0 &&
                         skyboxMaterial->getTexture(0)->getType() == kTextureType::TEX_TYPE_CUBE)
@@ -697,10 +769,19 @@ void main()
                         shader->setValue("skyboxMap", (int)skyboxUnit);
                     }
 
-                    // Shadow map
-                    shader->setValue("lightSpaceMatrix", lightSpaceMatrix);
-                    driver->bindTexture2D((int)shadowUnit, shadowFboTex);
-                    shader->setValue("shadowMap", shadowUnit);
+                    // Cascaded shadow maps
+                    driver->bindTexture2D((int)shadowUnit0, shadowFboTex[0]);
+                    driver->bindTexture2D((int)shadowUnit1, shadowFboTex[1]);
+                    driver->bindTexture2D((int)shadowUnit2, shadowFboTex[2]);
+                    shader->setValue("shadowMap0", (int)shadowUnit0);
+                    shader->setValue("shadowMap1", (int)shadowUnit1);
+                    shader->setValue("shadowMap2", (int)shadowUnit2);
+                    shader->setValue("lightSpaceMatrices",
+                        std::vector<kMat4>{lightSpaceMatrices[0], lightSpaceMatrices[1], lightSpaceMatrices[2]});
+                    shader->setValue("cascadeSplits",
+                        kVec3(cascadeSplits[0], cascadeSplits[1], cascadeSplits[2]));
+                    shader->setValue("enableShadow",  enableShadow);
+                    shader->setValue("receiveShadow", currentMesh->getReceiveShadow());
 
                     // Material textures
                     for (size_t k = 0; k < currentMesh->getMaterial()->getTextures().size(); k++)
@@ -719,8 +800,8 @@ void main()
 
                     currentMesh->draw();
 
-                    // Unbind all texture units
-                    int totalUnits = (int)currentMesh->getMaterial()->getTextures().size() + 1;
+                    // Unbind all texture units (material + 3 shadow + 1 skybox)
+                    int totalUnits = (int)currentMesh->getMaterial()->getTextures().size() + 4;
                     for (int k = totalUnits - 1; k >= 0; k--)
                     {
                         driver->unbindTexture2D(k);
@@ -826,7 +907,8 @@ void main()
         }
     }
 
-    void kRenderer::renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *currentNode, kMat4 lightSpaceMatrix, kMat4 lightView, kMat4 lightProjection, bool transparent, float deltaTime)
+    void kRenderer::renderSceneGraphShadow(kWorld *world, kScene *scene, kObject *currentNode,
+                                            const kMat4 &lightSpaceMatrix, float deltaTime)
     {
         if (currentNode == nullptr || !currentNode->getActive()) return;
 
@@ -840,8 +922,6 @@ void main()
             {
                 shadowShader->setValue("lightSpaceMatrix", lightSpaceMatrix);
                 shadowShader->setValue("modelMatrix",      currentMesh->getModelMatrixWorld());
-                shadowShader->setValue("viewMatrix",       lightView);
-                shadowShader->setValue("projectionMatrix", lightProjection);
 
                 std::vector<kMat4> boneTransforms(128, kMat4(1.0f));
                 if (currentMesh->getSkinned() && currentMesh->getAnimator() != nullptr)
@@ -861,7 +941,7 @@ void main()
         {
             if (currentNode->getChildren().at(i) != nullptr)
                 renderSceneGraphShadow(world, scene, currentNode->getChildren().at(i),
-                                       lightSpaceMatrix, lightView, lightProjection, transparent, deltaTime);
+                                       lightSpaceMatrix, deltaTime);
         }
     }
 
@@ -1004,13 +1084,15 @@ void main()
 
         if (newEnable)
         {
-            shadowFboTex = driver->createFBODepthTexture(shadowWidth, shadowHeight);
-            shadowFbo    = driver->createFramebuffer();
-            driver->attachFBODepthTexture(shadowFbo, shadowFboTex);
+            for (int i = 0; i < kNumShadowCascades; ++i)
+            {
+                shadowFboTex[i] = driver->createFBODepthTexture(shadowWidth, shadowHeight);
+                shadowFbo[i]    = driver->createFramebuffer();
+                driver->attachFBODepthTexture(shadowFbo[i], shadowFboTex[i]);
 
-            if (!driver->isFramebufferComplete())
-                std::cerr << "Shadow framebuffer is incomplete" << std::endl;
-
+                if (!driver->isFramebufferComplete())
+                    std::cerr << "Shadow cascade " << i << " framebuffer is incomplete" << std::endl;
+            }
             driver->unbindFramebuffer();
 
             if (useDefaultShader)
@@ -1022,15 +1104,10 @@ layout (location = 7) in vec4 weights;
 
 uniform mat4 lightSpaceMatrix;
 uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
 
 const int MAX_BONES = 128;
 const int MAX_BONE_INFLUENCE = 4;
-
 uniform mat4 finalBonesMatrices[MAX_BONES];
-
-out vec3 vertexPositionFrag;
 
 void main()
 {
@@ -1041,16 +1118,8 @@ void main()
     {
         int boneID = boneIDs[i];
         float weight = weights[i];
-
-        if(boneID == -1 || weight <= 0.0)
-            continue;
-
-        if(boneID >= MAX_BONES)
-        {
-            totalPosition = vec4(vertexPosition, 1.0);
-            break;
-        }
-
+        if(boneID == -1 || weight <= 0.0) continue;
+        if(boneID >= MAX_BONES) { totalPosition = vec4(vertexPosition, 1.0); break; }
         totalPosition += (finalBonesMatrices[boneID] * vec4(vertexPosition, 1.0)) * weight;
         totalWeight += weight;
     }
@@ -1058,18 +1127,12 @@ void main()
     if (totalWeight == 0.0)
         totalPosition = vec4(vertexPosition, 1.0);
 
-    vec4 worldPosition = modelMatrix * totalPosition;
-    vertexPositionFrag = (lightSpaceMatrix * worldPosition).xyz;
-    gl_Position = lightSpaceMatrix * worldPosition;
+    gl_Position = lightSpaceMatrix * (modelMatrix * totalPosition);
 })";
 
                 kString fragmentShader = R"(#version 330 core
-in vec3 vertexPositionFrag;
-out vec4 fragColor;
-
-void main()
-{
-})";
+void main() {}
+)";
 
                 kShader *newShadowShader = new kShader();
                 newShadowShader->loadShadersCode(vertexShader.c_str(), fragmentShader.c_str());

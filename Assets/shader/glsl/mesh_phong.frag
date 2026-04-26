@@ -29,6 +29,15 @@ uniform bool has_normalMap;
 uniform bool has_specularMap;
 uniform bool has_emissiveMap;
 
+// Cascaded shadow maps
+uniform sampler2D shadowMap0;
+uniform sampler2D shadowMap1;
+uniform sampler2D shadowMap2;
+uniform mat4 lightSpaceMatrices[3];
+uniform vec3 cascadeSplits;
+uniform bool enableShadow;
+uniform bool receiveShadow;
+
 uniform float alphaCutoff = 0.2;
 
 struct Material {
@@ -90,7 +99,48 @@ struct SpotLight
 uniform int spotLightNum;
 uniform SpotLight spotLights[32];
 
-vec3 CalcSunLight(SunLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 specularTexture)
+float sampleShadowPCF(int layer, vec2 uv, float currentDepth, float bias)
+{
+    vec2 texelSize = 1.0 / vec2(textureSize(shadowMap0, 0));
+    float shadow = 0.0;
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            vec2 off = vec2(x, y) * texelSize;
+            float d;
+            if      (layer == 0) d = texture(shadowMap0, uv + off).r;
+            else if (layer == 1) d = texture(shadowMap1, uv + off).r;
+            else                 d = texture(shadowMap2, uv + off).r;
+            shadow += currentDepth - bias > d ? 1.0 : 0.0;
+        }
+    }
+    return shadow / 9.0;
+}
+
+float ShadowCalculation(vec3 worldPos, vec3 normal)
+{
+    if (!enableShadow || !receiveShadow) return 0.0;
+
+    float fragDepth = abs((viewMatrix * vec4(worldPos, 1.0)).z);
+
+    int cascadeIndex = 2;
+    if      (fragDepth < cascadeSplits.x) cascadeIndex = 0;
+    else if (fragDepth < cascadeSplits.y) cascadeIndex = 1;
+
+    vec4 lsPos = lightSpaceMatrices[cascadeIndex] * vec4(worldPos, 1.0);
+    vec3 projCoords = lsPos.xyz / lsPos.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    if (projCoords.z > 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 ||
+        projCoords.y < 0.0 || projCoords.y > 1.0)
+        return 0.0;
+
+    float bias = max(0.005 * (1.0 - dot(normalize(normal), normalize(vec3(0.0, 1.0, 0.0)))), 0.0005);
+    return sampleShadowPCF(cascadeIndex, projCoords.xy, projCoords.z, bias);
+}
+
+vec3 CalcSunLight(SunLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 specularTexture, float shadow)
 {
     vec3 lightDir = normalize(-light.direction);
     float diff = max(dot(normal, lightDir), 0.0);
@@ -99,7 +149,7 @@ vec3 CalcSunLight(SunLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 
     float shininess = max(material.shininess, 1.0);
     float spec = pow(max(dot(viewDir, reflectDir), 0.001), shininess);
     vec3 specular = light.specular * material.specular * spec * specularTexture * light.power;
-    return (diffuse + specular);
+    return (diffuse + specular) * (1.0 - shadow);
 }
 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 specularTexture)
@@ -173,17 +223,20 @@ void main()
 	//if (diffuseTexture.a < alphaCutoff)
 		//discard;
 
+	// Shadow (computed once for first sun light)
+	float shadow = ShadowCalculation(vertexPositionFrag, norm);
+
 	// Scene ambient
 	vec3 result = sceneAmbient * material.ambient;
 	if (skyboxAmbientEnabled)
 		result += texture(skyboxMap, norm).rgb * skyboxAmbientStrength * material.ambient;
-	
+
 	// Sun lighting
 	if (sunLightNum > 0)
 	{
 		for(int i = 0; i < sunLightNum; i++)
 		{
-			result += CalcSunLight(sunLights[i], norm, vertexPositionFrag, viewDir, specularTexture.xyz);
+			result += CalcSunLight(sunLights[i], norm, vertexPositionFrag, viewDir, specularTexture.xyz, shadow);
 		}
 	}
 	

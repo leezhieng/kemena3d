@@ -153,6 +153,8 @@ namespace kemena
          */
         void setLightType(kLightType newType);
 
+        json serialize() override;
+
     protected:
     private:
         kVec3 diffuseColor  = kVec3(1.0f, 1.0f, 1.0f); ///< Diffuse colour.

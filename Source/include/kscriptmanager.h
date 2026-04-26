@@ -50,10 +50,10 @@ namespace kemena
 
         kString             fileName;   ///< Source file path.
         kString             moduleName; ///< AngelScript module identifier.
-        asIScriptEngine   *engine;     ///< Shared script engine.
-        asIScriptContext  *context;    ///< Execution context for this script.
-        asIScriptModule   *module;     ///< Compiled module.
-        bool               loaded = false; ///< true once the script has been compiled.
+        asIScriptEngine   *engine  = nullptr; ///< Shared script engine.
+        asIScriptContext  *context = nullptr; ///< Execution context for this script.
+        asIScriptModule   *module  = nullptr; ///< Compiled module.
+        bool               loaded  = false;   ///< true once the script has been compiled.
 
         /**
          * @brief Calls a single function by its AngelScript declaration.
