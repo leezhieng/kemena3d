@@ -8,6 +8,7 @@
 #include "krenderer.h"
 #include "kassetmanager.h"
 #include "kworld.h"
+#include "kprefab.h"
 #include "kmeshgenerator.h"
 #include "kscriptmanager.h"
 #include "kguimanager.h"

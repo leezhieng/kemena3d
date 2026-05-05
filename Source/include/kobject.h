@@ -244,6 +244,28 @@ namespace kemena
         void setName(kString newName);
 
         /**
+         * @brief Returns the prefab asset UUID this object is an instance of, or empty.
+         *
+         * Non-empty only on the root node of a prefab instance. Set by the editor
+         * when instantiating a prefab into a scene.
+         */
+        kString getPrefabRef() const;
+
+        /** @brief Sets the prefab asset UUID this object is an instance of. */
+        void setPrefabRef(const kString &ref);
+
+        /**
+         * @brief Returns the UUID of the corresponding node in the prefab template.
+         *
+         * Set on every node of a prefab instance subtree so the editor can match
+         * instance nodes back to their template counterparts.
+         */
+        kString getTemplateUuid() const;
+
+        /** @brief Sets the corresponding template UUID for this prefab instance node. */
+        void setTemplateUuid(const kString &uuid);
+
+        /**
          * @brief Returns the local position.
          * @return Position in parent space (or world space if root).
          */
@@ -427,6 +449,9 @@ namespace kemena
         unsigned int id = 0;
         kString uuid;
         kString name;
+
+        kString prefabRef;     ///< If non-empty, this is the root of a prefab instance referencing the prefab asset with this UUID.
+        kString templateUuid;  ///< For nodes inside a prefab instance, the UUID of the corresponding node in the prefab template.
 
         kVec3 position = kVec3(0.0f, 0.0f, 0.0f);
         kQuat rotation = kQuat(kVec3(0.0f, 0.0f, 0.0f));

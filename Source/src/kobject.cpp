@@ -211,6 +211,26 @@ namespace kemena
         name = newName;
     }
 
+    kString kObject::getPrefabRef() const
+    {
+        return prefabRef;
+    }
+
+    void kObject::setPrefabRef(const kString &ref)
+    {
+        prefabRef = ref;
+    }
+
+    kString kObject::getTemplateUuid() const
+    {
+        return templateUuid;
+    }
+
+    void kObject::setTemplateUuid(const kString &uuid)
+    {
+        templateUuid = uuid;
+    }
+
     kVec3 kObject::getPosition()
     {
         return position;
@@ -465,6 +485,10 @@ namespace kemena
                 {"children", childrenData},
                 {"script", scriptsData},
             };
+
+        // Prefab linkage — only emit when set so unrelated objects stay unchanged.
+        if (!prefabRef.empty())    data["prefab_ref"]    = prefabRef;
+        if (!templateUuid.empty()) data["template_uuid"] = templateUuid;
 
         return data;
     }

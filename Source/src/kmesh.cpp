@@ -533,6 +533,9 @@ namespace kemena
                 {"receive_shadow",  getReceiveShadow()},
             };
 
+        if (!getPrefabRef().empty())    data["prefab_ref"]    = getPrefabRef();
+        if (!getTemplateUuid().empty()) data["template_uuid"] = getTemplateUuid();
+
         return data;
     }
 
